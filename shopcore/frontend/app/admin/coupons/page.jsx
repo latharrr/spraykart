@@ -1,19 +1,25 @@
 'use client';
 import { useState } from 'react';
-import { adminGetCoupons, adminCreateCoupon, adminDeleteCoupon, adminUpdateCoupon } from '@/lib/api';
+import { adminGetCoupons, adminCreateCoupon, adminDeleteCoupon, adminUpdateCoupon, adminGetProducts } from '@/lib/api';
 import { useFetch } from '@/lib/hooks/useFetch';
 import Badge from '@/components/ui/Badge';
 import Modal from '@/components/ui/Modal';
 import Spinner from '@/components/ui/Spinner';
 import ErrorState from '@/components/ui/ErrorState';
 import EmptyState from '@/components/ui/EmptyState';
-import { Plus, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Trash2, ToggleLeft, ToggleRight, Package } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const EMPTY_FORM = { code: '', type: 'percentage', value: '', min_order: '', max_uses: '100', expiry_date: '' };
+const EMPTY_FORM = {
+  code: '', type: 'percentage', value: '', min_order: '',
+  max_uses: '100', expiry_date: '', applicable_products: [],
+};
 
 export default function AdminCouponsPage() {
   const { data: coupons, loading, error, refetch } = useFetch(adminGetCoupons);
+  const { data: productsData } = useFetch(adminGetProducts);
+  const products = productsData?.products || productsData || [];
+
   const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [formLoading, setFormLoading] = useState(false);
@@ -21,6 +27,13 @@ export default function AdminCouponsPage() {
   const [togglingId, setTogglingId] = useState(null);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  const toggleProduct = (id) =>
+    set('applicable_products',
+      form.applicable_products.includes(id)
+        ? form.applicable_products.filter((p) => p !== id)
+        : [...form.applicable_products, id]
+    );
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -34,6 +47,7 @@ export default function AdminCouponsPage() {
         max_uses: parseInt(form.max_uses || 100),
         expiry_date: form.expiry_date ? new Date(form.expiry_date).toISOString() : null,
         is_active: true,
+        applicable_products: form.applicable_products,
       });
       toast.success('Coupon created');
       setCreateOpen(false);
@@ -101,6 +115,7 @@ export default function AdminCouponsPage() {
                   <th className="table-th">Value</th>
                   <th className="table-th">Min Order</th>
                   <th className="table-th">Used / Max</th>
+                  <th className="table-th">Applies To</th>
                   <th className="table-th">Expiry</th>
                   <th className="table-th">Status</th>
                   <th className="table-th"></th>
@@ -118,6 +133,16 @@ export default function AdminCouponsPage() {
                       {parseFloat(c.min_order) > 0 ? `₹${parseFloat(c.min_order).toLocaleString('en-IN')}` : '—'}
                     </td>
                     <td className="table-td text-gray-500">{c.used_count} / {c.max_uses}</td>
+                    <td className="table-td">
+                      {c.applicable_products?.length > 0 ? (
+                        <span className="inline-flex items-center gap-1 text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-1 rounded-full">
+                          <Package size={10} />
+                          {c.applicable_products.length} product{c.applicable_products.length > 1 ? 's' : ''}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">All products</span>
+                      )}
+                    </td>
                     <td className="table-td text-gray-500">
                       {c.expiry_date ? new Date(c.expiry_date).toLocaleDateString('en-IN') : 'No expiry'}
                     </td>
@@ -174,6 +199,38 @@ export default function AdminCouponsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Expiry date</label>
             <input type="date" className="input text-sm" value={form.expiry_date} onChange={(e) => set('expiry_date', e.target.value)} />
           </div>
+
+          {/* Product restriction */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Applicable products
+              <span className="ml-2 text-xs font-normal text-gray-400">(leave empty = all products)</span>
+            </label>
+            {products.length > 0 ? (
+              <div className="border border-gray-200 rounded-lg max-h-44 overflow-y-auto divide-y divide-gray-50">
+                {products.map((p) => (
+                  <label key={p.id} className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50 transition">
+                    <input
+                      type="checkbox"
+                      checked={form.applicable_products.includes(p.id)}
+                      onChange={() => toggleProduct(p.id)}
+                      className="rounded border-gray-300 text-black focus:ring-black"
+                    />
+                    <span className="text-sm text-gray-700 flex-1 truncate">{p.name}</span>
+                    <span className="text-xs text-gray-400">₹{parseFloat(p.price).toLocaleString('en-IN')}</span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400 py-2">Loading products...</p>
+            )}
+            {form.applicable_products.length > 0 && (
+              <p className="text-xs text-indigo-600 mt-1 font-medium">
+                ✓ Restricted to {form.applicable_products.length} product{form.applicable_products.length > 1 ? 's' : ''}
+              </p>
+            )}
+          </div>
+
           <button type="submit" disabled={formLoading} className="btn-primary w-full py-3">
             {formLoading ? <Spinner size="sm" /> : 'Create Coupon'}
           </button>

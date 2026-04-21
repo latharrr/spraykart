@@ -108,6 +108,7 @@ CREATE TABLE IF NOT EXISTS coupons (
   used_count INTEGER DEFAULT 0,
   expiry_date DATE,
   is_active BOOLEAN DEFAULT true,
+  applicable_products UUID[] DEFAULT NULL,  -- NULL = all products; array of IDs = product-specific
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

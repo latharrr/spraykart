@@ -23,4 +23,6 @@ exports.createCouponSchema = z.object({
   max_uses: z.coerce.number().int().min(1).default(100),
   expiry_date: z.string().datetime().optional().nullable(),
   is_active: z.boolean().default(true),
+  // Empty array = applies to entire cart. Non-empty = only those product IDs.
+  applicable_products: z.array(z.string().uuid()).default([]),
 });

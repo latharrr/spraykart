@@ -41,9 +41,17 @@ export default function ProductInfo({ product }) {
     const cartSubtotal = product.price * quantity;
     setCouponLoading(true);
     try {
-      const { data } = await applyCoupon({ code: couponCode, cart_total: cartSubtotal });
+      const { data } = await applyCoupon({
+        code: couponCode,
+        cart_total: cartSubtotal,
+        cart_items: [{ id: product.id, price: product.price, quantity }],
+      });
       setCoupon(data.coupon, data.discount);
-      toast.success(`Coupon applied! Saved ₹${data.discount.toFixed(2)}`);
+      if (data.is_product_specific) {
+        toast.success(`Coupon applied to this product! Saved ₹${data.discount.toFixed(2)}`);
+      } else {
+        toast.success(`Coupon applied! Saved ₹${data.discount.toFixed(2)}`);
+      }
     } catch (err) {
       toast.error(err?.error || 'Invalid coupon');
     } finally {

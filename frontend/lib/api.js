@@ -11,6 +11,17 @@ const api = axios.create({
 api.interceptors.response.use(
   (res) => res,
   (err) => {
+    const data = err.response?.data;
+
+    if (typeof window !== 'undefined') {
+      console.error('[API request failed]', {
+        method: err.config?.method?.toUpperCase(),
+        url: err.config?.url,
+        status: err.response?.status,
+        data,
+      });
+    }
+
     if (err.response?.status === 401 && typeof window !== 'undefined') {
       const authPaths = ['/login', '/register'];
       if (!authPaths.includes(window.location.pathname)) {
@@ -20,7 +31,6 @@ api.interceptors.response.use(
     // Always normalize to a plain object with an `error` string.
     // Prevents React error #31 ("Objects are not valid as a React child")
     // when backend returns {code, message} without an 'error' key.
-    const data = err.response?.data;
     const normalized = {
       error:
         (typeof data === 'string' ? data : null) ||

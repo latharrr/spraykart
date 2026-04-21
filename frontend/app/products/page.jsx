@@ -27,6 +27,7 @@ function ProductsContent() {
   const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [diagnostics, setDiagnostics] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
 
   const page = parseInt(searchParams.get('page') || '1');
@@ -45,6 +46,7 @@ function ProductsContent() {
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setDiagnostics(null);
     try {
       const { data } = await getProducts({ category, search, sort: sortField, order: sortOrder, page, limit: 12 });
       setProducts(data.products || []);
@@ -59,6 +61,15 @@ function ProductsContent() {
         (typeof err?.message === 'string' ? err.message : null) ||
         'Failed to load products. Please try again.';
       setError(msg);
+
+      try {
+        const res = await fetch('/backend-diagnostic', { cache: 'no-store' });
+        if (res.ok) {
+          setDiagnostics(await res.json());
+        }
+      } catch {
+        // Keep the main error visible even if diagnostics fail too.
+      }
     } finally {
       setLoading(false);
     }
@@ -145,7 +156,39 @@ function ProductsContent() {
           {[...Array(12)].map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : error ? (
-        <ErrorState message={error} onRetry={fetchProducts} />
+        <div className="space-y-6">
+          <ErrorState message={error} onRetry={fetchProducts} />
+          {diagnostics && (
+            <div className="mx-auto max-w-2xl rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-left">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-800">Debug Info</p>
+              <div className="mt-3 space-y-3 text-sm text-amber-950">
+                <p>
+                  <span className="font-medium">Backend target:</span>{' '}
+                  <code className="rounded bg-white/80 px-1.5 py-0.5 text-xs">{diagnostics.backendUrl}</code>
+                </p>
+                <p>
+                  <span className="font-medium">Resolved from:</span>{' '}
+                  <code className="rounded bg-white/80 px-1.5 py-0.5 text-xs">{diagnostics.source}</code>
+                </p>
+                {Object.entries(diagnostics.probes || {}).map(([name, probe]) => (
+                  <div key={name} className="rounded-xl border border-amber-200 bg-white/80 p-3">
+                    <p className="font-medium capitalize text-amber-950">
+                      {name} probe
+                      <span className={`ml-2 text-xs ${probe?.ok ? 'text-green-700' : 'text-red-700'}`}>
+                        {probe?.status ? `${probe.status}` : 'request failed'}
+                      </span>
+                    </p>
+                    {probe?.summary && (
+                      <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words text-xs text-amber-900">
+                        {probe.summary}
+                      </pre>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       ) : products.length === 0 ? (
         <EmptyState
           icon="bag"

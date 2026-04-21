@@ -2,19 +2,92 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCartStore, useAuthStore } from '@/lib/store';
-import { createPayment, verifyPayment, createOrder } from '@/lib/api';
+import { createPayment, verifyPayment, createOrder, applyCoupon } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 import Spinner from '@/components/ui/Spinner';
 import EmptyState from '@/components/ui/EmptyState';
 import Link from 'next/link';
+import { Tag, X, ChevronDown } from 'lucide-react';
+
+// ─── Indian States & UTs ──────────────────────────────────────────────────────
+const INDIAN_STATES = [
+  'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh',
+  'Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka',
+  'Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram',
+  'Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana',
+  'Tripura','Uttar Pradesh','Uttarakhand','West Bengal',
+  // Union Territories
+  'Andaman and Nicobar Islands','Chandigarh',
+  'Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir',
+  'Ladakh','Lakshadweep','Puducherry',
+];
+
+// ─── Major Indian Cities ──────────────────────────────────────────────────────
+const INDIAN_CITIES = [
+  'Agra','Ahmedabad','Ahmednagar','Aizawl','Ajmer','Akola','Aligarh',
+  'Allahabad (Prayagraj)','Amravati','Amritsar','Anantapur','Asansol',
+  'Aurangabad','Bangalore','Bareilly','Bathinda','Belgaum','Bhilai',
+  'Bhopal','Bhubaneswar','Bikaner','Bilaspur','Chandigarh','Chennai',
+  'Coimbatore','Cuttack','Dehradun','Delhi','Dhanbad','Durgapur',
+  'Erode','Faridabad','Ghaziabad','Gorakhpur','Gulbarga','Guntur',
+  'Gurgaon','Guwahati','Gwalior','Hubli-Dharwad','Hyderabad','Imphal',
+  'Indore','Itanagar','Jabalpur','Jaipur','Jammu','Jamshedpur',
+  'Jodhpur','Kakinada','Kalyan-Dombivali','Kanpur','Kochi','Kohima',
+  'Kolhapur','Kolkata','Kozhikode','Kurnool','Lucknow','Ludhiana',
+  'Madurai','Mangalore','Meerut','Mumbai','Mysore','Nagpur','Nanded',
+  'Nashik','Navi Mumbai','Noida','Patna','Pune','Raipur','Rajkot',
+  'Ranchi','Salem','Shillong','Shimla','Srinagar','Surat','Thane',
+  'Thiruvananthapuram','Thrissur','Tiruchirappalli','Tirunelveli',
+  'Udaipur','Vadodara','Varanasi','Vijayawada','Visakhapatnam','Warangal',
+  'Other',
+].sort();
+
+const selectStyle = {
+  width: '100%',
+  padding: '12px 36px 12px 14px',
+  border: '1px solid #e5e7eb',
+  borderRadius: 4,
+  fontSize: 14,
+  color: '#111',
+  background: '#fff',
+  appearance: 'none',
+  WebkitAppearance: 'none',
+  cursor: 'pointer',
+  outline: 'none',
+};
+
+function SelectWrapper({ children }) {
+  return (
+    <div style={{ position: 'relative' }}>
+      {children}
+      <ChevronDown size={14} style={{
+        position: 'absolute', right: 12, top: '50%',
+        transform: 'translateY(-50%)', pointerEvents: 'none', color: '#9ca3af',
+      }} />
+    </div>
+  );
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, total, subtotal, discount, coupon, clearCart } = useCartStore();
+  const { items, discount, coupon, setCoupon, removeCoupon, clearCart } = useCartStore();
   const { user } = useAuthStore();
+
+  // Compute subtotal directly from items — avoids any selector timing issues
+  const subtotal = items.reduce((sum, i) => sum + parseFloat(i.price || 0) * (i.quantity || 1), 0);
+  const total = Math.max(0, subtotal - (discount || 0));
+  const shipping = total >= 999 ? 0 : 49;
+  const grandTotal = total + shipping;
+
   const [loading, setLoading] = useState(false);
-  const [address, setAddress] = useState({ line1: '', city: '', state: '', pincode: '', phone: '' });
+  const [address, setAddress] = useState({
+    line1: '', line2: '', city: '', state: '', pincode: '', phone: '',
+  });
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
 
   if (items.length === 0) {
     return (
@@ -30,21 +103,46 @@ export default function CheckoutPage() {
     );
   }
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    if (!user) { toast.error('Sign in to apply coupons'); return; }
+    setCouponLoading(true);
+    try {
+      const { data } = await applyCoupon({
+        code: couponCode.trim().toUpperCase(),
+        cart_total: subtotal,
+        cart_items: items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })),
+      });
+      setCoupon(data.coupon, data.discount);
+      setCouponCode('');
+      toast.success(`🎉 Saved ₹${data.discount.toLocaleString('en-IN')}!`);
+    } catch (err) {
+      toast.error(err?.error || 'Invalid or expired coupon');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    removeCoupon();
+    setCouponCode('');
+    toast.success('Coupon removed');
+  };
+
   const handlePayment = async () => {
     if (!user) return router.push('/login');
-    if (!address.line1 || !address.city || !address.pincode || !address.phone) {
-      return toast.error('Please fill in all address fields');
+    if (!address.line1 || !address.city || !address.state || !address.pincode || !address.phone) {
+      return toast.error('Please fill in all required address fields');
     }
+    if (!/^\d{6}$/.test(address.pincode)) return toast.error('Pincode must be 6 digits');
+    if (!/^\d{10}$/.test(address.phone)) return toast.error('Phone must be 10 digits');
 
     setLoading(true);
-    const idempotencyKey = uuidv4(); // Unique key for this checkout attempt
+    const idempotencyKey = uuidv4();
 
     try {
-      // Step 1: Create Razorpay order
-      const { data } = await createPayment({ amount: total });
+      const { data } = await createPayment({ amount: grandTotal });
 
-      // Step 2: Save order as 'pending' BEFORE opening Razorpay
-      // This ensures the order exists even if browser closes mid-payment
       await createOrder({
         items: items.map((i) => ({
           product_id: i.id,
@@ -54,38 +152,30 @@ export default function CheckoutPage() {
         shipping_address: address,
         coupon_code: coupon?.code,
         razorpay_order_id: data.order_id,
-        idempotency_key: idempotencyKey, // Prevents duplicate on retry
+        idempotency_key: idempotencyKey,
       });
 
-      // Step 3: Open Razorpay checkout
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: data.amount,
         currency: data.currency,
         order_id: data.order_id,
-        name: 'ShopCore',
+        name: 'Spraykart',
         description: `${items.length} item${items.length > 1 ? 's' : ''}`,
         handler: async (response) => {
           try {
-            // Step 4: Verify payment (fast path — webhook is the reliable fallback)
             await verifyPayment({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
-            clearCart();
-            router.push('/order-confirmed');
-          } catch {
-            // Even if verify fails, the Razorpay webhook will confirm the order
-            clearCart();
-            router.push('/order-confirmed');
-          }
+          } catch { /* webhook fallback */ }
+          clearCart();
+          router.push('/order-confirmed');
         },
         prefill: { name: user.name, email: user.email },
         theme: { color: '#000000' },
-        modal: {
-          ondismiss: () => setLoading(false),
-        },
+        modal: { ondismiss: () => setLoading(false) },
       };
 
       const rzp = new window.Razorpay(options);
@@ -100,68 +190,165 @@ export default function CheckoutPage() {
     }
   };
 
-  const fields = [
-    { name: 'line1', placeholder: 'Address line 1 *' },
-    { name: 'city', placeholder: 'City *' },
-    { name: 'state', placeholder: 'State *' },
-    { name: 'pincode', placeholder: 'Pincode (6 digits) *' },
-    { name: 'phone', placeholder: 'Phone number (10 digits) *' },
-  ];
+  const inp = (name, placeholder, type = 'text') => (
+    <input
+      key={name}
+      id={`address-${name}`}
+      type={type}
+      placeholder={placeholder}
+      value={address[name]}
+      onChange={(e) => setAddress({ ...address, [name]: e.target.value })}
+      className="input"
+      inputMode={type === 'tel' ? 'numeric' : undefined}
+    />
+  );
 
   return (
     <>
       <script src="https://checkout.razorpay.com/v1/checkout.js" async />
       <div className="max-w-5xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Shipping Address */}
+
+        {/* ── Left: Shipping Address ───────────────────────────────────────── */}
         <div>
           <h1 className="text-2xl font-bold mb-6">Shipping Address</h1>
           <div className="space-y-3">
-            {fields.map(({ name, placeholder }) => (
-              <input
-                key={name}
-                id={`address-${name}`}
-                placeholder={placeholder}
-                value={address[name]}
-                onChange={(e) => setAddress({ ...address, [name]: e.target.value })}
-                className="input"
-              />
-            ))}
+            {inp('line1', 'Address line 1 *')}
+            {inp('line2', 'Address line 2 (optional)')}
+
+            {/* City dropdown */}
+            <SelectWrapper>
+              <select
+                id="address-city"
+                style={selectStyle}
+                value={address.city}
+                onChange={(e) => setAddress({ ...address, city: e.target.value })}
+              >
+                <option value="">Select City *</option>
+                {INDIAN_CITIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </SelectWrapper>
+
+            {/* State dropdown */}
+            <SelectWrapper>
+              <select
+                id="address-state"
+                style={selectStyle}
+                value={address.state}
+                onChange={(e) => setAddress({ ...address, state: e.target.value })}
+              >
+                <option value="">Select State / UT *</option>
+                {INDIAN_STATES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </SelectWrapper>
+
+            {inp('pincode', 'Pincode (6 digits) *', 'tel')}
+            {inp('phone', 'Phone number (10 digits) *', 'tel')}
+          </div>
+
+          {/* ── Coupon ──────────────────────────────────────────────────────── */}
+          <div className="mt-8">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Tag size={14} /> Coupon Code
+            </h3>
+            {coupon ? (
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '12px 16px', background: '#f0fdf4',
+                border: '1px solid #bbf7d0', borderRadius: 8,
+              }}>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#16a34a', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+                    {coupon.code}
+                  </p>
+                  <p style={{ fontSize: 12, color: '#15803d', marginTop: 2 }}>
+                    You save ₹{(discount || 0).toLocaleString('en-IN')} 🎉
+                  </p>
+                </div>
+                <button
+                  onClick={handleRemoveCoupon}
+                  style={{
+                    background: 'none', border: '1px solid #86efac',
+                    borderRadius: 6, cursor: 'pointer', color: '#16a34a',
+                    padding: '4px 10px', display: 'flex', alignItems: 'center',
+                    gap: 4, fontSize: 12, fontWeight: 500,
+                  }}
+                >
+                  <X size={12} /> Remove
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  id="coupon-input"
+                  className="input text-sm"
+                  placeholder="Enter coupon code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  onClick={handleApplyCoupon}
+                  disabled={couponLoading || !couponCode.trim()}
+                  className="btn-secondary shrink-0 text-sm"
+                  style={{ padding: '10px 20px' }}
+                >
+                  {couponLoading ? <Spinner size="sm" /> : 'Apply'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Order Summary */}
+        {/* ── Right: Order Summary ─────────────────────────────────────────── */}
         <div>
           <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
           <div className="card p-6 space-y-4">
+
+            {/* Items */}
             {items.map((item) => (
-              <div key={item.cartKey} className="flex items-center justify-between text-sm">
-                <span className="text-gray-700 flex-1 truncate pr-4">
-                  {item.name}
+              <div key={item.cartKey} className="flex items-start justify-between text-sm gap-3">
+                <span className="text-gray-700 flex-1 min-w-0">
+                  <span className="font-medium">{item.name}</span>
                   {item.variant && <span className="text-gray-400"> · {item.variant.value}</span>}
-                  {' '}<span className="text-gray-400">×{item.quantity}</span>
+                  <span className="text-gray-400"> ×{item.quantity}</span>
                 </span>
-                <span className="font-medium shrink-0">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                <span className="font-semibold shrink-0 text-gray-900">
+                  ₹{(parseFloat(item.price) * item.quantity).toLocaleString('en-IN')}
+                </span>
               </div>
             ))}
 
-            <div className="border-t border-gray-100 pt-4 space-y-2">
+            {/* Totals */}
+            <div className="border-t border-gray-100 pt-4 space-y-2.5">
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Subtotal</span>
                 <span>₹{subtotal.toLocaleString('en-IN')}</span>
               </div>
               {discount > 0 && (
-                <div className="flex justify-between text-sm text-green-600 font-medium">
-                  <span>Discount {coupon?.code && `(${coupon.code})`}</span>
+                <div className="flex justify-between text-sm font-medium" style={{ color: '#16a34a' }}>
+                  <span>Coupon {coupon?.code && `(${coupon.code})`}</span>
                   <span>−₹{discount.toLocaleString('en-IN')}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Shipping</span>
-                <span className="text-green-600 font-medium">{total >= 999 ? 'Free' : '₹49'}</span>
+                <span className={shipping === 0 ? 'text-green-600 font-medium' : ''}>
+                  {shipping === 0 ? 'Free' : '₹49'}
+                </span>
               </div>
+              {shipping > 0 && (
+                <p style={{ fontSize: 11, color: '#a0a0a0', background: '#f7f7f5', padding: '6px 10px' }}>
+                  Add ₹{(999 - total).toLocaleString('en-IN')} more for free shipping
+                </p>
+              )}
               <div className="flex justify-between font-bold text-lg text-gray-900 pt-2 border-t border-gray-100">
                 <span>Total</span>
-                <span>₹{(total + (total < 999 ? 49 : 0)).toLocaleString('en-IN')}</span>
+                <span>₹{grandTotal.toLocaleString('en-IN')}</span>
               </div>
             </div>
 
@@ -171,12 +358,21 @@ export default function CheckoutPage() {
               disabled={loading}
               className="btn-primary w-full py-3.5 mt-2"
             >
-              {loading ? <><Spinner size="sm" /> Processing...</> : `Pay ₹${(total + (total < 999 ? 49 : 0)).toLocaleString('en-IN')}`}
+              {loading
+                ? <><Spinner size="sm" /> Processing...</>
+                : `Pay ₹${grandTotal.toLocaleString('en-IN')}`}
             </button>
 
             <p className="text-xs text-center text-gray-400 flex items-center justify-center gap-1">
               🔒 Secured by Razorpay
             </p>
+          </div>
+
+          {/* Back to cart */}
+          <div className="text-center mt-4">
+            <Link href="/cart" style={{ fontSize: 12, color: '#737373', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+              ← Back to cart
+            </Link>
           </div>
         </div>
       </div>

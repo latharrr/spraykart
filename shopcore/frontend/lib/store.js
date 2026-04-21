@@ -43,20 +43,59 @@ export const useCartStore = create(
       clearCart: () => set({ items: [], coupon: null, discount: 0 }),
       setCoupon: (coupon, discount) => set({ coupon, discount }),
       removeCoupon: () => set({ coupon: null, discount: 0 }),
-
-      get subtotal() {
-        return get().items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-      },
-      get total() {
-        return Math.max(0, get().subtotal - get().discount);
-      },
-      get itemCount() {
-        return get().items.reduce((sum, i) => sum + i.quantity, 0);
-      },
     }),
     { name: 'shopcore-cart' }
   )
 );
+
+// Reactive selector hooks — use these everywhere instead of destructuring getters
+export const useCartItemCount = () =>
+  useCartStore((state) => state.items.reduce((sum, i) => sum + i.quantity, 0));
+
+export const useCartSubtotal = () =>
+  useCartStore((state) => state.items.reduce((sum, i) => sum + i.price * i.quantity, 0));
+
+export const useCartTotal = () => {
+  const subtotal = useCartSubtotal();
+  const discount = useCartStore((state) => state.discount);
+  return Math.max(0, subtotal - discount);
+};
+
+// ─── Wishlist Store ───────────────────────────────────────────────────────────
+export const useWishlistStore = create(
+  persist(
+    (set, get) => ({
+      items: [], // array of product objects
+
+      addItem: (product) => {
+        if (get().items.find((i) => i.id === product.id)) return;
+        set((state) => ({ items: [...state.items, product] }));
+      },
+
+      removeItem: (productId) =>
+        set((state) => ({ items: state.items.filter((i) => i.id !== productId) })),
+
+      toggle: (product) => {
+        const exists = get().items.find((i) => i.id === product.id);
+        if (exists) {
+          set((state) => ({ items: state.items.filter((i) => i.id !== product.id) }));
+          return false; // removed
+        } else {
+          set((state) => ({ items: [...state.items, product] }));
+          return true; // added
+        }
+      },
+    }),
+    { name: 'shopcore-wishlist' }
+  )
+);
+
+// Reactive wishlist selectors
+export const useWishlistCount = () =>
+  useWishlistStore((state) => state.items.length);
+
+export const useIsWishlisted = (productId) =>
+  useWishlistStore((state) => state.items.some((i) => i.id === productId));
 
 // ─── Auth Store ───────────────────────────────────────────────────────────────
 // NOTE: No token is stored here. JWT lives in an httpOnly cookie managed by the backend.
@@ -70,7 +109,6 @@ export const useAuthStore = create(
 
       logout: async () => {
         try {
-          // Ask backend to clear the httpOnly cookie
           await fetch('/api/auth/logout', {
             method: 'POST',
             credentials: 'include',
@@ -81,7 +119,7 @@ export const useAuthStore = create(
     }),
     {
       name: 'shopcore-auth',
-      partialize: (state) => ({ user: state.user }), // Only persist user object
+      partialize: (state) => ({ user: state.user }),
     }
   )
 );

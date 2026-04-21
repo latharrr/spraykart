@@ -1,9 +1,9 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { ShoppingCart, Search, Menu, X, User, Package, Shield } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, User, Package, Shield, Heart } from 'lucide-react';
 import { useState, useEffect, Suspense } from 'react';
-import { useCartStore, useAuthStore } from '@/lib/store';
+import { useAuthStore, useCartItemCount, useWishlistCount } from '@/lib/store';
 import clsx from 'clsx';
 
 const navLinks = [
@@ -18,7 +18,8 @@ const navLinks = [
 function NavbarInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { itemCount } = useCartStore();
+  const itemCount = useCartItemCount();
+  const wishlistCount = useWishlistCount();
   const { user, logout } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -100,6 +101,22 @@ function NavbarInner() {
               <Search size={16} />
             </Link>
 
+            {/* Wishlist */}
+            <Link href="/wishlist" style={{ position: 'relative', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#909090', textDecoration: 'none', borderRadius: 2, transition: 'color .15s' }} aria-label="Wishlist">
+              <Heart size={16} />
+              {mounted && wishlistCount > 0 && (
+                <span style={{
+                  position: 'absolute', top: 4, right: 4,
+                  width: 14, height: 14, background: '#e11d48', color: '#ffffff',
+                  fontSize: 8, fontWeight: 700, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {wishlistCount > 9 ? '9+' : wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            {/* Cart */}
             <Link href="/cart" style={{ position: 'relative', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#909090', textDecoration: 'none', borderRadius: 2, transition: 'color .15s' }} aria-label="Cart">
               <ShoppingCart size={16} />
               {mounted && itemCount > 0 && (

@@ -1,14 +1,16 @@
 'use client';
 import { useState } from 'react';
-import { ShoppingCart, Zap, Star } from 'lucide-react';
+import { ShoppingCart, Zap, Star, Heart } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useCartStore, useAuthStore } from '@/lib/store';
+import { useCartStore, useAuthStore, useWishlistStore, useIsWishlisted } from '@/lib/store';
 import { applyCoupon } from '@/lib/api';
 import Spinner from '@/components/ui/Spinner';
 
 export default function ProductInfo({ product }) {
   const { addItem, setCoupon } = useCartStore();
   const { user } = useAuthStore();
+  const { toggle: toggleWishlist } = useWishlistStore();
+  const wishlisted = useIsWishlisted(product.id);
 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -166,6 +168,23 @@ export default function ProductInfo({ product }) {
         >
           <Zap size={18} />
           Buy now
+        </button>
+        {/* Wishlist toggle */}
+        <button
+          onClick={() => {
+            const added = toggleWishlist(product);
+            toast.success(added ? '❤️ Added to wishlist' : 'Removed from wishlist');
+          }}
+          aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          style={{
+            width: 48, height: 48, borderRadius: 8, flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: wishlisted ? '1px solid #fda4af' : '1px solid #e5e7eb',
+            background: wishlisted ? '#fff1f2' : '#ffffff',
+            cursor: 'pointer', transition: 'all 0.15s',
+          }}
+        >
+          <Heart size={18} fill={wishlisted ? '#e11d48' : 'none'} color={wishlisted ? '#e11d48' : '#9ca3af'} />
         </button>
       </div>
 

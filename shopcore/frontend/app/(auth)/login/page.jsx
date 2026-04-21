@@ -111,6 +111,12 @@ export default function LoginPage() {
               />
             </div>
 
+            <div style={{ textAlign: 'right', marginTop: -8 }}>
+              <Link href="/forgot-password" style={{ fontSize: 12, color: '#737373', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                Forgot password?
+              </Link>
+            </div>
+
             <button
               type="submit"
               disabled={loading}

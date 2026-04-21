@@ -16,10 +16,11 @@ const footerLinks = {
     { label: 'Sign In',    href: '/login' },
   ],
   Support: [
-    { label: 'About Spraykart', href: '/about' },
-    { label: 'Contact Us',      href: '/contact' },
-    { label: 'Privacy Policy',  href: '/privacy' },
-    { label: 'Terms',           href: '/terms' },
+    { label: 'Contact Us',       href: '/contact' },
+    { label: 'Privacy Policy',   href: '/privacy-policy' },
+    { label: 'Terms & Conditions', href: '/terms' },
+    { label: 'Refund Policy',    href: '/refund-policy' },
+    { label: 'Shipping Policy',  href: '/shipping-policy' },
   ],
 };
 

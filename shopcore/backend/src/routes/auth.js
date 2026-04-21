@@ -74,4 +74,62 @@ router.post('/logout', (req, res) => {
 // GET /api/auth/me
 router.get('/me', protect, (req, res) => res.json(req.user));
 
+// POST /api/auth/forgot-password
+router.post('/forgot-password', authLimiter, async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+
+  try {
+    const { rows } = await db.query('SELECT id, name FROM users WHERE email=$1', [email.toLowerCase().trim()]);
+    // Always return 200 to prevent email enumeration attacks
+    if (!rows.length) return res.json({ success: true, message: 'If that email exists, you will receive an OTP.' });
+
+    const user = rows[0];
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    // Delete any existing OTPs for this email, then insert new one
+    await db.query('DELETE FROM password_resets WHERE email=$1', [email.toLowerCase()]);
+    await db.query(
+      'INSERT INTO password_resets(email, otp, expires_at) VALUES($1,$2,$3)',
+      [email.toLowerCase(), otp, expiresAt]
+    );
+
+    // Send OTP email (fire-and-forget)
+    const emailService = require('../services/email.service');
+    emailService.sendPasswordReset({ to: email, name: user.name, otp }).catch(() => {});
+
+    logger.info(`Password reset OTP sent to ${email}`);
+    res.json({ success: true, message: 'If that email exists, you will receive an OTP.' });
+  } catch (err) {
+    logger.error(`Forgot password error: ${err.message}`);
+    res.status(500).json({ error: 'Failed to process request' });
+  }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', authLimiter, async (req, res) => {
+  const { email, otp, password } = req.body;
+  if (!email || !otp || !password) return res.status(400).json({ error: 'Email, OTP, and new password are required' });
+  if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+  try {
+    const { rows } = await db.query(
+      'SELECT * FROM password_resets WHERE email=$1 AND otp=$2 AND expires_at > NOW()',
+      [email.toLowerCase().trim(), otp]
+    );
+    if (!rows.length) return res.status(400).json({ error: 'Invalid or expired OTP' });
+
+    const hash = await bcrypt.hash(password, 12);
+    await db.query('UPDATE users SET password=$1 WHERE email=$2', [hash, email.toLowerCase()]);
+    await db.query('DELETE FROM password_resets WHERE email=$1', [email.toLowerCase()]);
+
+    logger.info(`Password reset successful for ${email}`);
+    res.json({ success: true, message: 'Password updated successfully. Please log in.' });
+  } catch (err) {
+    logger.error(`Reset password error: ${err.message}`);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
 module.exports = router;

@@ -1,121 +1,159 @@
-const nodemailer = require('nodemailer');
+/**
+ * email.service.js — Powered by Resend (resend.com)
+ * Falls back gracefully if RESEND_API_KEY is not set (logs a warning).
+ * 
+ * Setup: npm install resend
+ * Env:   RESEND_API_KEY=re_xxxxxxxxxxxx
+ *        EMAIL_FROM=Spraykart <orders@spraykart.in>
+ *        ADMIN_EMAIL=admin@spraykart.in
+ *        FRONTEND_URL=https://spraykart.vercel.app
+ */
+const { Resend } = require('resend');
 const logger = require('../utils/logger');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // Gmail App Password (not your real password)
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
+const FROM = process.env.EMAIL_FROM || 'Spraykart <onboarding@resend.dev>';
 
-// Shared email sender with error handling
-const sendMail = async (options) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    logger.warn('Email not configured — skipping email send');
+const send = async ({ to, subject, html }) => {
+  if (!process.env.RESEND_API_KEY) {
+    logger.warn('RESEND_API_KEY not set — skipping email');
     return;
   }
   try {
-    await transporter.sendMail({ from: `"ShopCore" <${process.env.EMAIL_USER}>`, ...options });
-    logger.info(`Email sent to ${options.to}: ${options.subject}`);
+    await resend.emails.send({ from: FROM, to, subject, html });
+    logger.info(`Email sent → ${to}: ${subject}`);
   } catch (err) {
-    logger.error(`Failed to send email to ${options.to}: ${err.message}`);
+    logger.error(`Email failed → ${to}: ${err.message}`);
   }
 };
 
-// ─── Templates ───────────────────────────────────────────────────────────────
+// ─── Shared HTML shell ────────────────────────────────────────────────────────
+const shell = (body) => `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f5f5f0;font-family:'Inter',Arial,sans-serif">
+  <div style="max-width:600px;margin:40px auto;background:#fff;border:1px solid #e8e8e8">
+    <div style="background:#0c0c0c;padding:24px 32px;display:flex;align-items:center">
+      <span style="font-family:Georgia,serif;font-size:22px;color:#fff;font-weight:400;letter-spacing:-0.02em">
+        Spray<em style="font-style:italic;font-weight:300">kart</em>
+      </span>
+    </div>
+    <div style="padding:36px 32px">${body}</div>
+    <div style="background:#f9f9f7;padding:20px 32px;border-top:1px solid #e8e8e8;text-align:center">
+      <p style="margin:0;font-size:11px;color:#a0a0a0;letter-spacing:0.05em">
+        © ${new Date().getFullYear()} Spraykart · 100% Authentic Luxury Fragrances · India
+      </p>
+      <p style="margin:6px 0 0;font-size:11px;color:#c0c0c0">
+        MCA Registered · GST Invoiced · Pan-India Delivery
+      </p>
+    </div>
+  </div>
+</body>
+</html>`;
 
-exports.sendOrderConfirmation = async ({ to, name, orderId, items, total }) => {
-  const itemsHtml = items
-    .map((i) => `<tr>
-      <td style="padding:8px;border-bottom:1px solid #eee">${i.name}</td>
-      <td style="padding:8px;border-bottom:1px solid #eee;text-align:center">${i.quantity}</td>
-      <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">₹${parseFloat(i.price * i.quantity).toLocaleString('en-IN')}</td>
-    </tr>`)
-    .join('');
+const btn = (href, text) =>
+  `<a href="${href}" style="display:inline-block;margin-top:24px;background:#0c0c0c;color:#fff;padding:12px 28px;text-decoration:none;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">${text}</a>`;
 
-  await sendMail({
+// ─── 1. Order Confirmation ─────────────────────────────────────────────────────
+exports.sendOrderConfirmation = async ({ to, name, orderId, items, total, discount }) => {
+  const rows = (items || []).map((i) => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;font-size:13px;color:#333">${i.name}</td>
+      <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;font-size:13px;color:#737373;text-align:center">×${i.quantity}</td>
+      <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:600;text-align:right">₹${(parseFloat(i.price) * i.quantity).toLocaleString('en-IN')}</td>
+    </tr>`).join('');
+
+  await send({
     to,
-    subject: `Order Confirmed — #${orderId.slice(0, 8).toUpperCase()}`,
-    html: `
-      <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;background:#fff">
-        <div style="background:#000;padding:24px;text-align:center">
-          <h1 style="color:#fff;margin:0;font-size:24px">ShopCore</h1>
-        </div>
-        <div style="padding:32px">
-          <h2 style="color:#111;margin-top:0">Order Confirmed! 🎉</h2>
-          <p style="color:#555">Hi ${name}, your order has been confirmed and is being processed.</p>
-          <p style="color:#555"><strong>Order ID:</strong> #${orderId.slice(0, 8).toUpperCase()}</p>
-          <table style="width:100%;border-collapse:collapse;margin:24px 0">
-            <thead>
-              <tr style="background:#f9fafb">
-                <th style="padding:8px;text-align:left;font-size:12px;color:#888;text-transform:uppercase">Item</th>
-                <th style="padding:8px;text-align:center;font-size:12px;color:#888;text-transform:uppercase">Qty</th>
-                <th style="padding:8px;text-align:right;font-size:12px;color:#888;text-transform:uppercase">Price</th>
-              </tr>
-            </thead>
-            <tbody>${itemsHtml}</tbody>
-          </table>
-          <div style="text-align:right;font-size:18px;font-weight:700;color:#111">
-            Total: ₹${parseFloat(total).toLocaleString('en-IN')}
-          </div>
-          <div style="margin-top:32px;text-align:center">
-            <a href="${process.env.FRONTEND_URL}/orders" style="background:#000;color:#fff;padding:12px 32px;text-decoration:none;border-radius:8px;font-weight:600">Track Your Order</a>
-          </div>
-        </div>
-        <div style="background:#f9fafb;padding:16px;text-align:center;color:#888;font-size:12px">
-          © ${new Date().getFullYear()} ShopCore. All rights reserved.
-        </div>
+    subject: `Order Confirmed 🎉 — #${orderId.slice(0,8).toUpperCase()} | Spraykart`,
+    html: shell(`
+      <h2 style="margin:0 0 4px;font-size:24px;font-weight:400;font-family:Georgia,serif;color:#0c0c0c">Order Confirmed!</h2>
+      <p style="margin:0 0 24px;font-size:13px;color:#737373">Hi ${name}, thank you for your order. We're preparing it now.</p>
+      <div style="background:#f9f9f7;padding:12px 16px;border-left:3px solid #0c0c0c;margin-bottom:24px">
+        <span style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#a0a0a0">Order ID</span><br>
+        <span style="font-size:14px;font-weight:600;color:#0c0c0c;font-family:monospace">#${orderId.slice(0,8).toUpperCase()}</span>
       </div>
-    `,
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="border-bottom:2px solid #0c0c0c">
+            <th style="padding:8px 0;text-align:left;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#737373">Item</th>
+            <th style="padding:8px 0;text-align:center;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#737373">Qty</th>
+            <th style="padding:8px 0;text-align:right;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#737373">Price</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ${discount > 0 ? `<p style="text-align:right;margin:8px 0 4px;font-size:13px;color:#16a34a">Discount: −₹${parseFloat(discount).toLocaleString('en-IN')}</p>` : ''}
+      <div style="text-align:right;margin-top:16px;padding-top:16px;border-top:2px solid #0c0c0c">
+        <span style="font-size:18px;font-weight:700;color:#0c0c0c">Total: ₹${parseFloat(total).toLocaleString('en-IN')}</span>
+      </div>
+      <p style="font-size:13px;color:#737373;margin-top:24px">Estimated delivery: <strong>3–7 business days</strong></p>
+      ${btn(`${process.env.FRONTEND_URL}/orders`, 'Track Your Order')}
+    `),
   });
 };
 
+// ─── 2. Admin — New Order Alert ───────────────────────────────────────────────
 exports.sendAdminNewOrder = async ({ orderId, customerName, customerEmail, total, itemCount }) => {
-  await sendMail({
+  if (!process.env.ADMIN_EMAIL) return;
+  await send({
     to: process.env.ADMIN_EMAIL,
-    subject: `New Order — ₹${parseFloat(total).toLocaleString('en-IN')} from ${customerName}`,
-    html: `
-      <div style="font-family:Inter,sans-serif;max-width:500px">
-        <h2>New Order Received</h2>
-        <table style="width:100%;border-collapse:collapse">
-          <tr><td style="padding:8px;color:#555">Order ID</td><td style="padding:8px;font-weight:600">#${orderId.slice(0, 8).toUpperCase()}</td></tr>
-          <tr><td style="padding:8px;color:#555">Customer</td><td style="padding:8px;font-weight:600">${customerName} (${customerEmail})</td></tr>
-          <tr><td style="padding:8px;color:#555">Items</td><td style="padding:8px;font-weight:600">${itemCount}</td></tr>
-          <tr><td style="padding:8px;color:#555">Total</td><td style="padding:8px;font-weight:600;color:#16a34a">₹${parseFloat(total).toLocaleString('en-IN')}</td></tr>
-        </table>
-        <a href="${process.env.FRONTEND_URL}/admin/orders" style="display:inline-block;margin-top:16px;background:#000;color:#fff;padding:10px 24px;text-decoration:none;border-radius:6px">View in Admin</a>
-      </div>
-    `,
+    subject: `🛒 New Order ₹${parseFloat(total).toLocaleString('en-IN')} — ${customerName} | Spraykart`,
+    html: shell(`
+      <h2 style="margin:0 0 20px;font-size:20px;font-weight:600;color:#0c0c0c">New Order Received</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <tr><td style="padding:8px 0;color:#737373;width:120px">Order ID</td><td style="font-weight:600;font-family:monospace">#${orderId.slice(0,8).toUpperCase()}</td></tr>
+        <tr><td style="padding:8px 0;color:#737373">Customer</td><td style="font-weight:600">${customerName}</td></tr>
+        <tr><td style="padding:8px 0;color:#737373">Email</td><td>${customerEmail}</td></tr>
+        <tr><td style="padding:8px 0;color:#737373">Items</td><td>${itemCount}</td></tr>
+        <tr><td style="padding:8px 0;color:#737373">Total</td><td style="font-weight:700;font-size:16px;color:#0c0c0c">₹${parseFloat(total).toLocaleString('en-IN')}</td></tr>
+      </table>
+      ${btn(`${process.env.FRONTEND_URL}/admin/orders`, 'View in Admin Panel')}
+    `),
   });
 };
 
+// ─── 3. Order Status Update ───────────────────────────────────────────────────
 exports.sendOrderStatusUpdate = async ({ to, name, orderId, status }) => {
-  const statusMessages = {
-    confirmed: { emoji: '✅', text: 'Your order has been confirmed and is being prepared.' },
-    shipped:   { emoji: '🚚', text: 'Your order is on its way!' },
-    delivered: { emoji: '📦', text: 'Your order has been delivered. Enjoy!' },
-    cancelled: { emoji: '❌', text: 'Your order has been cancelled. A refund (if applicable) will be processed within 5-7 business days.' },
+  const map = {
+    confirmed: { emoji: '✅', title: 'Order Confirmed',  text: 'Your order has been confirmed and is being prepared.' },
+    shipped:   { emoji: '🚚', title: 'Order Shipped',    text: 'Great news! Your order is on its way.' },
+    delivered: { emoji: '📦', title: 'Order Delivered',  text: 'Your order has been delivered. We hope you love it!' },
+    cancelled: { emoji: '❌', title: 'Order Cancelled',  text: 'Your order has been cancelled. Any payment will be refunded within 5–7 business days.' },
   };
+  const m = map[status] || { emoji: '📋', title: 'Order Update', text: `Your order status is now: ${status}.` };
 
-  const msg = statusMessages[status] || { emoji: '📋', text: `Your order status has been updated to: ${status}.` };
-
-  await sendMail({
+  await send({
     to,
-    subject: `${msg.emoji} Order Update — #${orderId.slice(0, 8).toUpperCase()} is now ${status}`,
-    html: `
-      <div style="font-family:Inter,sans-serif;max-width:500px;margin:0 auto">
-        <div style="background:#000;padding:20px;text-align:center">
-          <h1 style="color:#fff;margin:0;font-size:22px">ShopCore</h1>
-        </div>
-        <div style="padding:32px">
-          <h2 style="margin-top:0">${msg.emoji} Order ${status.charAt(0).toUpperCase() + status.slice(1)}</h2>
-          <p>Hi ${name},</p>
-          <p>${msg.text}</p>
-          <p><strong>Order ID:</strong> #${orderId.slice(0, 8).toUpperCase()}</p>
-          <a href="${process.env.FRONTEND_URL}/orders" style="display:inline-block;margin-top:16px;background:#000;color:#fff;padding:10px 24px;text-decoration:none;border-radius:6px">View Order</a>
+    subject: `${m.emoji} ${m.title} — #${orderId.slice(0,8).toUpperCase()} | Spraykart`,
+    html: shell(`
+      <h2 style="margin:0 0 4px;font-size:22px;font-weight:400;font-family:Georgia,serif">${m.emoji} ${m.title}</h2>
+      <p style="margin:0 0 20px;font-size:13px;color:#737373">Hi ${name},</p>
+      <p style="font-size:14px;color:#333;line-height:1.7">${m.text}</p>
+      <div style="background:#f9f9f7;padding:12px 16px;border-left:3px solid #0c0c0c;margin:20px 0">
+        <span style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#a0a0a0">Order ID</span><br>
+        <span style="font-size:14px;font-weight:600;font-family:monospace">#${orderId.slice(0,8).toUpperCase()}</span>
+      </div>
+      ${btn(`${process.env.FRONTEND_URL}/orders`, 'View Order')}
+    `),
+  });
+};
+
+// ─── 4. Password Reset OTP ────────────────────────────────────────────────────
+exports.sendPasswordReset = async ({ to, name, otp }) => {
+  await send({
+    to,
+    subject: `Reset your Spraykart password — OTP: ${otp}`,
+    html: shell(`
+      <h2 style="margin:0 0 4px;font-size:22px;font-weight:400;font-family:Georgia,serif">Reset Your Password</h2>
+      <p style="margin:0 0 24px;font-size:13px;color:#737373">Hi ${name}, use the OTP below to reset your password. It expires in 15 minutes.</p>
+      <div style="text-align:center;margin:32px 0">
+        <div style="display:inline-block;background:#0c0c0c;color:#fff;padding:20px 40px;letter-spacing:0.5em;font-size:32px;font-weight:700;font-family:monospace">
+          ${otp}
         </div>
       </div>
-    `,
+      <p style="font-size:12px;color:#a0a0a0;text-align:center">If you didn't request this, ignore this email. Your password won't change.</p>
+    `),
   });
 };

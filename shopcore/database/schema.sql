@@ -107,7 +107,8 @@ CREATE TABLE IF NOT EXISTS coupons (
   max_uses INTEGER DEFAULT 100,
   used_count INTEGER DEFAULT 0,
   expiry_date DATE,
-  is_active BOOLEAN DEFAULT true
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- CART (server-side optional, usually client-side)

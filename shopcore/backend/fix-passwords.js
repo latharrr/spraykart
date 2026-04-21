@@ -1,5 +1,5 @@
 // Fix user passwords in Supabase — resets all seed user passwords
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 

@@ -11,7 +11,8 @@ const logger = require('../utils/logger');
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict',
+  sameSite: 'lax',   // 'strict' breaks cookies through Next.js proxy rewrites
+  path: '/',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
@@ -66,7 +67,7 @@ router.post('/login', authLimiter, validate(loginSchema), async (req, res) => {
 
 // POST /api/auth/logout
 router.post('/logout', (req, res) => {
-  res.clearCookie('token', { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' });
+  res.clearCookie('token', { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/' });
   res.json({ success: true });
 });
 

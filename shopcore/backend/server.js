@@ -9,6 +9,9 @@ const logger = require('./src/utils/logger');
 
 const app = express();
 
+// Trust Next.js proxy (rewrites) — required for cookies to work through the proxy
+app.set('trust proxy', 1);
+
 // ─── Security ────────────────────────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {

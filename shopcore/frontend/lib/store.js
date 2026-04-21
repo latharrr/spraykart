@@ -71,7 +71,7 @@ export const useAuthStore = create(
       logout: async () => {
         try {
           // Ask backend to clear the httpOnly cookie
-          await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api/auth/logout', {
+          await fetch('/api/auth/logout', {
             method: 'POST',
             credentials: 'include',
           });

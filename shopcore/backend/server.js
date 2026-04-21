@@ -9,26 +9,60 @@ const logger = require('./src/utils/logger');
 
 const app = express();
 
-// Trust Next.js proxy (rewrites) — required for cookies to work through the proxy
+// Trust Next.js/Vercel proxy — required for secure cookies and IP detection
 app.set('trust proxy', 1);
 
-// ─── Security ────────────────────────────────────────────────────────────────
+// ─── Allowed Origins ──────────────────────────────────────────────────────────
+// Supports local dev + any number of production domains via FRONTEND_URL.
+// FRONTEND_URL can be a comma-separated list: "https://spraykart.vercel.app,https://spraykart.in"
+const rawOrigins = process.env.FRONTEND_URL || 'http://localhost:3000';
+const allowedOrigins = new Set([
+  'http://localhost:3000',
+  ...rawOrigins.split(',').map((o) => o.trim()).filter(Boolean),
+]);
+
+// ─── Security ─────────────────────────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "checkout.razorpay.com"],
-      imgSrc: ["'self'", "res.cloudinary.com", "data:", "blob:"],
-      connectSrc: ["'self'", process.env.FRONTEND_URL || 'http://localhost:3000'],
-      frameSrc: ["'self'", "api.razorpay.com"],
+      scriptSrc: [
+        "'self'",
+        'checkout.razorpay.com',
+        'cdn.razorpay.com',
+        "'unsafe-inline'", // Required for Razorpay inline scripts
+      ],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'res.cloudinary.com', 'data:', 'blob:'],
+      connectSrc: [
+        "'self'",
+        'api.razorpay.com',
+        'lumberjack.razorpay.com',
+        ...Array.from(allowedOrigins),
+      ],
+      frameSrc: ["'self'", 'api.razorpay.com'],
+      fontSrc: ["'self'", 'fonts.googleapis.com', 'fonts.gstatic.com'],
     },
   },
+  // Allow Razorpay to load in iframes
+  crossOriginEmbedderPolicy: false,
 }));
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow server-to-server requests (no origin) and requests from allowed origins
+    if (!origin || allowedOrigins.has(origin)) {
+      callback(null, true);
+    } else {
+      logger.warn(`CORS blocked: ${origin}`);
+      callback(new Error(`CORS policy: origin ${origin} not allowed`));
+    }
+  },
   credentials: true, // Required for httpOnly cookies
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
 
 // ─── Razorpay Webhook — MUST be before express.json() (needs raw body) ───────
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));

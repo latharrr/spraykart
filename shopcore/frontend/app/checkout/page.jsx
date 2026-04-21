@@ -117,6 +117,17 @@ export default function CheckoutPage() {
     if (!/^\d{6}$/.test(address.pincode)) return toast.error('Pincode must be 6 digits');
     if (!/^\d{10}$/.test(address.phone)) return toast.error('Phone must be 10 digits');
 
+    // ── Defensive: verify Razorpay is configured and SDK is loaded ────────────
+    const rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    if (!rzpKey || rzpKey.includes('xxxx')) {
+      toast.error('Online payments are temporarily unavailable. Please try again later.');
+      return;
+    }
+    if (typeof window === 'undefined' || typeof window.Razorpay === 'undefined') {
+      toast.error('Payment SDK not loaded. Please refresh the page and try again.');
+      return;
+    }
+
     setLoading(true);
     const idempotencyKey = uuidv4();
 
@@ -136,7 +147,7 @@ export default function CheckoutPage() {
       });
 
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: rzpKey,
         amount: data.amount,
         currency: data.currency,
         order_id: data.order_id,
@@ -149,7 +160,7 @@ export default function CheckoutPage() {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
-          } catch { /* webhook fallback */ }
+          } catch { /* webhook handles idempotent fallback */ }
           clearCart();
           router.push('/order-confirmed');
         },
@@ -165,7 +176,7 @@ export default function CheckoutPage() {
       });
       rzp.open();
     } catch (err) {
-      toast.error(err?.error || 'Failed to initiate payment');
+      toast.error(err?.error || 'Failed to initiate payment. Please try again.');
       setLoading(false);
     }
   };

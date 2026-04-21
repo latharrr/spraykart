@@ -5,7 +5,10 @@ import ReviewSection from '@/components/product/ReviewSection';
 
 export async function generateMetadata({ params }) {
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+    const backendUrl =
+      process.env.BACKEND_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      'http://localhost:5000';
     const res = await fetch(`${backendUrl}/api/products/${params.slug}`);
     if (!res.ok) return {};
     const p = await res.json();
@@ -24,7 +27,10 @@ export async function generateMetadata({ params }) {
 export default async function ProductPage({ params }) {
   let product;
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+    const backendUrl =
+      process.env.BACKEND_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      'http://localhost:5000';
     const res = await fetch(
       `${backendUrl}/api/products/${params.slug}`,
       { next: { revalidate: 300 } }

@@ -8,6 +8,10 @@ const cache = require('../../services/cache.service');
 const slugify = require('slugify');
 const logger = require('../../utils/logger');
 
+// Strip HTML tags from user-provided text fields before DB storage
+const stripTags = (str) =>
+  str ? str.replace(/<[^>]*>/g, '').replace(/[<>]/g, '').trim().slice(0, 5000) : null;
+
 router.use(protect, adminOnly);
 
 // GET /api/admin/products
@@ -37,7 +41,7 @@ router.post('/', upload.array('images', 8), validate(createProductSchema), async
     const { rows } = await client.query(
       `INSERT INTO products(name,slug,description,price,compare_price,stock,category,is_featured,meta_title,meta_description)
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
-      [name, slug, description || null, price, compare_price || null, stock || 0, category || null, is_featured || false, meta_title || null, meta_description || null]
+      [name, slug, stripTags(description), price, compare_price || null, stock || 0, category || null, is_featured || false, meta_title || null, meta_description || null]
     );
     const product = rows[0];
 
@@ -94,7 +98,8 @@ router.put('/:id', upload.array('images', 8), async (req, res) => {
         is_active=COALESCE($9,is_active)
        WHERE id=$10 RETURNING *`,
       [
-        name, slug, description, price ? parseFloat(price) : undefined,
+        name, slug, description !== undefined ? stripTags(description) : undefined,
+        price ? parseFloat(price) : undefined,
         compare_price ? parseFloat(compare_price) : null,
         stock ? parseInt(stock) : undefined, category,
         is_featured !== undefined ? is_featured === 'true' : undefined,

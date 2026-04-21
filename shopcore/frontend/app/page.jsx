@@ -6,7 +6,10 @@ import { ArrowRight, ShieldCheck, Truck, Gift, Star, Phone, BadgeCheck } from 'l
 async function getFeaturedProducts() {
   try {
     // Server-side fetch — always hits backend directly (not through browser)
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+    const backendUrl =
+      process.env.BACKEND_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      'http://localhost:5000';
     const res = await fetch(
       `${backendUrl}/api/products?is_featured=true&limit=8`,
       { next: { revalidate: 300 } }
@@ -19,7 +22,7 @@ async function getFeaturedProducts() {
 
 export const metadata = {
   title: 'Spraykart — Luxury Fragrances at Accessible Prices',
-  description: "India's most trusted luxury fragrance platform. 100% authentic perfumes, attars & niche fragrances. MCA registered, GST invoiced, pan-India delivery.",
+  description: "India's most trusted luxury fragrance platform. 100% authentic perfumes, attars & niche fragrances. Pan-India delivery.",
 };
 
 const trustPillars = [
@@ -46,11 +49,11 @@ const testimonials = [
 ];
 
 const faqs = [
-  { q: 'Are the fragrances 100% authentic?',   a: 'Yes. Every product undergoes source verification, product inspection (packaging, batch codes), and a final pre-listing authenticity check.' },
-  { q: 'Do you provide a GST invoice?',        a: 'Every order ships with a valid GST invoice, Certificate of Authenticity, and Original Product Guarantee Card.' },
-  { q: 'What are the shipping timelines?',     a: 'Standard delivery: 8–10 business days. Express: 5–7 business days. Pan-India coverage including tier-2 and tier-3 cities.' },
-  { q: 'Is Cash on Delivery available?',       a: 'Yes, COD is available for most Indian pincodes. You can also pay securely online via Razorpay.' },
-  { q: 'How do I track my order?',             a: 'You receive email and SMS confirmation with a tracking ID immediately after purchase. Track anytime via your Orders page.' },
+  { q: 'Are the fragrances 100% authentic?',   a: 'Yes. Every product undergoes source verification, product inspection (packaging, batch codes), and a final pre-listing authenticity check by our experts.' },
+  { q: 'What are the shipping timelines?',     a: 'Standard delivery: 3–7 business days. Pan-India coverage including tier-2 and tier-3 cities. Free shipping on orders above ₹999.' },
+  { q: 'What payment methods do you accept?',  a: 'We accept all major credit/debit cards, UPI (GPay, PhonePe, Paytm), net banking, and wallets via Razorpay — India\'s most trusted payment gateway.' },
+  { q: 'How do I track my order?',             a: 'Once your order is dispatched, you will receive an email with your tracking details. You can also track your order anytime from the Orders page in your account.' },
+  { q: 'What is your return policy?',          a: 'We accept returns for damaged, defective, or wrong products within 48 hours of delivery. Please contact support@spraykart.in with your order ID and photos.' },
 ];
 
 export default async function HomePage() {
@@ -86,7 +89,7 @@ export default async function HomePage() {
             <div>
               <p style={{ fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginBottom: 32, display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ width: 24, height: 1, background: 'rgba(255,255,255,.3)', display: 'inline-block' }} />
-                MCA Registered · Govt. of India Recognized Startup
+                100% Authentic · Pan-India Delivery
               </p>
 
               <h1 className="hero-h1" style={{
@@ -324,10 +327,9 @@ export default async function HomePage() {
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {[
                   '100% Authentic Product',
-                  'GST Invoice Included',
                   'Original Guarantee Card',
-                  'MCA Registered Company',
-                  'Govt. of India Recognized Startup',
+                  'Securely Packed & Shipped',
+                  'Razorpay Secured Payments',
                 ].map(item => (
                   <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 13, color: 'rgba(255,255,255,.5)' }}>
                     <span style={{ width: 16, height: 1, background: 'rgba(255,255,255,.2)', flexShrink: 0 }} />
@@ -420,7 +422,7 @@ export default async function HomePage() {
       <section style={{ background: '#0c0c0c', padding: '80px 40px', textAlign: 'center' }} className="cta-section">
         <p style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
           <span style={{ width: 32, height: 1, background: 'rgba(255,255,255,.2)', display: 'inline-block' }} />
-          Free shipping above ₹999 &nbsp;·&nbsp; COD available &nbsp;·&nbsp; GST invoice
+          Free shipping above ₹999 &nbsp;·&nbsp; Razorpay Secured &nbsp;·&nbsp; Pan-India Delivery
           <span style={{ width: 32, height: 1, background: 'rgba(255,255,255,.2)', display: 'inline-block' }} />
         </p>
         <h2 style={{

@@ -54,7 +54,7 @@ export default function LoginPage() {
           </h2>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', lineHeight: 1.8 }}>
             100% authentic perfumes, attars &amp; niche fragrances.<br />
-            MCA registered · GST invoiced · Pan-India delivery.
+            Sourced from authorised distributors · Pan-India delivery.
           </p>
         </div>
 
@@ -138,7 +138,7 @@ export default function LoginPage() {
 
           {/* Trust signals */}
           <div style={{ marginTop: 40, display: 'flex', gap: 16, justifyContent: 'center' }}>
-            {['MCA Registered', 'GST Invoiced', '100% Authentic'].map(s => (
+            {['100% Authentic', 'Razorpay Secured', 'Pan-India Delivery'].map(s => (
               <span key={s} style={{ fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#c0c0c0' }}>{s}</span>
             ))}
           </div>

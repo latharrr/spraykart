@@ -84,13 +84,10 @@ export default function Footer() {
           <p className="text-xs text-neutral-700 flex flex-wrap gap-3">
             <span>© {new Date().getFullYear()} Spraykart</span>
             <span>·</span>
-            <span>MCA Registered</span>
-            <span>·</span>
-            <span>Govt. of India Recognized Startup</span>
+            <span>Pan-India Delivery</span>
           </p>
           <p className="text-xs text-neutral-700 flex items-center gap-2">
             Payments secured by <span className="text-neutral-500 font-medium">Razorpay</span>
-            &nbsp;·&nbsp;GST Invoice with every order
           </p>
         </div>
       </div>

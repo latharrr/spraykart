@@ -37,7 +37,7 @@ function NavbarInner() {
     <>
       {/* Announcement strip */}
       <div style={{ background: '#0c0c0c', color: 'rgba(255,255,255,.65)', textAlign: 'center', padding: '8px 20px', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', fontFamily: "'Inter', sans-serif", overflowX: 'auto', whiteSpace: 'nowrap' }}>
-        100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; COD Available
+        100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments
       </div>
 
       <header style={{

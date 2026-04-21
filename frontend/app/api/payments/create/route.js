@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { getAuthUser, unauthorized } from '@/lib/auth';
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+const getRazorpay = () => new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'dummy_key',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_secret',
 });
 
 export async function POST(request) {
@@ -15,7 +15,7 @@ export async function POST(request) {
     const { amount } = await request.json();
     if (!amount || amount <= 0) return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
 
-    const order = await razorpay.orders.create({
+    const order = await getRazorpay().orders.create({
       amount: Math.round(amount * 100),
       currency: 'INR',
       receipt: `receipt_${Date.now()}`,

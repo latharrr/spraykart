@@ -51,7 +51,14 @@ function ProductsContent() {
       setTotal(data.total || 0);
       setPages(data.pages || 1);
     } catch (err) {
-      setError(err?.error || 'Failed to load products');
+      // Triple-guard: always coerce to string — never store an object in error state
+      // (React error #31 fires if an object reaches JSX as a child)
+      const msg =
+        (typeof err === 'string' ? err : null) ||
+        (typeof err?.error === 'string' ? err.error : null) ||
+        (typeof err?.message === 'string' ? err.message : null) ||
+        'Failed to load products. Please try again.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -67,7 +74,9 @@ function ProductsContent() {
           <h1 className="text-2xl font-bold text-gray-900">
             {category || 'All Products'}
           </h1>
-          {!loading && <p className="text-sm text-gray-500 mt-0.5">{total} products</p>}
+          {!loading && total > 0 && (
+            <p className="text-sm text-gray-500 mt-0.5">{total} products</p>
+          )}
         </div>
 
         <div className="flex items-center gap-3">

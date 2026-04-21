@@ -22,7 +22,12 @@ export function useFetch(fetchFn, deps = [], options = {}) {
       const res = await fetchFn();
       setData(res.data);
     } catch (err) {
-      setError(err?.error || err?.message || 'Something went wrong');
+      const msg =
+        (typeof err === 'string' ? err : null) ||
+        (typeof err?.error === 'string' ? err.error : null) ||
+        (typeof err?.message === 'string' ? err.message : null) ||
+        'Something went wrong';
+      setError(msg);
     } finally {
       setLoading(false);
     }

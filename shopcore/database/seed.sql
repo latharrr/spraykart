@@ -1,16 +1,19 @@
 -- ─── Spraykart Seed Data ─────────────────────────────────────────────────────
 -- Run AFTER schema.sql on your Supabase SQL editor
+-- IMPORTANT: After running this file, run: node backend/reset-and-verify.js
+-- This sets correct bcrypt password hashes (SQL cannot run bcrypt natively)
 
 -- ─── Admin User ───────────────────────────────────────────────────────────────
--- Password: admin123
+-- Temporary placeholder hash — MUST run reset-and-verify.js afterwards!
+-- Password after reset: admin123
 INSERT INTO users (name, email, password, role) VALUES
-  ('Admin', 'admin@spraykart.in', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8FIFAr6c5p.VfJ.Mz5O', 'admin')
+  ('Admin', 'admin@spraykart.in', '$2a$12$placeholder_run_reset_verify_js_to_fix', 'admin')
 ON CONFLICT (email) DO NOTHING;
 
--- Customers — Password: password123
+-- Customers — Password after reset: customer123
 INSERT INTO users (name, email, password) VALUES
-  ('Ananya Sharma', 'ananya@example.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8FIFAr6c5p.VfJ.Mz5O'),
-  ('Rahul Mehta',   'rahul@example.com',  '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8FIFAr6c5p.VfJ.Mz5O')
+  ('Ananya Sharma', 'ananya@example.com', '$2a$12$placeholder_run_reset_verify_js_to_fix'),
+  ('Rahul Mehta',   'rahul@example.com',  '$2a$12$placeholder_run_reset_verify_js_to_fix')
 ON CONFLICT (email) DO NOTHING;
 
 -- ─── Products ─────────────────────────────────────────────────────────────────

@@ -12,13 +12,25 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401 && typeof window !== 'undefined') {
-      // Don't redirect on auth pages
       const authPaths = ['/login', '/register'];
       if (!authPaths.includes(window.location.pathname)) {
         window.location.href = '/login';
       }
     }
-    return Promise.reject(err.response?.data || err);
+    // Always normalize to a plain object with an `error` string.
+    // Prevents React error #31 ("Objects are not valid as a React child")
+    // when backend returns {code, message} without an 'error' key.
+    const data = err.response?.data;
+    const normalized = {
+      error:
+        (typeof data === 'string' ? data : null) ||
+        data?.error ||
+        data?.message ||
+        err.message ||
+        'Something went wrong',
+      status: err.response?.status,
+    };
+    return Promise.reject(normalized);
   }
 );
 

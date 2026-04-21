@@ -23,26 +23,6 @@ const INDIAN_STATES = [
   'Ladakh','Lakshadweep','Puducherry',
 ];
 
-// ─── Major Indian Cities ──────────────────────────────────────────────────────
-const INDIAN_CITIES = [
-  'Agra','Ahmedabad','Ahmednagar','Aizawl','Ajmer','Akola','Aligarh',
-  'Allahabad (Prayagraj)','Amravati','Amritsar','Anantapur','Asansol',
-  'Aurangabad','Bangalore','Bareilly','Bathinda','Belgaum','Bhilai',
-  'Bhopal','Bhubaneswar','Bikaner','Bilaspur','Chandigarh','Chennai',
-  'Coimbatore','Cuttack','Dehradun','Delhi','Dhanbad','Durgapur',
-  'Erode','Faridabad','Ghaziabad','Gorakhpur','Gulbarga','Guntur',
-  'Gurgaon','Guwahati','Gwalior','Hubli-Dharwad','Hyderabad','Imphal',
-  'Indore','Itanagar','Jabalpur','Jaipur','Jammu','Jamshedpur',
-  'Jodhpur','Kakinada','Kalyan-Dombivali','Kanpur','Kochi','Kohima',
-  'Kolhapur','Kolkata','Kozhikode','Kurnool','Lucknow','Ludhiana',
-  'Madurai','Mangalore','Meerut','Mumbai','Mysore','Nagpur','Nanded',
-  'Nashik','Navi Mumbai','Noida','Patna','Pune','Raipur','Rajkot',
-  'Ranchi','Salem','Shillong','Shimla','Srinagar','Surat','Thane',
-  'Thiruvananthapuram','Thrissur','Tiruchirappalli','Tirunelveli',
-  'Udaipur','Vadodara','Varanasi','Vijayawada','Visakhapatnam','Warangal',
-  'Other',
-].sort();
-
 const selectStyle = {
   width: '100%',
   padding: '12px 36px 12px 14px',
@@ -214,21 +194,7 @@ export default function CheckoutPage() {
           <div className="space-y-3">
             {inp('line1', 'Address line 1 *')}
             {inp('line2', 'Address line 2 (optional)')}
-
-            {/* City dropdown */}
-            <SelectWrapper>
-              <select
-                id="address-city"
-                style={selectStyle}
-                value={address.city}
-                onChange={(e) => setAddress({ ...address, city: e.target.value })}
-              >
-                <option value="">Select City *</option>
-                {INDIAN_CITIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </SelectWrapper>
+            {inp('city', 'City *')}
 
             {/* State dropdown */}
             <SelectWrapper>

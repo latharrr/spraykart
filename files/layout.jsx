@@ -26,7 +26,7 @@ const cormorant = Cormorant({
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: { default: 'Spraykart — Luxury Fragrances at Accessible Prices', template: '%s | Spraykart' },
-  description: "India's most trusted luxury fragrance store. 100% authentic perfumes, attars & gift sets. Pan-India delivery.",
+  description: "India's most trusted luxury fragrance store. 100% authentic perfumes, attars & gift sets. MCA registered, GST invoiced. Pan-India delivery.",
   keywords: ['luxury perfumes India', 'buy authentic perfumes online', 'attar', 'niche fragrances', 'Spraykart'],
   openGraph: {
     type: 'website',

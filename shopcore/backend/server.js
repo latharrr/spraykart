@@ -85,8 +85,8 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
 });
 
-// Local dev server — Vercel ignores this and uses module.exports instead
-if (process.env.NODE_ENV !== 'production' || process.env.LOCAL_DEV) {
+// Local dev server — Vercel uses module.exports, never calls listen()
+if (require.main === module) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => logger.info(`🚀 Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`));
 }

@@ -1,0 +1,128 @@
+-- USERS
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  role VARCHAR(20) DEFAULT 'customer',   -- 'customer' | 'admin'
+  is_blocked BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ADDRESSES
+CREATE TABLE IF NOT EXISTS addresses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  line1 TEXT NOT NULL,
+  line2 TEXT,
+  city VARCHAR(100),
+  state VARCHAR(100),
+  pincode VARCHAR(20),
+  is_default BOOLEAN DEFAULT false
+);
+
+-- PRODUCTS
+CREATE TABLE IF NOT EXISTS products (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) UNIQUE NOT NULL,
+  description TEXT,
+  price NUMERIC(10,2) NOT NULL,
+  compare_price NUMERIC(10,2),
+  stock INTEGER DEFAULT 0,
+  category VARCHAR(100),
+  is_featured BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
+  meta_title VARCHAR(255),
+  meta_description TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- PRODUCT IMAGES
+CREATE TABLE IF NOT EXISTS product_images (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  url TEXT NOT NULL,
+  public_id TEXT,       -- Cloudinary public_id
+  is_primary BOOLEAN DEFAULT false,
+  sort_order INTEGER DEFAULT 0
+);
+
+-- VARIANTS
+CREATE TABLE IF NOT EXISTS variants (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  type VARCHAR(50) NOT NULL,    -- 'size' | 'color'
+  value VARCHAR(100) NOT NULL,
+  price_modifier NUMERIC(10,2) DEFAULT 0,
+  stock INTEGER DEFAULT 0
+);
+
+-- ORDERS
+CREATE TABLE IF NOT EXISTS orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  total_price NUMERIC(10,2) NOT NULL,
+  discount NUMERIC(10,2) DEFAULT 0,
+  final_price NUMERIC(10,2) NOT NULL,
+  status VARCHAR(30) DEFAULT 'pending',  -- pending|confirmed|shipped|delivered|cancelled
+  razorpay_order_id TEXT,
+  razorpay_payment_id TEXT,
+  coupon_code VARCHAR(50),
+  shipping_address JSONB,
+  idempotency_key TEXT UNIQUE,           -- Prevents duplicate orders on retry/double-click
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ORDER ITEMS
+CREATE TABLE IF NOT EXISTS order_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
+  product_id UUID REFERENCES products(id),
+  variant_id UUID REFERENCES variants(id),
+  name VARCHAR(255),
+  price NUMERIC(10,2) NOT NULL,
+  quantity INTEGER NOT NULL
+);
+
+-- REVIEWS
+CREATE TABLE IF NOT EXISTS reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  rating INTEGER CHECK (rating BETWEEN 1 AND 5),
+  comment TEXT,
+  is_approved BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, product_id)
+);
+
+-- COUPONS
+CREATE TABLE IF NOT EXISTS coupons (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code VARCHAR(50) UNIQUE NOT NULL,
+  type VARCHAR(20) NOT NULL,   -- 'percentage' | 'flat'
+  value NUMERIC(10,2) NOT NULL,
+  min_order NUMERIC(10,2) DEFAULT 0,
+  max_uses INTEGER DEFAULT 100,
+  used_count INTEGER DEFAULT 0,
+  expiry_date DATE,
+  is_active BOOLEAN DEFAULT true
+);
+
+-- CART (server-side optional, usually client-side)
+CREATE TABLE IF NOT EXISTS cart_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  variant_id UUID REFERENCES variants(id),
+  quantity INTEGER DEFAULT 1,
+  UNIQUE(user_id, product_id, variant_id)
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
+CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
+CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id);

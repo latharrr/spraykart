@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design Tokens ──────────────────────────────────────────────────────────── */
+:root {
+  --black:   #0c0c0c;
+  --gray-900:#1a1a1a;
+  --gray-700:#3d3d3d;
+  --gray-500:#737373;
+  --gray-300:#c8c8c8;
+  --gray-200:#e8e8e8;
+  --gray-100:#f2f2f2;
+  --gray-50: #f9f9f9;
+  --white:   #ffffff;
+  --cream:   #faf9f7;
+
+  --font-serif: 'Cormorant', 'Georgia', serif;
+  --font-sans:  'Inter', system-ui, sans-serif;
+}
+
+/* ─── Reset & Base ───────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--white);
+  color: var(--black);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prevent browser auto-link-detection coloring */
+a { color: inherit; text-decoration: none; }
+* { -webkit-touch-callout: none; }
+
+/* ─── Skeleton ───────────────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -1000px 0; }
+  100% { background-position:  1000px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #eeeeee 25%, #e4e4e4 50%, #eeeeee 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 1.8s infinite;
+  border-radius: 2px;
+}
+
+/* ─── Components ─────────────────────────────────────────────────────────────── */
+@layer components {
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 text-sm font-medium
+    transition-all duration-200 active:scale-[.98] disabled:opacity-40 disabled:pointer-events-none;
+    background: var(--black);
+    color: var(--white);
+    padding: 12px 28px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+  .btn-primary:hover { background: var(--gray-900); }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2
+    transition-all duration-200 active:scale-[.98] disabled:opacity-40 disabled:pointer-events-none;
+    background: transparent;
+    color: var(--black);
+    padding: 11px 28px;
+    border-radius: 2px;
+    border: 1px solid var(--black);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+  .btn-secondary:hover { background: var(--black); color: var(--white); }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded
+    transition-all duration-150 hover:opacity-80 active:scale-95 disabled:opacity-40;
+    background: #dc2626; color: white;
+  }
+
+  .input {
+    @apply w-full px-4 py-3 text-sm transition-all duration-150;
+    background: var(--white);
+    color: var(--black);
+    border: 1px solid var(--gray-300);
+    border-radius: 2px;
+    font-family: var(--font-sans);
+  }
+  .input::placeholder { color: var(--gray-300); }
+  .input:focus { outline: none; border-color: var(--black); }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 2px;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 text-xs font-medium;
+    border-radius: 2px;
+  }
+  .table-th {
+    @apply px-4 py-3 text-left text-xs font-medium uppercase tracking-wider;
+    color: var(--gray-500);
+  }
+  .table-td {
+    @apply px-4 py-4 text-sm;
+    color: var(--gray-700);
+  }
+}
+
+/* ─── Focus ──────────────────────────────────────────────────────────────────── */
+:focus-visible { outline: 1px solid var(--black); outline-offset: 3px; }
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 9999px; }
+
+/* ─── Utility classes ────────────────────────────────────────────────────────── */
+.serif { font-family: var(--font-serif); }
+
+.section-label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin-bottom: 12px;
+}
+
+.eyebrow-line {
+  width: 32px;
+  height: 1px;
+  background: var(--black);
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.7s ease forwards; }
+
+/* ─── Mobile Responsive Helpers ─────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Hero: stack columns on mobile */
+  .hero-grid { display: flex !important; flex-direction: column !important; gap: 48px !important; }
+  .hero-stats { display: none !important; }
+  .hero-padding { padding: 60px 20px !important; }
+
+  /* Featured Products: 2 cols on mobile */
+  .featured-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+
+  /* Trust pillars: 1 col on mobile */
+  .trust-grid { grid-template-columns: 1fr !important; }
+
+  /* Testimonials: 1 col */
+  .testimonials-grid { grid-template-columns: 1fr !important; }
+
+  /* Cart: stacked */
+  .cart-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+  .cart-padding { padding: 40px 0 !important; }
+  .cart-inner { padding: 0 16px !important; }
+  .cart-item { flex-wrap: wrap !important; gap: 16px !important; }
+
+  /* Section padding */
+  .section-padding { padding: 60px 0 !important; }
+  .section-inner { padding: 0 20px !important; }
+
+  /* CTA section */
+  .cta-section { padding: 60px 20px !important; }
+
+  /* Auth: reduce padding */
+  .faq-inner { padding: 0 20px !important; }
+
+  /* Authenticity section */
+  .auth-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+}
+
+@media (max-width: 480px) {
+  .hero-h1 { font-size: 44px !important; }
+  .featured-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+}

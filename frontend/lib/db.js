@@ -8,19 +8,15 @@ function createPool() {
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
 
-    // ── Pool sizing ──────────────────────────────────────────────────────────
-    max: 10,               // max concurrent connections (Supabase free = 15 limit)
-    min: 2,                // keep 2 warm — eliminates cold-start latency on first req
-    idleTimeoutMillis: 30_000,
+    // ── Transaction mode pooler settings (port 6543) ─────────────────────────
+    // min:0 — let the pooler manage persistent connections, not pg itself
+    max: 5,
+    min: 0,
+    idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 5_000,
 
     // ── Query safety ─────────────────────────────────────────────────────────
-    statement_timeout: 10_000,
     query_timeout: 10_000,
-
-    // ── Keep TCP alive — prevents Supabase from dropping idle connections ────
-    keepAlive: true,
-    keepAliveInitialDelayMillis: 10_000,
   });
 
   pool.on('error', (err) => {
@@ -32,14 +28,6 @@ function createPool() {
 
 if (!globalForDb._pgPool) {
   globalForDb._pgPool = createPool();
-
-  // ── Eagerly warm 2 connections so the first request is instant ─────────────
-  if (process.env.DATABASE_URL) {
-    Promise.all([
-      globalForDb._pgPool.query('SELECT 1').catch(() => {}),
-      globalForDb._pgPool.query('SELECT 1').catch(() => {}),
-    ]);
-  }
 }
 
 export const db = {

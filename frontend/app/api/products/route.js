@@ -1,0 +1,77 @@
+import { NextResponse } from 'next/server';
+import db from '@/lib/db';
+import cache from '@/lib/cache';
+
+const ALLOWED_SORTS = ['price', 'created_at', 'name'];
+
+function buildCacheKey(params) {
+  const sorted = Object.keys(params).sort().reduce((acc, k) => { acc[k] = params[k]; return acc; }, {});
+  return `products:${JSON.stringify(sorted)}`;
+}
+
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const category = searchParams.get('category') || '';
+  const search = searchParams.get('search') || '';
+  const sort = searchParams.get('sort') || 'created_at';
+  const order = searchParams.get('order') || 'DESC';
+  const page = parseInt(searchParams.get('page') || '1');
+  const limit = Math.min(parseInt(searchParams.get('limit') || '12'), 100);
+  const min_price = searchParams.get('min_price');
+  const max_price = searchParams.get('max_price');
+  const is_featured = searchParams.get('is_featured');
+
+  const queryParams = { category, search, sort, order, page, limit, min_price, max_price, is_featured };
+  const cacheKey = buildCacheKey(queryParams);
+
+  const cached = await cache.get(cacheKey);
+  if (cached) return NextResponse.json(cached);
+
+  const offset = (page - 1) * limit;
+  const conditions = ['p.is_active = true'];
+  const params = [];
+  let i = 1;
+
+  if (category)    { conditions.push(`p.category = $${i++}`);    params.push(category); }
+  if (search)      { conditions.push(`p.name ILIKE $${i++}`);    params.push(`%${search}%`); }
+  if (min_price)   { conditions.push(`p.price >= $${i++}`);      params.push(min_price); }
+  if (max_price)   { conditions.push(`p.price <= $${i++}`);      params.push(max_price); }
+  if (is_featured) { conditions.push(`p.is_featured = $${i++}`); params.push(is_featured === 'true'); }
+
+  const sortField = ALLOWED_SORTS.includes(sort) ? sort : 'created_at';
+  const sortOrder = order === 'ASC' ? 'ASC' : 'DESC';
+  const where = conditions.join(' AND ');
+  const countParams = [...params];
+  params.push(limit, offset);
+
+  try {
+    const [{ rows }, { rows: countRows }] = await Promise.all([
+      db.query(`
+        SELECT p.*,
+          (SELECT url FROM product_images WHERE product_id=p.id AND is_primary=true LIMIT 1) as image,
+          COALESCE(AVG(r.rating), 0)::NUMERIC(3,1) as avg_rating,
+          COUNT(DISTINCT r.id) as review_count
+        FROM products p
+        LEFT JOIN reviews r ON r.product_id = p.id AND r.is_approved = true
+        WHERE ${where}
+        GROUP BY p.id
+        ORDER BY p.${sortField} ${sortOrder}
+        LIMIT $${i++} OFFSET $${i++}
+      `, params),
+      db.query(`SELECT COUNT(*) FROM products p WHERE ${where}`, countParams),
+    ]);
+
+    const result = {
+      products: rows,
+      total: parseInt(countRows[0].count),
+      page,
+      pages: Math.ceil(parseInt(countRows[0].count) / limit),
+    };
+
+    await cache.set(cacheKey, result, 300);
+    return NextResponse.json(result);
+  } catch (err) {
+    console.error('Products list error:', err);
+    return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
+  }
+}

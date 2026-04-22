@@ -37,16 +37,17 @@ function ProductCard({ product, priority = false }) {
         {/* Image — aspect-ratio box prevents layout shift */}
         <div style={{ position: 'relative', aspectRatio: '3/4', background: '#f7f7f5', overflow: 'hidden' }}>
           {product.image ? (
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              style={{ objectFit: 'cover', transition: 'transform .6s ease' }}
-              className="group-hover:scale-105"
-              priority={priority}            // pass true for first 4 above-fold cards
-              quality={80}
-            />
+              <Image
+                src={product.image}
+                alt={product.name}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                style={{ objectFit: 'cover', transition: 'transform .6s ease' }}
+                className="group-hover:scale-105"
+                priority={priority}            // pass true for first 4 above-fold cards
+                fetchPriority={priority ? "high" : "auto"} // fixes LCP priority
+                quality={80}
+              />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f2f2f0' }}>
               <span style={{ fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#c8c8c8' }}>No Image</span>

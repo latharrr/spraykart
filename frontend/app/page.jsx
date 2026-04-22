@@ -15,13 +15,16 @@ async function getFeaturedProducts() {
 
     const { rows } = await db.query(`
       SELECT p.*,
-        (SELECT url FROM product_images WHERE product_id=p.id AND is_primary=true LIMIT 1) as image,
+        img.url as image,
         COALESCE(AVG(r.rating), 0)::NUMERIC(3,1) as avg_rating,
         COUNT(DISTINCT r.id) as review_count
       FROM products p
+      LEFT JOIN LATERAL (
+        SELECT url FROM product_images WHERE product_id=p.id AND is_primary=true LIMIT 1
+      ) img ON true
       LEFT JOIN reviews r ON r.product_id = p.id AND r.is_approved = true
       WHERE p.is_active = true AND p.is_featured = true
-      GROUP BY p.id
+      GROUP BY p.id, img.url
       ORDER BY p.created_at DESC LIMIT 8
     `);
 

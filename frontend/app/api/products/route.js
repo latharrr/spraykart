@@ -48,13 +48,16 @@ export async function GET(request) {
     const [{ rows }, { rows: countRows }] = await Promise.all([
       db.query(`
         SELECT p.*,
-          (SELECT url FROM product_images WHERE product_id=p.id AND is_primary=true LIMIT 1) as image,
+          img.url as image,
           COALESCE(AVG(r.rating), 0)::NUMERIC(3,1) as avg_rating,
           COUNT(DISTINCT r.id) as review_count
         FROM products p
+        LEFT JOIN LATERAL (
+          SELECT url FROM product_images WHERE product_id=p.id AND is_primary=true LIMIT 1
+        ) img ON true
         LEFT JOIN reviews r ON r.product_id = p.id AND r.is_approved = true
         WHERE ${where}
-        GROUP BY p.id
+        GROUP BY p.id, img.url
         ORDER BY p.${sortField} ${sortOrder}
         LIMIT $${i++} OFFSET $${i++}
       `, params),

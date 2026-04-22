@@ -23,9 +23,12 @@ async function getProduct(slug) {
   if (!rows.length) return null;
   const product = rows[0];
 
-  const [images, variants, reviews] = await Promise.all([
-    db.query('SELECT * FROM product_images WHERE product_id=$1 ORDER BY sort_order', [product.id]),
-    db.query('SELECT * FROM variants WHERE product_id=$1', [product.id]),
+  const [detailsRows, reviewsRows] = await Promise.all([
+    db.query(`
+      SELECT 
+        (SELECT json_agg(i) FROM (SELECT * FROM product_images WHERE product_id=$1 ORDER BY sort_order) i) as images,
+        (SELECT json_agg(v) FROM (SELECT * FROM variants WHERE product_id=$1) v) as variants
+    `, [product.id]),
     db.query(`
       SELECT r.*, u.name as user_name FROM reviews r
       JOIN users u ON u.id=r.user_id
@@ -34,7 +37,11 @@ async function getProduct(slug) {
     `, [product.id]),
   ]);
 
-  const result = { ...product, images: images.rows, variants: variants.rows, reviews: reviews.rows };
+  const images = detailsRows.rows[0]?.images || [];
+  const variants = detailsRows.rows[0]?.variants || [];
+  const reviews = reviewsRows.rows || [];
+
+  const result = { ...product, images, variants, reviews };
   await cache.set(cacheKey, result, 300);
   return result;
 }

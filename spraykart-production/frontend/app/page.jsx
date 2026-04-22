@@ -5,6 +5,9 @@ import { ArrowRight, ShieldCheck, Truck, Gift, Star, Phone, BadgeCheck } from 'l
 import db from '@/lib/db';
 import cache from '@/lib/cache';
 
+// ISR: rebuild at most once every 5 minutes instead of on every request
+export const revalidate = 300;
+
 async function getFeaturedProducts() {
   try {
     const cached = await cache.get('products:featured:home');
@@ -12,13 +15,18 @@ async function getFeaturedProducts() {
 
     const { rows } = await db.query(`
       SELECT p.*,
-        (SELECT url FROM product_images WHERE product_id=p.id AND is_primary=true LIMIT 1) as image,
+        pi.url as image,
         COALESCE(AVG(r.rating), 0)::NUMERIC(3,1) as avg_rating,
         COUNT(DISTINCT r.id) as review_count
       FROM products p
+      LEFT JOIN LATERAL (
+        SELECT url FROM product_images
+        WHERE product_id = p.id AND is_primary = true
+        LIMIT 1
+      ) pi ON true
       LEFT JOIN reviews r ON r.product_id = p.id AND r.is_approved = true
       WHERE p.is_active = true AND p.is_featured = true
-      GROUP BY p.id
+      GROUP BY p.id, pi.url
       ORDER BY p.created_at DESC LIMIT 8
     `);
 
@@ -133,7 +141,7 @@ export default async function HomePage() {
           </div>
           {featuredProducts.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }} className="featured-grid">
-              {featuredProducts.map(p => <ProductCard key={p.id} product={p} />)}
+              {featuredProducts.map((p, i) => <ProductCard key={p.id} product={p} priority={i < 4} />)}
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }} className="featured-grid">

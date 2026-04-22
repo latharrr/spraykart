@@ -10,33 +10,51 @@ async function getProduct(slug) {
   const cached = await cache.get(cacheKey);
   if (cached) return cached;
 
-  const { rows } = await db.query(`
-    SELECT p.*,
-      COALESCE(AVG(r.rating), 0)::NUMERIC(3,1) as avg_rating,
-      COUNT(DISTINCT r.id) as review_count
-    FROM products p
-    LEFT JOIN reviews r ON r.product_id = p.id AND r.is_approved = true
-    WHERE p.slug = $1 AND p.is_active = true
-    GROUP BY p.id
-  `, [slug]);
-
-  if (!rows.length) return null;
-  const product = rows[0];
-
-  const [images, variants, reviews] = await Promise.all([
-    db.query('SELECT * FROM product_images WHERE product_id=$1 ORDER BY sort_order', [product.id]),
-    db.query('SELECT * FROM variants WHERE product_id=$1', [product.id]),
+  // Run both queries in parallel:
+  // Query 1 — product + images + variants collapsed into a single JSON-aggregated query
+  // Query 2 — reviews (independent of images/variants, can run simultaneously)
+  const [productRes, reviewsRes] = await Promise.all([
     db.query(`
-      SELECT r.*, u.name as user_name FROM reviews r
-      JOIN users u ON u.id=r.user_id
-      WHERE r.product_id=$1 AND r.is_approved=true
-      ORDER BY r.created_at DESC LIMIT 10
-    `, [product.id]),
+      SELECT p.*,
+        COALESCE(AVG(r.rating), 0)::NUMERIC(3,1) as avg_rating,
+        COUNT(DISTINCT r.id)                       as review_count,
+        COALESCE(
+          json_agg(DISTINCT pi.*) FILTER (WHERE pi.id IS NOT NULL), '[]'
+        ) as images,
+        COALESCE(
+          json_agg(DISTINCT v.*) FILTER (WHERE v.id IS NOT NULL), '[]'
+        ) as variants
+      FROM products p
+      LEFT JOIN reviews       r  ON r.product_id  = p.id AND r.is_approved = true
+      LEFT JOIN product_images pi ON pi.product_id = p.id
+      LEFT JOIN variants       v  ON v.product_id  = p.id
+      WHERE p.slug = $1 AND p.is_active = true
+      GROUP BY p.id
+    `, [slug]),
+
+    db.query(`
+      SELECT r.*, u.name as user_name
+      FROM reviews r
+      JOIN users u ON u.id = r.user_id
+      WHERE r.product_id = (
+        SELECT id FROM products WHERE slug = $1 AND is_active = true LIMIT 1
+      ) AND r.is_approved = true
+      ORDER BY r.created_at DESC
+      LIMIT 10
+    `, [slug]),
   ]);
 
-  const result = { ...product, images: images.rows, variants: variants.rows, reviews: reviews.rows };
-  await cache.set(cacheKey, result, 300);
-  return result;
+  if (!productRes.rows.length) return null;
+
+  // Sort images by sort_order (JSON agg doesn't guarantee order)
+  const product = productRes.rows[0];
+  product.images = (product.images || []).sort(
+    (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
+  );
+  product.reviews = reviewsRes.rows;
+
+  await cache.set(cacheKey, product, 300);
+  return product;
 }
 
 export async function generateMetadata({ params }) {

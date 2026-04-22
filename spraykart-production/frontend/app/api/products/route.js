@@ -25,7 +25,9 @@ export async function GET(request) {
   const cacheKey = buildCacheKey(queryParams);
 
   const cached = await cache.get(cacheKey);
-  if (cached) return NextResponse.json(cached);
+  if (cached) return NextResponse.json(cached, {
+    headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
+  });
 
   const offset = (page - 1) * limit;
   const conditions = ['p.is_active = true'];
@@ -48,13 +50,18 @@ export async function GET(request) {
     const [{ rows }, { rows: countRows }] = await Promise.all([
       db.query(`
         SELECT p.*,
-          (SELECT url FROM product_images WHERE product_id=p.id AND is_primary=true LIMIT 1) as image,
+          pi.url as image,
           COALESCE(AVG(r.rating), 0)::NUMERIC(3,1) as avg_rating,
           COUNT(DISTINCT r.id) as review_count
         FROM products p
+        LEFT JOIN LATERAL (
+          SELECT url FROM product_images
+          WHERE product_id = p.id AND is_primary = true
+          LIMIT 1
+        ) pi ON true
         LEFT JOIN reviews r ON r.product_id = p.id AND r.is_approved = true
         WHERE ${where}
-        GROUP BY p.id
+        GROUP BY p.id, pi.url
         ORDER BY p.${sortField} ${sortOrder}
         LIMIT $${i++} OFFSET $${i++}
       `, params),
@@ -69,7 +76,9 @@ export async function GET(request) {
     };
 
     await cache.set(cacheKey, result, 300);
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
+    });
   } catch (err) {
     console.error('Products list error:', err);
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });

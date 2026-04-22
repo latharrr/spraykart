@@ -51,11 +51,24 @@ export async function PUT(request, { params }) {
     if (!rows.length) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
     const imageFiles = formData.getAll('images');
-    for (let i = 0; i < imageFiles.length; i++) {
-      if (!(imageFiles[i] instanceof File)) continue;
-      const buffer = Buffer.from(await imageFiles[i].arrayBuffer());
-      const { url, public_id } = await uploadImage(buffer);
-      await db.query('INSERT INTO product_images(product_id,url,public_id,sort_order) VALUES($1,$2,$3,$4)', [params.id, url, public_id, i]);
+    if (imageFiles.length > 0) {
+      // Check if product already has any images (to determine if first new one should be primary)
+      const { rows: existingImages } = await db.query('SELECT id FROM product_images WHERE product_id = $1 AND is_primary = true', [params.id]);
+      let hasPrimary = existingImages.length > 0;
+
+      for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i];
+        if (!(file instanceof File) || file.size === 0) continue;
+
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const { url, public_id } = await uploadImage(buffer);
+        
+        await db.query(
+          'INSERT INTO product_images(product_id,url,public_id,is_primary,sort_order) VALUES($1,$2,$3,$4,$5)',
+          [params.id, url, public_id, !hasPrimary, i]
+        );
+        hasPrimary = true; // Only the first one added becomes primary if none existed
+      }
     }
 
     await Promise.all([cache.delPattern('products:*'), cache.del(`product:${rows[0].slug}`)]);

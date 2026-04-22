@@ -63,14 +63,19 @@ export async function POST(request) {
     const product = rows[0];
 
     const imageFiles = formData.getAll('images');
+    let uploadedCount = 0;
     for (let i = 0; i < imageFiles.length; i++) {
-      if (!(imageFiles[i] instanceof File)) continue;
-      const buffer = Buffer.from(await imageFiles[i].arrayBuffer());
+      const file = imageFiles[i];
+      if (!(file instanceof File) || file.size === 0) continue;
+
+      const buffer = Buffer.from(await file.arrayBuffer());
       const { url, public_id } = await uploadImage(buffer);
+      
       await client.query(
         'INSERT INTO product_images(product_id,url,public_id,is_primary,sort_order) VALUES($1,$2,$3,$4,$5)',
-        [product.id, url, public_id, i === 0, i]
+        [product.id, url, public_id, uploadedCount === 0, uploadedCount]
       );
+      uploadedCount++;
     }
 
     const variants = (() => { try { return JSON.parse(variantsRaw || '[]'); } catch { return []; } })();

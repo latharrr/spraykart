@@ -157,6 +157,23 @@ a { color: inherit; text-decoration: none; }
 }
 .fade-up { animation: fadeUp 0.7s ease forwards; }
 
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+}
+.marquee-content {
+  display: flex;
+  animation: marquee 20s linear infinite;
+}
+.marquee-content:hover {
+  animation-play-state: paused;
+}
+
 /* ─── Mobile Responsive Helpers ─────────────────────────────────────────────── */
 @media (max-width: 767px) {
   .hero-grid { display: flex !important; flex-direction: column !important; gap: 48px !important; }

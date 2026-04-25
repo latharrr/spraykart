@@ -36,8 +36,13 @@ function NavbarInner() {
   return (
     <>
       {/* Announcement strip */}
-      <div style={{ background: '#0c0c0c', color: 'rgba(255,255,255,.65)', textAlign: 'center', padding: '8px 20px', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', fontFamily: "'Inter', sans-serif", overflowX: 'auto', whiteSpace: 'nowrap' }}>
-        100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments
+      <div className="marquee-container" style={{ background: '#0c0c0c', color: 'rgba(255,255,255,.65)', padding: '8px 0', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', fontFamily: "'Inter', sans-serif" }}>
+        <div className="marquee-content">
+          <span style={{ paddingRight: '40px' }}>100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments</span>
+          <span style={{ paddingRight: '40px' }}>100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments</span>
+          <span style={{ paddingRight: '40px' }}>100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments</span>
+          <span style={{ paddingRight: '40px' }}>100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments</span>
+        </div>
       </div>
 
       <header style={{

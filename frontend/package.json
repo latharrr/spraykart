@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
+    "@sentry/nextjs": "^10.50.0",
     "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.0.0",

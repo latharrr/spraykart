@@ -76,6 +76,25 @@ export const cache = {
       if (keys.length > 0) await Promise.all(keys.map((k) => redis.del(k)));
     } catch { /* silent */ }
   },
+
+  incr: async (key) => {
+    if (!redis) {
+      // Local fallback
+      const current = LOCAL.get(key) || 0;
+      LOCAL.set(key, current + 1, 300);
+      return current + 1;
+    }
+    try {
+      return await redis.incr(key);
+    } catch { return 1; }
+  },
+
+  expire: async (key, ttlSeconds) => {
+    if (!redis) return;
+    try {
+      await redis.expire(key, ttlSeconds);
+    } catch { /* silent */ }
+  },
 };
 
 export default cache;

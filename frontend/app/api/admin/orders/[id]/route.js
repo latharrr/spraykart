@@ -38,15 +38,39 @@ export async function PUT(request, { params }) {
     const { status } = await request.json();
     if (!VALID_STATUSES.includes(status)) return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
 
-    const { rows } = await db.query(
-      `UPDATE orders SET status=$1 WHERE id=$2
-       RETURNING *, (SELECT name FROM users WHERE id=orders.user_id) as customer_name,
-                    (SELECT email FROM users WHERE id=orders.user_id) as customer_email`,
-      [status, params.id]
-    );
-    if (!rows.length) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    const currentOrder = await db.query('SELECT status FROM orders WHERE id=$1', [params.id]);
+    if (!currentOrder.rows.length) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    const prevStatus = currentOrder.rows[0].status;
 
-    const order = rows[0];
+    const client = await db.pool.connect();
+    let order;
+    try {
+      await client.query('BEGIN');
+      const { rows } = await client.query(
+        `UPDATE orders SET status=$1 WHERE id=$2
+         RETURNING *, (SELECT name FROM users WHERE id=orders.user_id) as customer_name,
+                      (SELECT email FROM users WHERE id=orders.user_id) as customer_email`,
+        [status, params.id]
+      );
+      order = rows[0];
+
+      if (status === 'cancelled' && prevStatus !== 'cancelled') {
+        const itemsRes = await client.query('SELECT product_id, variant_id, quantity FROM order_items WHERE order_id=$1', [params.id]);
+        for (const item of itemsRes.rows) {
+          if (item.variant_id) {
+            await client.query('UPDATE variants SET stock = stock + $1 WHERE id=$2', [item.quantity, item.variant_id]);
+          } else {
+            await client.query('UPDATE products SET stock = stock + $1 WHERE id=$2', [item.quantity, item.product_id]);
+          }
+        }
+      }
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
     if (['shipped', 'delivered', 'cancelled'].includes(status)) {
       email.sendOrderStatusUpdate({ to: order.customer_email, name: order.customer_name, orderId: order.id, status })
         .catch(console.error);

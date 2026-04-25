@@ -9,8 +9,18 @@ const schema = z.object({
   password: z.string().min(1),
 });
 
+import cache from '@/lib/cache';
+
 export async function POST(request) {
   try {
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    if (ip !== 'unknown') {
+      const rlKey = `rl:login:${ip}`;
+      const attempts = await cache.incr(rlKey);
+      if (attempts === 1) await cache.expire(rlKey, 900); // 15 mins
+      if (attempts > 5) return NextResponse.json({ error: 'Too many login attempts. Please try again in 15 minutes.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const result = schema.safeParse(body);
     if (!result.success) {

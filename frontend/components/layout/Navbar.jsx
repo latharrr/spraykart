@@ -61,7 +61,7 @@ function NavbarInner() {
           </Link>
 
           {/* Desktop nav */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 28, flex: 1, justifyContent: 'center' }} className="hidden lg:flex">
+          <div className="hidden lg:flex items-center justify-center flex-1" style={{ gap: 28 }}>
             {navLinks.map(({ href, label }) => {
               const currentCategory = searchParams.get('category');
               const linkCategory = href.includes('category=') ? new URLSearchParams(href.split('?')[1]).get('category') : null;

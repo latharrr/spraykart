@@ -5,8 +5,8 @@ export const metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-24">
-      <h1 className="text-4xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Contact Us</h1>
+    <div className="max-w-4xl mx-auto px-4 py-12 md:py-24">
+      <h1 className="text-2xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Contact Us</h1>
       <p className="text-gray-600 mb-12">We would love to hear from you. Reach out to us for any queries about our authentic luxury fragrances.</p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">

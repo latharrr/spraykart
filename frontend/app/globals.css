@@ -175,38 +175,77 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ─── Mobile Responsive Helpers ─────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  /* Navbar: reduce padding on tablet/mobile */
+  nav { padding: 0 16px !important; }
+}
+
 @media (max-width: 767px) {
+  /* ── Hero ─────────────────────────────────── */
   .hero-grid { display: flex !important; flex-direction: column !important; gap: 48px !important; }
   .hero-stats { display: none !important; }
-  .hero-padding { padding: 60px 20px !important; }
+  .hero-padding { padding: 48px 16px !important; }
 
-  .featured-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+  /* ── Homepage grids ──────────────────────── */
+  .featured-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
   .trust-grid { grid-template-columns: 1fr !important; border-left: none !important; border-top: none !important; }
-  .trust-grid > div { border-right: none !important; border-bottom: 1px solid #e8e8e8 !important; }
+  .trust-grid > div { border-right: none !important; border-bottom: 1px solid #e8e8e8 !important; padding: 24px 20px !important; }
   .testimonials-grid { grid-template-columns: 1fr !important; border-left: none !important; border-top: none !important; }
-  .testimonials-grid > div { border-right: none !important; border-bottom: 1px solid #eeeeee !important; }
-
-  .trust-header { flex-direction: column !important; gap: 24px !important; margin-bottom: 40px !important; }
+  .testimonials-grid > div { border-right: none !important; border-bottom: 1px solid #eeeeee !important; padding: 24px 20px !important; }
+  .trust-header { flex-direction: column !important; gap: 16px !important; margin-bottom: 32px !important; }
   .trust-header > div { border-top: none !important; padding-top: 0 !important; }
-  
-  .reviews-header { margin-bottom: 32px !important; }
-  .faq-inner { padding: 0 20px !important; }
-  
-  .navbar-nav { padding: 0 20px !important; }
+  .reviews-header { margin-bottom: 24px !important; }
 
-  .cart-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
-  .cart-padding { padding: 40px 0 !important; }
+  /* ── Section spacing ─────────────────────── */
+  .section-padding { padding: 48px 0 !important; }
+  .section-inner { padding: 0 16px !important; }
+  .cta-section { padding: 48px 16px !important; }
+  .faq-inner { padding: 0 16px !important; }
+
+  /* ── Cart ─────────────────────────────────── */
+  .cart-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+  .cart-padding { padding: 32px 0 !important; }
   .cart-inner { padding: 0 16px !important; }
-  .cart-item { flex-wrap: wrap !important; gap: 16px !important; }
+  .cart-item { flex-wrap: wrap !important; gap: 12px !important; }
 
-  .section-padding { padding: 60px 0 !important; }
-  .section-inner { padding: 0 20px !important; }
-  .cta-section { padding: 60px 20px !important; }
-  .faq-inner { padding: 0 20px !important; }
+  /* ── Auth pages ──────────────────────────── */
   .auth-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+
+  /* ── Headings scale down ─────────────────── */
+  h1 { word-break: break-word; }
+  
+  /* ── Orders table mobile card view ───────── */
+  .orders-table thead { display: none !important; }
+  .orders-table tbody tr {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 16px !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+    gap: 6px !important;
+  }
+  .orders-table .table-td {
+    padding: 2px 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-bottom: none !important;
+  }
+  .orders-table .table-td::before {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #a0a0a0;
+  }
+
+  /* ── Footer mobile ──────────────────────── */
+  footer .grid { gap: 32px !important; }
 }
 
 @media (max-width: 480px) {
-  .hero-h1 { font-size: clamp(38px, 11vw, 52px) !important; }
-  .featured-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+  .hero-h1 { font-size: clamp(36px, 10vw, 48px) !important; }
+  .featured-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+  
+  /* Section headings smaller on very small screens */
+  .section-inner h2, .faq-inner h2 { font-size: 28px !important; }
 }

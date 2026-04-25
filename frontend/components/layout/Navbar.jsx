@@ -52,7 +52,7 @@ function NavbarInner() {
         boxShadow: scrolled ? '0 1px 16px rgba(0,0,0,.06)' : 'none',
         transition: 'box-shadow .2s, border-color .2s',
       }}>
-        <nav style={{ maxWidth: 1280, margin: '0 auto', padding: '0 40px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
+        <nav style={{ maxWidth: 1280, margin: '0 auto', padding: '0 16px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }} className="md:!px-10">
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <button

@@ -47,7 +47,8 @@ export default function OrdersPage() {
       ) : (
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            {/* Desktop Table */}
+            <table className="w-full hidden md:table">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
                   <th className="table-th">Order ID</th>
@@ -88,6 +89,28 @@ export default function OrdersPage() {
                 ))}
               </tbody>
             </table>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {orders.map((order) => (
+                <Link key={order.id} href={`/orders/${order.id}`} className="block p-4 hover:bg-gray-50 transition">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-xs text-gray-500">#{order.id.slice(0, 8).toUpperCase()}</span>
+                    <OrderStatusBadge status={order.status} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">₹{parseFloat(order.final_price).toLocaleString('en-IN')}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {' · '}{order.items?.length || 0} item{(order.items?.length || 0) !== 1 && 's'}
+                      </p>
+                    </div>
+                    <span className="text-xs text-gray-400">View →</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )}

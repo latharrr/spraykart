@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import db from '@/lib/db';
 import { signToken, COOKIE_OPTIONS } from '@/lib/auth';
+import { email as emailService } from '@/lib/email';
 import { z } from 'zod';
 
 const schema = z.object({
@@ -45,6 +46,8 @@ export async function POST(request) {
       [name, email, hash]
     );
     const user = rows[0];
+
+    emailService.sendWelcome({ to: user.email, name: user.name }).catch(() => {});
 
     const response = NextResponse.json({ user }, { status: 201 });
     response.cookies.set('token', signToken(user.id), COOKIE_OPTIONS);

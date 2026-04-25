@@ -82,6 +82,15 @@ export const email = {
         <div style="display:inline-block;background:#0c0c0c;color:#fff;padding:20px 40px;letter-spacing:0.5em;font-size:32px;font-weight:700;font-family:monospace">${otp}</div>
       </div>`),
   }),
+
+  sendWelcome: ({ to, name }) => send({
+    to, subject: `Welcome to Spraykart, ${name}! 🎉`,
+    html: shell(`<h2 style="font-size:20px;font-weight:400;font-family:Georgia,serif">Welcome to Spraykart!</h2>
+      <p style="color:#737373;font-size:13px;line-height:1.6">Hi ${name},</p>
+      <p style="color:#737373;font-size:13px;line-height:1.6">We're thrilled to have you here. Spraykart is India's most trusted luxury fragrance platform, offering 100% authentic perfumes, attars, and niche fragrances.</p>
+      <p style="color:#737373;font-size:13px;line-height:1.6">To get started, explore our curated collections:</p>
+      <a href="${FRONTEND_URL}/products" style="display:inline-block;margin-top:20px;background:#0c0c0c;color:#fff;padding:12px 28px;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Shop Fragrances</a>`),
+  }),
 };
 
 export default email;

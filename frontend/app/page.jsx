@@ -18,8 +18,8 @@ async function getFeaturedProducts() {
       WITH featured AS (
         SELECT *
         FROM products
-        WHERE is_active = true AND is_featured = true
-        ORDER BY created_at DESC
+        WHERE is_active = true
+        ORDER BY is_featured DESC, created_at DESC
         LIMIT 8
       )
       SELECT featured.*,

@@ -5,74 +5,6 @@ import { ShoppingBag, Users, TrendingUp, Package, ArrowUpRight, Clock } from 'lu
 import { OrderStatusBadge } from '@/components/ui/Badge';
 import ErrorState from '@/components/ui/ErrorState';
 import Link from 'next/link';
-import toast from 'react-hot-toast';
-
-function RedisManagement() {
-  const [lockedIps, setLockedIps] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const fetchRedisData = async () => {
-    try {
-      const res = await fetch('/api/admin/redis');
-      const data = await res.json();
-      if (res.ok) setLockedIps(data.lockedIps || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    fetchRedisData();
-  }, []);
-
-  const flushRedis = async () => {
-    if (!confirm('Are you sure you want to flush the entire Redis cache? This will clear all rate limits and cached data.')) return;
-    setLoading(true);
-    try {
-      const res = await fetch('/api/admin/redis', { method: 'DELETE' });
-      if (res.ok) {
-        toast.success('Redis cache flushed successfully');
-        setLockedIps([]);
-      } else {
-        toast.error('Failed to flush Redis');
-      }
-    } catch (err) {
-      toast.error('An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="card p-6 mt-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold text-gray-900">Redis & Rate Limits</h2>
-        <button 
-          onClick={flushRedis} 
-          disabled={loading}
-          className="btn-primary text-xs py-2 px-3 bg-red-600 hover:bg-red-700"
-        >
-          {loading ? 'Flushing...' : 'Flush Redis DB'}
-        </button>
-      </div>
-      <div>
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Locked IPs (Rate Limited)</h3>
-        {lockedIps.length === 0 ? (
-          <p className="text-xs text-gray-400">No IPs currently locked.</p>
-        ) : (
-          <div className="space-y-2">
-            {lockedIps.map((ip) => (
-              <div key={ip.key} className="flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-100">
-                <span className="text-xs font-mono text-gray-600">{ip.key.replace('rl:', '')}</span>
-                <span className="text-xs font-semibold text-red-600">{ip.attempts} attempts</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function StatCard({ label, value, sub, icon: Icon, color, href }) {
   return (
@@ -261,8 +193,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-
-      <RedisManagement />
     </div>
   );
 }

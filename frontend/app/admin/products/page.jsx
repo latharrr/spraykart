@@ -28,7 +28,11 @@ function ProductForm({ initial = EMPTY_FORM, onSubmit, loading, submitLabel }) {
     Object.entries(form).forEach(([k, v]) => {
       if (k === 'variantsStr' && v.trim()) {
         const sizes = v.split(',').map(s => s.trim()).filter(s => s);
-        const variantsArr = sizes.map(size => ({ type: 'Size', value: size, stock: parseInt(form.stock) || 0 }));
+        const variantsArr = sizes.map(sizeStr => {
+          const [size, priceStr] = sizeStr.split(':').map(s => s.trim());
+          const price = priceStr ? parseFloat(priceStr) : null;
+          return { type: 'Size', value: size, price, stock: parseInt(form.stock) || 0 };
+        });
         fd.append('variants', JSON.stringify(variantsArr));
       } else if (v !== '' && k !== 'variantsStr') {
         fd.append(k, v);
@@ -68,7 +72,7 @@ function ProductForm({ initial = EMPTY_FORM, onSubmit, loading, submitLabel }) {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Variants (comma separated sizes)</label>
-          <input className="input text-sm" placeholder="e.g. 25ml, 50ml, 100ml" value={form.variantsStr} onChange={(e) => set('variantsStr', e.target.value)} />
+          <input className="input text-sm" placeholder="e.g. 25ml:999, 50ml:1499" value={form.variantsStr} onChange={(e) => set('variantsStr', e.target.value)} />
         </div>
         <div className="col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>

@@ -76,8 +76,10 @@ export async function PUT(request, { params }) {
       const variants = (() => { try { return JSON.parse(variantsRaw); } catch { return []; } })();
       if (variants.length > 0) {
         await db.query('DELETE FROM variants WHERE product_id=$1', [params.id]);
+        const basePrice = price ? parseFloat(price) : parseFloat(rows[0].price);
         for (const v of variants) {
-          await db.query('INSERT INTO variants(product_id,type,value,stock) VALUES($1,$2,$3,$4)', [params.id, v.type, v.value, v.stock || 0]);
+          const modifier = v.price !== null ? v.price - basePrice : 0;
+          await db.query('INSERT INTO variants(product_id,type,value,price_modifier,stock) VALUES($1,$2,$3,$4,$5)', [params.id, v.type, v.value, modifier, v.stock || 0]);
         }
       }
     }

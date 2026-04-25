@@ -80,7 +80,8 @@ export async function POST(request) {
 
     const variants = (() => { try { return JSON.parse(variantsRaw || '[]'); } catch { return []; } })();
     for (const v of variants) {
-      await client.query('INSERT INTO variants(product_id,type,value,stock) VALUES($1,$2,$3,$4)', [product.id, v.type, v.value, v.stock || 0]);
+      const modifier = v.price !== null ? v.price - parseFloat(price) : 0;
+      await client.query('INSERT INTO variants(product_id,type,value,price_modifier,stock) VALUES($1,$2,$3,$4,$5)', [product.id, v.type, v.value, modifier, v.stock || 0]);
     }
 
     await client.query('COMMIT');

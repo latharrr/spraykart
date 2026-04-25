@@ -65,9 +65,19 @@ export async function POST(request) {
         const { rows: p } = await client.query('SELECT name, stock FROM products WHERE id=$1', [item.product_id]);
         throw new Error(p.length ? `Insufficient stock for "${p[0].name}" (available: ${p[0].stock})` : `Product not found: ${item.product_id}`);
       }
-      const price = parseFloat(rows[0].price);
+      let price = parseFloat(rows[0].price);
+      let name = rows[0].name;
+
+      if (item.variant_id) {
+        const { rows: vRows } = await client.query('SELECT value, price_modifier FROM variants WHERE id=$1', [item.variant_id]);
+        if (vRows.length) {
+          price += parseFloat(vRows[0].price_modifier || 0);
+          name = `${name} - ${vRows[0].value}`;
+        }
+      }
+
       total += price * item.quantity;
-      enrichedItems.push({ ...item, price, name: rows[0].name });
+      enrichedItems.push({ ...item, price, name });
     }
 
     let discount = 0;

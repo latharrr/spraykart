@@ -40,7 +40,9 @@ export default function CartPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 48, alignItems: 'start' }} className="cart-grid">
           {/* Items */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0, border: '1px solid #e8e8e8', background: '#ffffff' }}>
-            {items.map((item, i) => (
+            {items.map((item, i) => {
+              const itemPrice = item.variant ? parseFloat(item.price) + parseFloat(item.variant.price_modifier || 0) : parseFloat(item.price);
+              return (
               <div key={item.cartKey} style={{ display: 'flex', gap: 20, padding: '24px', borderBottom: i < items.length - 1 ? '1px solid #f0f0f0' : 'none', alignItems: 'flex-start' }} className="cart-item">
                 {/* Image */}
                 <Link href={`/products/${item.slug}`} style={{ flexShrink: 0, textDecoration: 'none' }}>
@@ -64,7 +66,7 @@ export default function CartPage() {
                   {item.variant && (
                     <p style={{ fontSize: 12, color: '#737373', marginBottom: 8 }}>{item.variant.type}: {item.variant.value}</p>
                   )}
-                  <p style={{ fontSize: 15, fontWeight: 600, color: '#0c0c0c' }}>₹{parseFloat(item.price).toLocaleString('en-IN')}</p>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: '#0c0c0c' }}>₹{itemPrice.toLocaleString('en-IN')}</p>
                 </div>
 
                 {/* Qty + remove */}
@@ -84,11 +86,11 @@ export default function CartPage() {
                   </div>
 
                   <p style={{ fontSize: 14, fontWeight: 700, color: '#0c0c0c' }}>
-                    ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+                    ₹{(itemPrice * item.quantity).toLocaleString('en-IN')}
                   </p>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
 
           {/* Order summary */}

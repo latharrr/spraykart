@@ -18,8 +18,16 @@ export default function ProductInfo({ product }) {
   const [couponLoading, setCouponLoading] = useState(false);
   const [added, setAdded] = useState(false);
 
-  const discount = product.compare_price
-    ? Math.round(((product.compare_price - product.price) / product.compare_price) * 100)
+  const displayPrice = selectedVariant
+    ? parseFloat(product.price) + parseFloat(selectedVariant.price_modifier || 0)
+    : parseFloat(product.price);
+
+  const displayComparePrice = product.compare_price
+    ? parseFloat(product.compare_price) + (selectedVariant ? parseFloat(selectedVariant.price_modifier || 0) : 0)
+    : null;
+
+  const discount = displayComparePrice
+    ? Math.round(((displayComparePrice - displayPrice) / displayComparePrice) * 100)
     : 0;
 
   // Group variants by type
@@ -40,13 +48,13 @@ export default function ProductInfo({ product }) {
     if (!couponCode.trim()) return;
     if (!user) { toast.error('Sign in to apply coupons'); return; }
 
-    const cartSubtotal = product.price * quantity;
+    const cartSubtotal = displayPrice * quantity;
     setCouponLoading(true);
     try {
       const { data } = await applyCoupon({
         code: couponCode,
         cart_total: cartSubtotal,
-        cart_items: [{ id: product.id, price: product.price, quantity }],
+        cart_items: [{ id: product.id, price: displayPrice, quantity }],
       });
       setCoupon(data.coupon, data.discount);
       if (data.is_product_specific) {
@@ -93,12 +101,12 @@ export default function ProductInfo({ product }) {
       {/* Price */}
       <div className="flex items-baseline gap-3">
         <span className="text-4xl font-bold text-gray-900">
-          ₹{parseFloat(product.price).toLocaleString('en-IN')}
+          ₹{displayPrice.toLocaleString('en-IN')}
         </span>
-        {product.compare_price && (
+        {displayComparePrice && (
           <>
             <span className="text-xl text-gray-400 line-through">
-              ₹{parseFloat(product.compare_price).toLocaleString('en-IN')}
+              ₹{displayComparePrice.toLocaleString('en-IN')}
             </span>
             <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
               {discount}% off

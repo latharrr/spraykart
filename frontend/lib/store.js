@@ -53,7 +53,10 @@ export const useCartItemCount = () =>
   useCartStore((state) => state.items.reduce((sum, i) => sum + i.quantity, 0));
 
 export const useCartSubtotal = () =>
-  useCartStore((state) => state.items.reduce((sum, i) => sum + i.price * i.quantity, 0));
+  useCartStore((state) => state.items.reduce((sum, i) => {
+    const itemPrice = i.variant ? parseFloat(i.price) + parseFloat(i.variant.price_modifier || 0) : parseFloat(i.price);
+    return sum + itemPrice * i.quantity;
+  }, 0));
 
 export const useCartTotal = () => {
   const subtotal = useCartSubtotal();

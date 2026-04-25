@@ -26,7 +26,7 @@ export default function ContactPage() {
         </div>
 
         <div>
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
               <input type="text" className="input" placeholder="Your full name" required />

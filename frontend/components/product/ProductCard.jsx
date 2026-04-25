@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Star } from 'lucide-react';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 
 // ─── Star row is pure — memoize to avoid 5 Star rerenders per card ─────────────
 const StarRow = memo(function StarRow({ avgRating, reviewCount }) {
@@ -26,6 +26,7 @@ const StarRow = memo(function StarRow({ avgRating, reviewCount }) {
 });
 
 function ProductCard({ product, priority = false }) {
+  const [isLoaded, setIsLoaded] = useState(false);
   const discount = product.compare_price
     ? Math.min(Math.round(((product.compare_price - product.price) / product.compare_price) * 100), 70)
     : 0;
@@ -36,13 +37,18 @@ function ProductCard({ product, priority = false }) {
 
         {/* Image — rock solid aspect ratio container */}
         <div className="relative w-full aspect-[3/4] bg-[#f7f7f5] overflow-hidden shrink-0">
+          {!isLoaded && product.image && (
+            <div className="absolute inset-0 bg-gray-200 animate-pulse z-0" />
+          )}
+          
           {product.image ? (
               <Image
                 src={product.image}
                 alt={product.name}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                className={`object-cover transition-all duration-700 ease-out group-hover:scale-105 z-10 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                onLoad={() => setIsLoaded(true)}
                 priority={priority}
                 fetchPriority={priority ? "high" : "auto"}
                 quality={80}

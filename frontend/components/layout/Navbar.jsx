@@ -54,16 +54,27 @@ function NavbarInner() {
       }}>
         <nav style={{ maxWidth: 1280, margin: '0 auto', padding: '0 40px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
 
-          {/* Logo */}
-          <Link href="/" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'baseline' }}>
-            <span style={{
-              fontFamily: "'Cormorant', Georgia, serif",
-              fontSize: 22, fontWeight: 500,
-              color: '#0c0c0c', letterSpacing: '-0.02em',
-            }}>
-              Spray<em style={{ fontWeight: 300, fontStyle: 'italic' }}>kart</em>
-            </span>
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <button
+              className="lg:hidden"
+              style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#737373', background: 'none', border: 'none', cursor: 'pointer', marginLeft: '-8px' }}
+              onClick={() => setMobileOpen(v => !v)}
+              aria-label="Menu"
+            >
+              {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+
+            {/* Logo */}
+            <Link href="/" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'baseline' }}>
+              <span style={{
+                fontFamily: "'Cormorant', Georgia, serif",
+                fontSize: 22, fontWeight: 500,
+                color: '#0c0c0c', letterSpacing: '-0.02em',
+              }}>
+                Spray<em style={{ fontWeight: 300, fontStyle: 'italic' }}>kart</em>
+              </span>
+            </Link>
+          </div>
 
           {/* Desktop nav */}
           <div className="hidden lg:flex items-center justify-center flex-1" style={{ gap: 28 }}>
@@ -188,14 +199,7 @@ function NavbarInner() {
               </Link>
             )}
 
-            <button
-              className="lg:hidden"
-              style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#737373', background: 'none', border: 'none', cursor: 'pointer' }}
-              onClick={() => setMobileOpen(v => !v)}
-              aria-label="Menu"
-            >
-              {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
+            )}
           </div>
         </nav>
 

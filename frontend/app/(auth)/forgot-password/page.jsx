@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
   };
   const cardStyle = {
     width: '100%', maxWidth: 400,
-    background: '#fff', border: '1px solid #e8e8e8', padding: '40px',
+    background: '#fff', border: '1px solid #e8e8e8',
   };
   const labelStyle = {
     display: 'block', fontSize: 11, fontWeight: 500,
@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div style={panelStyle}>
-      <div style={cardStyle}>
+      <div style={cardStyle} className="p-6 sm:p-10">
         <Link href="/" style={{ textDecoration: 'none', display: 'block', marginBottom: 32 }}>
           <span style={{ fontFamily: "'Cormorant', Georgia, serif", fontSize: 22, fontWeight: 500, color: '#0c0c0c' }}>
             Spray<em style={{ fontStyle: 'italic', fontWeight: 300 }}>kart</em>

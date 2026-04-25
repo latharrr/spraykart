@@ -169,7 +169,7 @@ export default async function HomePage() {
       {/* ── TRUST PILLARS ── */}
       <section style={{ background: '#f9f9f7', borderTop: '1px solid #eeeeee', padding: '96px 0' }} className="section-padding">
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 40px' }} className="section-inner">
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 80, marginBottom: 64 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 80, marginBottom: 64 }} className="trust-header">
             <div style={{ flexShrink: 0 }}>
               <span style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a0a0a0', display: 'block', marginBottom: 8 }}>Why Spraykart</span>
               <h2 style={{ fontFamily: 'var(--font-cormorant), Georgia, serif', fontSize: 40, fontWeight: 400, letterSpacing: '-0.01em', color: '#0c0c0c', lineHeight: 1 }}>The Spraykart<br />Promise</h2>
@@ -193,7 +193,7 @@ export default async function HomePage() {
       {/* ── TESTIMONIALS ── */}
       <section style={{ background: '#ffffff', padding: '96px 0' }} className="section-padding">
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 40px' }} className="section-inner">
-          <div style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: 28, marginBottom: 56 }}>
+          <div style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: 28, marginBottom: 56 }} className="reviews-header">
             <span style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a0a0a0', display: 'block', marginBottom: 8 }}>Reviews</span>
             <h2 style={{ fontFamily: 'var(--font-cormorant), Georgia, serif', fontSize: 40, fontWeight: 400, letterSpacing: '-0.01em', color: '#0c0c0c', lineHeight: 1 }}>Loved Across India</h2>
           </div>

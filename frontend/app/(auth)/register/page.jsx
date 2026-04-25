@@ -65,8 +65,8 @@ export default function RegisterPage() {
       </div>
 
       {/* Right panel — form */}
-      <div style={{ flex: '0 0 480px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 40px' }}>
-        <div style={{ width: '100%', maxWidth: 380 }}>
+      <div className="flex-1 lg:flex-none lg:w-[480px] flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-[380px]">
           <Link href="/" className="lg:hidden" style={{ display: 'inline-block', marginBottom: 32, textDecoration: 'none' }}>
             <span style={{ fontFamily: "'Cormorant', Georgia, serif", fontSize: 24, fontWeight: 500, color: '#0c0c0c' }}>
               Spray<em style={{ fontStyle: 'italic', fontWeight: 300 }}>kart</em>

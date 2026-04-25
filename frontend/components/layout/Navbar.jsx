@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { ShoppingCart, Search, Menu, X, User, Package, Shield, Heart } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, User, Package, Shield, Heart, LogOut } from 'lucide-react';
 import { useState, useEffect, Suspense } from 'react';
 import { useAuthStore, useCartItemCount, useWishlistCount } from '@/lib/store';
 import clsx from 'clsx';
@@ -38,10 +38,10 @@ function NavbarInner() {
       {/* Announcement strip */}
       <div className="marquee-container" style={{ background: '#0c0c0c', color: 'rgba(255,255,255,.65)', padding: '8px 0', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', fontFamily: "'Inter', sans-serif" }}>
         <div className="marquee-content">
-          <span style={{ paddingRight: '40px' }}>100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments</span>
-          <span style={{ paddingRight: '40px' }}>100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments</span>
-          <span style={{ paddingRight: '40px' }}>100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments</span>
-          <span style={{ paddingRight: '40px' }}>100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments</span>
+          <span style={{ paddingRight: '40px', flexShrink: 0, whiteSpace: 'nowrap' }}>100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments</span>
+          <span style={{ paddingRight: '40px', flexShrink: 0, whiteSpace: 'nowrap' }}>100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments</span>
+          <span style={{ paddingRight: '40px', flexShrink: 0, whiteSpace: 'nowrap' }}>100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments</span>
+          <span style={{ paddingRight: '40px', flexShrink: 0, whiteSpace: 'nowrap' }}>100% Authentic Luxury Fragrances &nbsp;·&nbsp; Free Shipping Above ₹999 &nbsp;·&nbsp; Razorpay Secured Payments</span>
         </div>
       </div>
 
@@ -159,7 +159,7 @@ function NavbarInner() {
                   {user.role === 'admin' && (
                     <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', fontSize: 12, fontWeight: 600, color: '#0c0c0c', textDecoration: 'none', borderTop: '1px solid #f0f0f0', marginTop: 4 }}><Shield size={12} /> Admin Panel</Link>
                   )}
-                  <button onClick={logout} style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: 12, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', borderTop: '1px solid #f0f0f0', marginTop: 4, display: 'block' }}>Sign out</button>
+                  <button onClick={logout} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: 12, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', borderTop: '1px solid #f0f0f0', marginTop: 4 }}><LogOut size={12} /> Sign out</button>
                 </div>
               </div>
             ) : (

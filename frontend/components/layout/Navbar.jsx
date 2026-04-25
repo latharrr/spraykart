@@ -198,8 +198,6 @@ function NavbarInner() {
                 Sign in
               </Link>
             )}
-
-            )}
           </div>
         </nav>
 

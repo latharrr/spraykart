@@ -52,160 +52,214 @@ export default function AdminOrdersPage() {
     }
   };
 
+  const getPaymentStatus = (order) => {
+    if (order.status === 'cancelled') return { label: 'Refunded', color: 'gray' };
+    if (order.payment_method === 'razorpay') return { label: 'Paid', color: 'gray' };
+    if (order.status === 'delivered') return { label: 'Paid', color: 'gray' };
+    return { label: 'Payment pending', color: 'orange' };
+  };
+
+  const getFulfillmentStatus = (status) => {
+    if (status === 'delivered') return { label: 'Fulfilled', color: 'gray' };
+    if (status === 'shipped') return { label: 'Shipped', color: 'gray' };
+    if (status === 'cancelled') return { label: 'Cancelled', color: 'gray' };
+    return { label: 'Unfulfilled', color: 'yellow' };
+  };
+
+  const StatusBadge = ({ label, color }) => {
+    const colorStyles = {
+      gray: 'bg-[#f3f4f6] text-[#4b5563]',
+      grayDot: 'bg-[#6b7280]',
+      orange: 'bg-[#ffedd5] text-[#9a3412]',
+      orangeDot: 'bg-[#ea580c]',
+      yellow: 'bg-[#fef08a] text-[#854d0e]',
+      yellowDot: 'bg-[#eab308]',
+    };
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[13px] font-medium rounded-md whitespace-nowrap ${colorStyles[color]}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${colorStyles[`${color}Dot`]}`} />
+        {label}
+      </span>
+    );
+  };
+
+  const getFulfillBy = (createdAt) => {
+    const date = new Date(createdAt);
+    date.setDate(date.getDate() + 2); // Assume 2 days to fulfill
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (now > date) {
+      return <span className="text-[#dc2626] font-medium">{diffDays} days ago</span>;
+    }
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  };
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-        <h1 className="text-2xl font-bold">Orders</h1>
-        <div className="flex items-center gap-2">
-          {['', ...STATUSES].map((s) => (
-            <button
-              key={s}
-              onClick={() => { setStatusFilter(s); setPage(1); }}
-              className={`text-sm px-3 py-1.5 rounded-full border transition capitalize ${
-                statusFilter === s ? 'bg-black text-white border-black' : 'border-gray-200 text-gray-600 hover:border-gray-400'
-              }`}
-            >
-              {s || 'All'}
-            </button>
-          ))}
-        </div>
+    <div className="max-w-[1400px] mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <h1 className="text-[22px] font-bold text-[#1a1a1a]">Orders</h1>
       </div>
 
-      {loading ? (
-        <div className="card p-6 space-y-3 animate-pulse">
-          {[...Array(5)].map((_, i) => <div key={i} className="h-12 skeleton rounded-lg" />)}
+      <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm overflow-hidden">
+        {/* Filters bar */}
+        <div className="flex items-center gap-4 px-4 py-3 border-b border-[#e5e7eb] bg-white">
+          <div className="flex items-center gap-4 border-r border-[#e5e7eb] pr-4">
+            <button className="text-[14px] font-medium text-[#1a1a1a] flex items-center gap-1">All <ChevronDown size={14} /></button>
+          </div>
+          <div className="flex-1 flex items-center gap-2 text-[#6b7280]">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" placeholder="Search and filter" className="bg-transparent border-none focus:outline-none text-[14px] w-full text-[#1a1a1a]" />
+          </div>
         </div>
-      ) : error ? (
-        <ErrorState message={error} onRetry={refetch} />
-      ) : orders.length === 0 ? (
-        <EmptyState icon="bag" title="No orders found" description={statusFilter ? `No ${statusFilter} orders` : 'No orders yet'} />
-      ) : (
-        <>
-          <div className="card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-100">
-                  <tr>
-                    <th className="table-th"></th>
-                    <th className="table-th">Order ID</th>
-                    <th className="table-th">Customer</th>
-                    <th className="table-th">Date</th>
-                    <th className="table-th">Total</th>
-                    <th className="table-th">Status</th>
-                    <th className="table-th">Update</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {orders.map((order) => (
+
+        {loading ? (
+          <div className="p-6 space-y-3 animate-pulse">
+            {[...Array(8)].map((_, i) => <div key={i} className="h-10 skeleton rounded" />)}
+          </div>
+        ) : error ? (
+          <div className="p-8"><ErrorState message={error} onRetry={refetch} /></div>
+        ) : orders.length === 0 ? (
+          <div className="p-8"><EmptyState icon="bag" title="No orders found" /></div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full whitespace-nowrap text-[14px]">
+              <thead className="bg-[#f9fafb] border-b border-[#e5e7eb]">
+                <tr>
+                  <th className="px-4 py-2.5 text-left font-medium text-[#4b5563] w-10">
+                    <input type="checkbox" className="rounded border-gray-300 text-black focus:ring-black" />
+                  </th>
+                  <th className="px-4 py-2.5 text-left font-medium text-[#4b5563]">Order</th>
+                  <th className="px-4 py-2.5 text-left font-medium text-[#4b5563]">Date ↓</th>
+                  <th className="px-4 py-2.5 text-left font-medium text-[#4b5563]">Customer</th>
+                  <th className="px-4 py-2.5 text-left font-medium text-[#4b5563]">Fulfill by</th>
+                  <th className="px-4 py-2.5 text-left font-medium text-[#4b5563]">Channel</th>
+                  <th className="px-4 py-2.5 text-right font-medium text-[#4b5563]">Total</th>
+                  <th className="px-4 py-2.5 text-left font-medium text-[#4b5563]">Payment status</th>
+                  <th className="px-4 py-2.5 text-left font-medium text-[#4b5563]">Fulfillment status</th>
+                  <th className="px-4 py-2.5 text-left font-medium text-[#4b5563]">Items</th>
+                  <th className="px-4 py-2.5 text-left font-medium text-[#4b5563]">Delivery method</th>
+                  <th className="px-4 py-2.5 text-left font-medium text-[#4b5563]">Tags</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#e5e7eb]">
+                {orders.map((order) => {
+                  const payment = getPaymentStatus(order);
+                  const fulfillment = getFulfillmentStatus(order.status);
+                  const itemCount = order.items?.length || 0;
+                  
+                  return (
                     <Fragment key={order.id}>
-                      <tr className="hover:bg-gray-50 transition">
-                        <td className="table-td w-8">
-                          <button
-                            onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
-                            className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700"
-                          >
-                            {expandedId === order.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                          </button>
-                        </td>
-                        <td className="table-td font-mono text-xs text-gray-500">#{order.id.slice(0, 8).toUpperCase()}</td>
-                        <td className="table-td">
-                          <p className="font-medium text-sm text-gray-800">{order.customer_name}</p>
-                          <p className="text-xs text-gray-400">{order.customer_email}</p>
-                        </td>
-                        <td className="table-td text-gray-500">
-                          {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </td>
-                        <td className="table-td font-semibold">₹{parseFloat(order.final_price).toLocaleString('en-IN')}</td>
-                        <td className="table-td"><OrderStatusBadge status={order.status} /></td>
-                        <td className="table-td">
-                          {updatingId === order.id ? (
-                            <Spinner size="sm" />
-                          ) : (
+                      <tr className="hover:bg-[#f9fafb] transition-colors cursor-pointer group">
+                      <td className="px-4 py-3">
+                        <input type="checkbox" className="rounded border-gray-300 text-black focus:ring-black" />
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-[#1a1a1a]">
+                        <button onClick={() => setExpandedId(expandedId === order.id ? null : order.id)} className="hover:underline">
+                          #{order.id.slice(0, 4).toUpperCase()}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 text-[#4b5563]">
+                        {new Date(order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} at {new Date(order.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                      </td>
+                      <td className="px-4 py-3 text-[#1a1a1a]">{order.customer_name}</td>
+                      <td className="px-4 py-3 text-[#4b5563]">{getFulfillBy(order.created_at)}</td>
+                      <td className="px-4 py-3 text-[#4b5563]">Online Store</td>
+                      <td className="px-4 py-3 text-right text-[#1a1a1a]">₹{parseFloat(order.final_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                      <td className="px-4 py-3"><StatusBadge {...payment} /></td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <StatusBadge {...fulfillment} />
+                          {/* Dropdown for quick update visible on hover */}
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                             <select
-                              className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-black/20"
+                              className="text-xs border border-gray-200 rounded px-1 py-1 bg-white"
                               value={order.status}
                               onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
                             >
-                              {STATUSES.map((s) => <option key={s} value={s} className="capitalize">{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                              {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
-                          )}
-                        </td>
-                      </tr>
-
-                      {/* Expanded order items */}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-[#4b5563]">{itemCount} item{itemCount !== 1 && 's'}</td>
+                      <td className="px-4 py-3 text-[#4b5563]">Standard</td>
+                      <td className="px-4 py-3 text-[#4b5563]"></td>
+                    </tr>
+                      
+                      {/* Expanded details */}
                       {expandedId === order.id && (
-                        <tr key={`${order.id}-detail`}>
-                          <td colSpan={7} className="px-4 pb-4 bg-gray-50">
-                            <div className="rounded-xl border border-gray-200 overflow-hidden">
-                              <table className="w-full text-sm">
-                                <thead className="bg-white">
-                                  <tr>
-                                    <th className="text-left px-4 py-2.5 text-xs font-semibold text-gray-500">Item</th>
-                                    <th className="text-center px-4 py-2.5 text-xs font-semibold text-gray-500">Qty</th>
-                                    <th className="text-right px-4 py-2.5 text-xs font-semibold text-gray-500">Price</th>
+                        <tr className="bg-[#f9fafb]">
+                          <td colSpan={12} className="px-12 py-4 border-b border-[#e5e7eb]">
+                            <div className="bg-white rounded-lg border border-[#e5e7eb] p-4">
+                              <h4 className="font-semibold text-[#1a1a1a] mb-3">Order Details</h4>
+                              <table className="w-full text-sm mb-4">
+                                <thead>
+                                  <tr className="text-[#6b7280] border-b border-[#e5e7eb]">
+                                    <th className="text-left pb-2 font-medium">Item</th>
+                                    <th className="text-center pb-2 font-medium">Qty</th>
+                                    <th className="text-right pb-2 font-medium">Price</th>
                                   </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
+                                <tbody>
                                   {(order.items || []).filter(Boolean).map((item) => (
-                                    <tr key={item.id}>
-                                      <td className="px-4 py-2.5 text-gray-700">{item.name}</td>
-                                      <td className="px-4 py-2.5 text-center text-gray-500">{item.quantity}</td>
-                                      <td className="px-4 py-2.5 text-right font-medium">₹{parseFloat(item.price * item.quantity).toLocaleString('en-IN')}</td>
+                                    <tr key={item.id} className="border-b border-gray-50">
+                                      <td className="py-2 text-[#1a1a1a]">{item.name}</td>
+                                      <td className="py-2 text-center text-[#4b5563]">{item.quantity}</td>
+                                      <td className="py-2 text-right text-[#1a1a1a]">₹{parseFloat(item.price * item.quantity).toLocaleString('en-IN')}</td>
                                     </tr>
                                   ))}
                                 </tbody>
-                                <tfoot className="bg-white border-t border-gray-100">
-                                  <tr>
-                                    <td colSpan={2} className="px-4 py-2.5 text-sm font-semibold text-gray-700">Total</td>
-                                    <td className="px-4 py-2.5 text-right font-bold">₹{parseFloat(order.final_price).toLocaleString('en-IN')}</td>
-                                  </tr>
-                                  {order.status === 'cancelled' && order.razorpay_payment_id && (
-                                    <tr>
-                                      <td colSpan={3} className="px-4 py-3 text-right border-t border-gray-100">
-                                        <button
-                                          onClick={() => handleRefund(order.id)}
-                                          disabled={updatingId === order.id}
-                                          className="text-sm px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
-                                        >
-                                          {updatingId === order.id ? <Spinner size="sm" /> : 'Issue Refund via Razorpay'}
-                                        </button>
-                                      </td>
-                                    </tr>
-                                  )}
-                                </tfoot>
                               </table>
+                              {order.shipping_address && (
+                                <div className="text-sm text-[#4b5563] mb-4">
+                                  <p className="font-medium text-[#1a1a1a] mb-1">Shipping Address</p>
+                                  <p>{order.shipping_address.line1}</p>
+                                  <p>{order.shipping_address.city}, {order.shipping_address.state} {order.shipping_address.pincode}</p>
+                                </div>
+                              )}
+                              {order.status === 'cancelled' && order.razorpay_payment_id && (
+                                <div className="flex justify-end pt-3 border-t border-[#e5e7eb]">
+                                  <button
+                                    onClick={() => handleRefund(order.id)}
+                                    disabled={updatingId === order.id}
+                                    className="px-4 py-2 bg-black text-white text-sm font-medium rounded shadow-sm hover:bg-gray-800 disabled:opacity-50"
+                                  >
+                                    {updatingId === order.id ? 'Processing...' : 'Issue Refund via Razorpay'}
+                                  </button>
+                                </div>
+                              )}
                             </div>
-                            {order.shipping_address && (
-                              <p className="text-xs text-gray-500 mt-2 px-1">
-                                📍 {order.shipping_address.line1}, {order.shipping_address.city}, {order.shipping_address.state} — {order.shipping_address.pincode}
-                              </p>
-                            )}
                           </td>
                         </tr>
                       )}
                     </Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
+        )}
 
-          {/* Pagination */}
+        {/* Pagination footer */}
+        <div className="border-t border-[#e5e7eb] px-4 py-3 flex items-center justify-center bg-white">
           {pages > 1 && (
-            <div className="flex gap-2 mt-6 justify-center">
+            <div className="flex gap-1">
               {[...Array(pages)].map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setPage(i + 1)}
-                  className={`w-9 h-9 rounded-lg text-sm font-medium transition ${page === i + 1 ? 'bg-black text-white' : 'border border-gray-200 hover:bg-gray-50'}`}
+                  className={`w-8 h-8 flex items-center justify-center rounded text-[14px] font-medium transition ${page === i + 1 ? 'bg-[#f3f4f6] text-[#1a1a1a]' : 'text-[#4b5563] hover:bg-[#f9fafb]'}`}
                 >
                   {i + 1}
                 </button>
               ))}
             </div>
           )}
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 }

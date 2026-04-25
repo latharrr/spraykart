@@ -47,19 +47,27 @@ export async function GET(request) {
   try {
     const [{ rows }, { rows: countRows }] = await Promise.all([
       db.query(`
-        SELECT p.*,
-          img.url as image,
-          COALESCE(AVG(r.rating), 0)::NUMERIC(3,1) as avg_rating,
-          COUNT(DISTINCT r.id) as review_count
-        FROM products p
+        WITH paged_products AS (
+          SELECT p.*
+          FROM products p
+          WHERE ${where}
+          ORDER BY p.${sortField} ${sortOrder}
+          LIMIT $${i++} OFFSET $${i++}
+        )
+        SELECT paged_products.*,
+          img.url AS image,
+          COALESCE(AVG(r.rating), 0)::NUMERIC(3,1) AS avg_rating,
+          COUNT(r.id) AS review_count
+        FROM paged_products
         LEFT JOIN LATERAL (
-          SELECT url FROM product_images WHERE product_id=p.id AND is_primary=true LIMIT 1
+          SELECT url
+          FROM product_images
+          WHERE product_id = paged_products.id AND is_primary = true
+          LIMIT 1
         ) img ON true
-        LEFT JOIN reviews r ON r.product_id = p.id AND r.is_approved = true
-        WHERE ${where}
-        GROUP BY p.id, img.url
-        ORDER BY p.${sortField} ${sortOrder}
-        LIMIT $${i++} OFFSET $${i++}
+        LEFT JOIN reviews r ON r.product_id = paged_products.id AND r.is_approved = true
+        GROUP BY paged_products.id, img.url
+        ORDER BY paged_products.${sortField} ${sortOrder}
       `, params),
       db.query(`SELECT COUNT(*) FROM products p WHERE ${where}`, countParams),
     ]);
@@ -72,7 +80,11 @@ export async function GET(request) {
     };
 
     await cache.set(cacheKey, result, 300);
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=900',
+      },
+    });
   } catch (err) {
     console.error('Products list error:', err);
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });

@@ -7,7 +7,13 @@ export async function GET(request, { params }) {
   const cacheKey = `product:${slug}`;
 
   const cached = await cache.get(cacheKey);
-  if (cached) return NextResponse.json(cached);
+  if (cached) {
+    return NextResponse.json(cached, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=900',
+      },
+    });
+  }
 
   try {
     const { rows } = await db.query(`
@@ -36,7 +42,11 @@ export async function GET(request, { params }) {
 
     const result = { ...product, images: images.rows, variants: variants.rows, reviews: reviews.rows };
     await cache.set(cacheKey, result, 300);
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=900',
+      },
+    });
   } catch (err) {
     console.error('Product detail error:', err);
     return NextResponse.json({ error: 'Failed to fetch product' }, { status: 500 });

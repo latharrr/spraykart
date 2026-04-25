@@ -73,11 +73,11 @@ export default function ProductForm({ initial, onSubmit, onCancel, loading, subm
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[85vh]">
-      <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-gray-50/50">
+    <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[85vh] md:max-h-[85vh] max-h-[90vh]">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8 bg-gray-50/50">
         
         {/* Basics */}
-        <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <section className="bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center gap-2 mb-4 text-gray-900 font-semibold">
             <Tag size={18} className="text-gray-400" /> Basics
           </div>
@@ -108,7 +108,7 @@ export default function ProductForm({ initial, onSubmit, onCancel, loading, subm
 
         {/* Pricing & Inventory */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <section className="bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
             <div className="flex items-center gap-2 mb-4 text-gray-900 font-semibold">
               <BarChart2 size={18} className="text-gray-400" /> Pricing
             </div>
@@ -127,7 +127,7 @@ export default function ProductForm({ initial, onSubmit, onCancel, loading, subm
             </div>
           </section>
 
-          <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <section className="bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
             <div className="flex items-center gap-2 mb-4 text-gray-900 font-semibold">
               <Package size={18} className="text-gray-400" /> Inventory
             </div>
@@ -148,7 +148,7 @@ export default function ProductForm({ initial, onSubmit, onCancel, loading, subm
         </div>
 
         {/* Variants */}
-        <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <section className="bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 text-gray-900 font-semibold">
               <Settings size={18} className="text-gray-400" /> Variants
@@ -197,7 +197,7 @@ export default function ProductForm({ initial, onSubmit, onCancel, loading, subm
         </section>
 
         {/* Media */}
-        <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <section className="bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center gap-2 mb-4 text-gray-900 font-semibold">
             <ImageIcon size={18} className="text-gray-400" /> Media
           </div>
@@ -254,7 +254,7 @@ export default function ProductForm({ initial, onSubmit, onCancel, loading, subm
 
         {/* SEO & Status */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <section className="bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
             <div className="flex items-center gap-2 mb-4 text-gray-900 font-semibold">
               <Tag size={18} className="text-gray-400" /> SEO & Tax (Optional)
             </div>
@@ -280,7 +280,7 @@ export default function ProductForm({ initial, onSubmit, onCancel, loading, subm
             </div>
           </section>
 
-          <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col">
+          <section className="bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col">
             <div className="flex items-center gap-2 mb-4 text-gray-900 font-semibold">
               <Settings size={18} className="text-gray-400" /> Status
             </div>
@@ -314,7 +314,7 @@ export default function ProductForm({ initial, onSubmit, onCancel, loading, subm
       </div>
 
       {/* Sticky Footer */}
-      <div className="bg-white border-t border-gray-200 p-4 px-6 flex items-center justify-end gap-3 shrink-0">
+      <div className="bg-white border-t border-gray-200 p-3 md:p-4 px-4 md:px-6 flex items-center justify-end gap-3 shrink-0">
         {onCancel && (
           <button type="button" onClick={onCancel} className="btn-secondary px-6">Cancel</button>
         )}

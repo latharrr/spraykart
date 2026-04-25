@@ -47,7 +47,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
               >
                 {/* Header */}
                 {title && (
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                  <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-gray-100">
                     <Dialog.Title className="text-lg font-semibold text-gray-900">
                       {title}
                     </Dialog.Title>
@@ -59,7 +59,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
                     </button>
                   </div>
                 )}
-                <div className="p-6">{children}</div>
+                <div className="p-4 md:p-6">{children}</div>
               </Dialog.Panel>
             </Transition.Child>
           </div>

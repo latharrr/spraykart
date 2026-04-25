@@ -154,7 +154,7 @@ export default function AdminProductsPage() {
 
       {/* Create modal */}
       <Modal isOpen={createOpen} onClose={() => setCreateOpen(false)} title="Add Product" size="xl">
-        <div className="bg-gray-50 -mx-6 -mb-6">
+        <div className="bg-gray-50 -mx-4 md:-mx-6 -mb-4 md:-mb-6">
           <ProductForm 
             onSubmit={handleCreate} 
             onCancel={() => setCreateOpen(false)}
@@ -167,7 +167,7 @@ export default function AdminProductsPage() {
       {/* Edit modal */}
       <Modal isOpen={!!editProduct} onClose={() => setEditProduct(null)} title="Edit Product" size="xl">
         {editProduct && (
-          <div className="bg-gray-50 -mx-6 -mb-6">
+          <div className="bg-gray-50 -mx-4 md:-mx-6 -mb-4 md:-mb-6">
             <ProductForm
               initial={editProduct}
               onSubmit={handleUpdate}

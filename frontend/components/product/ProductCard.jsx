@@ -4,6 +4,12 @@ import Image from 'next/image';
 import { Star } from 'lucide-react';
 import { memo, useState } from 'react';
 
+function optimizeCloudinaryUrl(url) {
+  if (!url || !url.includes('cloudinary.com')) return url;
+  // Insert optimization params into existing Cloudinary URL
+  return url.replace('/upload/', '/upload/f_auto,q_auto,w_600/');
+}
+
 // ─── Star row is pure — memoize to avoid 5 Star rerenders per card ─────────────
 const StarRow = memo(function StarRow({ avgRating, reviewCount }) {
   if (!avgRating || avgRating <= 0) return null;
@@ -43,7 +49,7 @@ function ProductCard({ product, priority = false }) {
           
           {product.image ? (
               <Image
-                src={product.image}
+                src={optimizeCloudinaryUrl(product.image)}
                 alt={product.name}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"

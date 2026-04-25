@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis';
+import Redis from 'ioredis';
 
 // ─── Tiny in-process LRU (max 100 keys, TTL-aware) for dev / no-Redis envs ────
 const lru = new Map(); // key → { value, expiresAt }
@@ -27,12 +27,10 @@ const LOCAL = {
 let redis = null;
 
 try {
-  if (process.env.UPSTASH_REDIS_URL && process.env.UPSTASH_REDIS_TOKEN) {
-    redis = new Redis({
-      url: process.env.UPSTASH_REDIS_URL,
-      token: process.env.UPSTASH_REDIS_TOKEN,
-    });
-  }
+  // Use native Redis connection URL for production
+  if (process.env.REDIS_URL) {
+    redis = new Redis(process.env.REDIS_URL);
+  } 
 } catch {
   redis = null;
 }
@@ -59,7 +57,8 @@ export const cache = {
     LOCAL.set(key, value, Math.min(ttlSeconds, 60)); // LRU holds ≤ 60s
     if (!redis) return;
     try {
-      await redis.set(key, JSON.stringify(value), { ex: ttlSeconds });
+      // ioredis syntax for expiration
+      await redis.set(key, JSON.stringify(value), 'EX', ttlSeconds);
     } catch { /* silent */ }
   },
 

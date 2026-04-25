@@ -3,7 +3,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://shopcore-backend.onrender.com",
     "NEXT_PUBLIC_SITE_URL": "https://your-store.vercel.app"
   },
   "headers": [

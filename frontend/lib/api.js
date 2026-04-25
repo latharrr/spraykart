@@ -93,5 +93,6 @@ export const adminUpdateCoupon = (id, data) => api.put(`/admin/coupons/${id}`, d
 export const adminDeleteCoupon = (id) => api.delete(`/admin/coupons/${id}`);
 
 export const adminGetAnalytics = (params) => api.get('/admin/analytics', { params });
+export const adminGetPerf = () => api.get('/perf');
 
 export default api;

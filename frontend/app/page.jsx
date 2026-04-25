@@ -5,8 +5,9 @@ import { ArrowRight, ShieldCheck, Truck, Gift, Star, Phone, BadgeCheck } from 'l
 import db from '@/lib/db';
 import cache from '@/lib/cache';
 
-// Revalidate page every 5 minutes — avoids full cold DB hit on every request
-export const revalidate = 300;
+// Keep homepage statically rendered and refresh periodically.
+export const dynamic = 'force-static';
+export const revalidate = 1800;
 
 async function getFeaturedProducts() {
   try {
@@ -14,21 +15,30 @@ async function getFeaturedProducts() {
     if (cached) return cached;
 
     const { rows } = await db.query(`
-      SELECT p.*,
-        img.url as image,
-        COALESCE(AVG(r.rating), 0)::NUMERIC(3,1) as avg_rating,
-        COUNT(DISTINCT r.id) as review_count
-      FROM products p
+      WITH featured AS (
+        SELECT *
+        FROM products
+        WHERE is_active = true AND is_featured = true
+        ORDER BY created_at DESC
+        LIMIT 8
+      )
+      SELECT featured.*,
+        img.url AS image,
+        COALESCE(AVG(r.rating), 0)::NUMERIC(3,1) AS avg_rating,
+        COUNT(r.id) AS review_count
+      FROM featured
       LEFT JOIN LATERAL (
-        SELECT url FROM product_images WHERE product_id=p.id AND is_primary=true LIMIT 1
+        SELECT url
+        FROM product_images
+        WHERE product_id = featured.id AND is_primary = true
+        LIMIT 1
       ) img ON true
-      LEFT JOIN reviews r ON r.product_id = p.id AND r.is_approved = true
-      WHERE p.is_active = true AND p.is_featured = true
-      GROUP BY p.id, img.url
-      ORDER BY p.created_at DESC LIMIT 8
+      LEFT JOIN reviews r ON r.product_id = featured.id AND r.is_approved = true
+      GROUP BY featured.id, img.url
+      ORDER BY featured.created_at DESC
     `);
 
-    await cache.set('products:featured:home', rows, 300);
+    await cache.set('products:featured:home', rows, 1800);
     return rows;
   } catch (err) {
     console.error('Failed to fetch featured products:', err);

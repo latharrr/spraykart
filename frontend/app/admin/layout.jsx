@@ -22,10 +22,10 @@ export default function AdminLayout({ children }) {
   if (!mounted || !user || user.role !== 'admin') return null;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
       <AdminSidebar />
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">{children}</div>
+      <main className="flex-1 overflow-auto w-full">
+        <div className="p-4 md:p-8">{children}</div>
       </main>
     </div>
   );

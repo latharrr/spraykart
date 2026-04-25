@@ -4,9 +4,10 @@ import { Pool } from 'pg';
 const globalForDb = globalThis;
 
 function createPool() {
+  const isLocal = process.env.DATABASE_URL?.includes('127.0.0.1') || process.env.DATABASE_URL?.includes('localhost');
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
+    ssl: isLocal ? false : { rejectUnauthorized: false },
 
     // ── Transaction mode pooler settings (port 6543) ─────────────────────────
     // min:0 — let the pooler manage persistent connections, not pg itself

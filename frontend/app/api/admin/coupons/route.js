@@ -6,11 +6,12 @@ import { z } from 'zod';
 const schema = z.object({
   code: z.string().min(3).max(50).toUpperCase().trim(),
   type: z.enum(['percentage', 'flat']),
-  value: z.coerce.number().positive(),
+  value: z.coerce.number().min(0),
   min_order: z.coerce.number().min(0).default(0),
   max_uses: z.coerce.number().int().min(1).default(100),
   expiry_date: z.string().datetime().optional().nullable(),
   is_active: z.boolean().default(true),
+  free_shipping: z.boolean().default(false),
   applicable_products: z.array(z.string().uuid()).default([]),
 });
 
@@ -45,11 +46,11 @@ export async function POST(request) {
     const result = schema.safeParse(body);
     if (!result.success) return NextResponse.json({ error: 'Validation failed', details: result.error.flatten().fieldErrors }, { status: 400 });
 
-    const { code, type, value, min_order, max_uses, expiry_date, is_active, applicable_products } = result.data;
+    const { code, type, value, min_order, max_uses, expiry_date, is_active, free_shipping, applicable_products } = result.data;
     const { rows } = await db.query(
-      `INSERT INTO coupons(code,type,value,min_order,max_uses,expiry_date,is_active,applicable_products)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-      [code, type, value, min_order, max_uses, expiry_date || null, is_active, applicable_products.length ? applicable_products : null]
+      `INSERT INTO coupons(code,type,value,min_order,max_uses,expiry_date,is_active,free_shipping,applicable_products)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      [code, type, value, min_order, max_uses, expiry_date || null, is_active, free_shipping, applicable_products.length ? applicable_products : null]
     );
     return NextResponse.json(rows[0], { status: 201 });
   } catch (err) {

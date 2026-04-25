@@ -57,7 +57,8 @@ export default function CheckoutPage() {
   // Compute subtotal directly from items — avoids any selector timing issues
   const subtotal = items.reduce((sum, i) => sum + parseFloat(i.price || 0) * (i.quantity || 1), 0);
   const total = Math.max(0, subtotal - (discount || 0));
-  const shipping = total >= 999 ? 0 : 49;
+  const hasFreeShippingCoupon = coupon?.free_shipping === true;
+  const shipping = (total >= 999 || hasFreeShippingCoupon) ? 0 : 49;
   const grandTotal = total + shipping;
 
   const [loading, setLoading] = useState(false);

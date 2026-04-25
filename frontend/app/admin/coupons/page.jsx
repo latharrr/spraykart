@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 
 const EMPTY_FORM = {
   code: '', type: 'percentage', value: '', min_order: '',
-  max_uses: '100', expiry_date: '', applicable_products: [],
+  max_uses: '100', expiry_date: '', applicable_products: [], free_shipping: false,
 };
 
 export default function AdminCouponsPage() {
@@ -47,6 +47,7 @@ export default function AdminCouponsPage() {
         max_uses: parseInt(form.max_uses || 100),
         expiry_date: form.expiry_date ? new Date(form.expiry_date).toISOString() : null,
         is_active: true,
+        free_shipping: form.free_shipping,
         applicable_products: form.applicable_products,
       });
       toast.success('Coupon created');
@@ -128,6 +129,7 @@ export default function AdminCouponsPage() {
                     <td className="table-td capitalize text-gray-500">{c.type}</td>
                     <td className="table-td font-medium">
                       {c.type === 'percentage' ? `${c.value}%` : `₹${parseFloat(c.value).toLocaleString('en-IN')}`}
+                      {c.free_shipping && <span className="block text-xs text-green-600 font-semibold mt-0.5">+ Free Shipping</span>}
                     </td>
                     <td className="table-td text-gray-500">
                       {parseFloat(c.min_order) > 0 ? `₹${parseFloat(c.min_order).toLocaleString('en-IN')}` : '—'}
@@ -198,6 +200,19 @@ export default function AdminCouponsPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Expiry date</label>
             <input type="date" className="input text-sm" value={form.expiry_date} onChange={(e) => set('expiry_date', e.target.value)} />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
+              <input 
+                type="checkbox" 
+                className="w-4 h-4 text-black rounded border-gray-300 focus:ring-black"
+                checked={form.free_shipping} 
+                onChange={(e) => set('free_shipping', e.target.checked)} 
+              />
+              <span className="text-sm font-medium text-gray-800">Include Free Shipping</span>
+            </label>
+            <p className="text-xs text-gray-500 mt-1 ml-1">If value is 0, this will act as a free-shipping-only coupon.</p>
           </div>
 
           {/* Product restriction */}

@@ -48,7 +48,7 @@ export async function POST(request) {
       applicable_total: parseFloat(applicableTotal.toFixed(2)),
       is_product_specific: isProductSpecific,
       applicable_product_ids: applicableProducts,
-      coupon: { code: coupon.code, type: coupon.type, value: coupon.value },
+      coupon: { code: coupon.code, type: coupon.type, value: coupon.value, free_shipping: coupon.free_shipping },
     });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });

@@ -154,8 +154,7 @@ export default async function HomePage() {
           {featuredProducts.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }} className="featured-grid">
               {featuredProducts.map((p, i) => (
-                // First 4 cards are above the fold — mark as priority for LCP
-                <ProductCard key={p.id} product={p} priority={i < 4} />
+                <ProductCard key={p.id} product={p} />
               ))}
             </div>
           ) : (

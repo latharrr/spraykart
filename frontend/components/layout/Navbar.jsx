@@ -148,30 +148,6 @@ function NavbarInner() {
             </Link>
 
             {mounted && user ? (
-              <div className="relative group" style={{ display: 'none' }}>
-                <button className="hidden lg:flex" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#737373', padding: '6px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                  <User size={14} />
-                  {user.name.split(' ')[0]}
-                </button>
-                <div style={{
-                  position: 'absolute', right: 0, top: '100%', marginTop: 4,
-                  width: 200, background: '#ffffff',
-                  border: '1px solid #e8e8e8', borderRadius: 2,
-                  boxShadow: '0 8px 32px rgba(0,0,0,.08)',
-                  padding: '4px 0',
-                  opacity: 0, pointerEvents: 'none',
-                }} className="group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-150">
-                  <Link href="/orders" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', fontSize: 12, color: '#3d3d3d', textDecoration: 'none' }}><Package size={12} /> My Orders</Link>
-                  <Link href="/account" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', fontSize: 12, color: '#3d3d3d', textDecoration: 'none' }}><User size={12} /> Account</Link>
-                  {user.role === 'admin' && (
-                    <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', fontSize: 12, fontWeight: 600, color: '#0c0c0c', textDecoration: 'none', borderTop: '1px solid #f0f0f0', marginTop: 4 }}><Shield size={12} /> Admin Panel</Link>
-                  )}
-                  <button onClick={logout} style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: 12, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', borderTop: '1px solid #f0f0f0', marginTop: 4, display: 'block' }}>Sign out</button>
-                </div>
-              </div>
-            ) : null}
-
-            {mounted && user ? (
               <div className="relative group hidden lg:block">
                 <button style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#737373', padding: '6px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
                   <User size={14} />
@@ -187,9 +163,8 @@ function NavbarInner() {
                 </div>
               </div>
             ) : (
-              <Link href="/login" className="hidden lg:block" style={{
+              <Link href="/login" className="hidden lg:inline-flex items-center" style={{
                 marginLeft: 8,
-                display: 'inline-flex', alignItems: 'center',
                 padding: '8px 20px',
                 fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
                 background: '#0c0c0c', color: '#ffffff',

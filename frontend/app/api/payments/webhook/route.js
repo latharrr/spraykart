@@ -71,6 +71,46 @@ export async function POST(request) {
     } catch (err) {
       console.error('Webhook processing error:', err);
     }
+  } else if (event.event === 'payment.failed') {
+    const payment = event.payload.payment.entity;
+    const { order_id: razorpay_order_id } = payment;
+
+    try {
+      const { rows } = await db.query(
+        `SELECT * FROM orders WHERE razorpay_order_id = $1 AND status = 'pending'`,
+        [razorpay_order_id]
+      );
+
+      if (rows.length) {
+        const order = rows[0];
+        const client = await db.pool.connect();
+        try {
+          await client.query('BEGIN');
+          await client.query("UPDATE orders SET status='cancelled' WHERE id=$1", [order.id]);
+
+          const itemsRes = await client.query('SELECT product_id, variant_id, quantity FROM order_items WHERE order_id=$1', [order.id]);
+          for (const item of itemsRes.rows) {
+            if (item.variant_id) {
+              await client.query('UPDATE variants SET stock = stock + $1 WHERE id=$2', [item.quantity, item.variant_id]);
+            } else {
+              await client.query('UPDATE products SET stock = stock + $1 WHERE id=$2', [item.quantity, item.product_id]);
+            }
+          }
+
+          if (order.coupon_code) {
+            await client.query('UPDATE coupons SET used_count = GREATEST(0, used_count - 1) WHERE code=$1', [order.coupon_code]);
+          }
+          await client.query('COMMIT');
+        } catch (err) {
+          await client.query('ROLLBACK');
+          console.error('Failed to restore stock on payment failure:', err);
+        } finally {
+          client.release();
+        }
+      }
+    } catch (err) {
+      console.error('Webhook processing error (payment.failed):', err);
+    }
   }
 
   return NextResponse.json({ received: true });

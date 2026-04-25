@@ -65,6 +65,7 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState({
     line1: '', line2: '', city: '', state: '', pincode: '', phone: '',
   });
+  const [paymentMethod, setPaymentMethod] = useState('online');
 
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
@@ -133,6 +134,19 @@ export default function CheckoutPage() {
     const idempotencyKey = uuidv4();
 
     try {
+      if (paymentMethod === 'cod') {
+        await createOrder({
+          items: items.map((i) => ({ product_id: i.id, variant_id: i.variant?.id || null, quantity: i.quantity })),
+          shipping_address: address,
+          coupon_code: coupon?.code,
+          idempotency_key: idempotencyKey,
+          payment_method: 'cod'
+        });
+        clearCart();
+        router.push('/order-confirmed');
+        return;
+      }
+
       const { data } = await createPayment({ amount: grandTotal });
 
       await createOrder({
@@ -145,6 +159,7 @@ export default function CheckoutPage() {
         coupon_code: coupon?.code,
         razorpay_order_id: data.order_id,
         idempotency_key: idempotencyKey,
+        payment_method: 'online'
       });
 
       const options = {
@@ -330,6 +345,20 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <h3 className="text-sm font-semibold mb-3">Payment Method</h3>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                  <input type="radio" name="payment" value="online" checked={paymentMethod === 'online'} onChange={() => setPaymentMethod('online')} className="w-4 h-4 text-black focus:ring-black" />
+                  <span className="text-sm font-medium">Pay Online (Razorpay)</span>
+                </label>
+                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                  <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="w-4 h-4 text-black focus:ring-black" />
+                  <span className="text-sm font-medium">Cash on Delivery (COD)</span>
+                </label>
+              </div>
+            </div>
+
             <button
               id="checkout-pay-btn"
               onClick={handlePayment}
@@ -338,12 +367,14 @@ export default function CheckoutPage() {
             >
               {loading
                 ? <><Spinner size="sm" /> Processing...</>
-                : `Pay ₹${grandTotal.toLocaleString('en-IN')}`}
+                : paymentMethod === 'cod' ? `Confirm Order (₹${grandTotal.toLocaleString('en-IN')})` : `Pay ₹${grandTotal.toLocaleString('en-IN')}`}
             </button>
 
-            <p className="text-xs text-center text-gray-400 flex items-center justify-center gap-1">
-              🔒 Secured by Razorpay
-            </p>
+            {paymentMethod === 'online' && (
+              <p className="text-xs text-center text-gray-400 flex items-center justify-center gap-1">
+                🔒 Secured by Razorpay
+              </p>
+            )}
           </div>
 
           {/* Back to cart */}

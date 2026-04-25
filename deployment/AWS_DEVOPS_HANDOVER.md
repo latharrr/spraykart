@@ -65,12 +65,34 @@ If the application throws a 500 error, PM2 captures all `console.error` outputs.
 
 ```bash
 # View live application logs
-pm2 logs spraykart --lines 50
+pm2 logs spraykart --lines 100
+```
 
+## 7. Database Backups & Restores
+A daily automated cron job runs at 3:00 AM, executing `deployment/db_backup.sh`. Backups are saved to `/home/ubuntu/backups/`.
+
+### How to Restore a Database Backup
+If you ever need to restore the database from a backup, use the following sequence carefully. This will OVERWRITE current data.
+
+```bash
+# 1. Locate the backup file you want to restore
+ls -lh /home/ubuntu/backups/
+
+# 2. Decompress the chosen backup file (e.g., spraykart_backup_2026-04-25.sql.gz)
+gunzip /home/ubuntu/backups/spraykart_backup_2026-04-25.sql.gz
+
+# 3. Drop existing connections and restore the database using psql
+# (This pipes the decompressed .sql file directly into the spraykart database)
+cat /home/ubuntu/backups/spraykart_backup_2026-04-25.sql | sudo -u postgres psql -d spraykart
+
+# 4. (Optional) Recompress the backup file to save space
+gzip /home/ubuntu/backups/spraykart_backup_2026-04-25.sql
+```
+### Viewing Nginx Logs
+```bash
 # View Nginx access/error logs (for 502 Bad Gateway errors)
 sudo tail -f /var/log/nginx/error.log
 ```
-
 ### Renewing SSL Certificates
 The SSL certificate was issued by Let's Encrypt via Certbot. It is configured to renew automatically. If manual renewal is ever required:
 ```bash

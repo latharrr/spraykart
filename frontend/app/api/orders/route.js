@@ -24,6 +24,7 @@ const schema = z.object({
   coupon_code: z.string().max(50).trim().optional(),
   razorpay_order_id: z.string().optional(),
   idempotency_key: z.string().optional(),
+  payment_method: z.enum(['online', 'cod']).default('online'),
 });
 
 export async function POST(request) {
@@ -36,7 +37,7 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Validation failed', details: result.error.flatten().fieldErrors }, { status: 400 });
   }
 
-  const { items, shipping_address, coupon_code, razorpay_order_id, idempotency_key } = result.data;
+  const { items, shipping_address, coupon_code, razorpay_order_id, idempotency_key, payment_method } = result.data;
 
   if (idempotency_key) {
     const { rows: existing } = await db.query(
@@ -84,10 +85,12 @@ export async function POST(request) {
     }
 
     const final_price = Math.max(0, total - discount);
+    const initialStatus = payment_method === 'cod' ? 'confirmed' : 'pending';
+    
     const { rows: orderRows } = await client.query(
-      `INSERT INTO orders(user_id,total_price,discount,final_price,status,razorpay_order_id,coupon_code,shipping_address,idempotency_key)
-       VALUES($1,$2,$3,$4,'pending',$5,$6,$7,$8) RETURNING *`,
-      [user.id, total, discount, final_price, razorpay_order_id || null, coupon_code || null, JSON.stringify(shipping_address), idempotency_key || null]
+      `INSERT INTO orders(user_id,total_price,discount,final_price,status,razorpay_order_id,coupon_code,shipping_address,idempotency_key,payment_method)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      [user.id, total, discount, final_price, initialStatus, razorpay_order_id || null, coupon_code || null, JSON.stringify(shipping_address), idempotency_key || null, payment_method]
     );
     const order = orderRows[0];
 

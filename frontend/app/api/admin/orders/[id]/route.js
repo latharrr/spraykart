@@ -63,6 +63,9 @@ export async function PUT(request, { params }) {
             await client.query('UPDATE products SET stock = stock + $1 WHERE id=$2', [item.quantity, item.product_id]);
           }
         }
+        if (order.coupon_code) {
+          await client.query('UPDATE coupons SET used_count = GREATEST(0, used_count - 1) WHERE code=$1', [order.coupon_code]);
+        }
       }
       await client.query('COMMIT');
     } catch (err) {

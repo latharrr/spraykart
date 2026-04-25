@@ -39,8 +39,11 @@ export async function GET(request) {
       cancelledCount++;
     }
 
+    // Cleanup expired password resets
+    const { rowCount: deletedTokens } = await client.query("DELETE FROM password_resets WHERE expires_at < NOW()");
+
     await client.query('COMMIT');
-    return NextResponse.json({ success: true, reconciled: cancelledCount });
+    return NextResponse.json({ success: true, reconciled: cancelledCount, deletedTokens });
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Failed to reconcile orders:', err);

@@ -20,3 +20,6 @@ CREATE INDEX IF NOT EXISTS idx_product_images_product_id ON product_images(produ
 
 -- 6. Variants lookups
 CREATE INDEX IF NOT EXISTS idx_variants_product_id ON variants(product_id);
+
+-- 7. Password resets lookups
+CREATE INDEX IF NOT EXISTS idx_password_resets_email_otp ON password_resets(email, otp, expires_at);

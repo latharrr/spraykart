@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS password_resets (
   email      VARCHAR(150) NOT NULL,
   otp        VARCHAR(6)   NOT NULL,
   expires_at TIMESTAMPTZ  NOT NULL,
+  attempts   INTEGER      DEFAULT 0,
   created_at TIMESTAMPTZ  DEFAULT NOW()
 );
 

@@ -21,3 +21,16 @@ This document tracks the completed tasks from the Production Readiness Checklist
 * **Security:** Implemented session invalidation (cookie clearing) upon successful password reset.
 * **Documentation:** Added detailed Database Restore instructions to `AWS_DEVOPS_HANDOVER.md`.
 * **Performance:** Sized PostgreSQL connection pool (`max: 5`) perfectly for the 1GB RAM instance and added index on `password_resets`.
+* **Admin UX:** Completely overhauled the Product Management UI, moving away from cramped modals to a full-featured `ProductForm` component with variant pricing, stock management, and Cloudinary image deletion sync.
+* **Pricing Integrity:** Fixed discrepancy between cart `subtotal` and checkout logic to correctly include variant price modifiers, resolving Razorpay webhook rejections.
+* **Security & Reliability:** Replaced hardcoded webhook IP allowlists with robust Razorpay Signature verification.
+* **Data Integrity:** Prevented deletion of products that have active order items by implementing a `409 Conflict` check.
+* **Data Integrity:** Fixed critical race conditions in product stock by implementing `FOR UPDATE` row-level locks for concurrent orders and cancellations, ensuring variant stock is correctly decremented and restored.
+* **Data Integrity:** Fortified order creation idempotency using database-level `ON CONFLICT DO NOTHING` to prevent duplicate coupon decrementing.
+* **Features:** Implemented a Refund Button in the Admin Orders UI directly integrating the Razorpay Refund API.
+* **Security:** Rate-limited OTP attempts on the Forgot Password flow and restricted Cash on Delivery (COD) to orders under ₹2,999.
+* **Features:** Added automatic Order Confirmation emails for COD orders.
+* **UX/UI Optimization:** Replaced harsh `window.location.href` navigation with `useRouter` for seamless SPA transitions, and fixed Wishlist "Add to Cart" logic to handle variant selection.
+* **Performance:** Optimized Admin Product List API to use a fetch-on-edit pattern, significantly speeding up the dashboard load time. Fixed React debouncing bug in Product Search by adopting `useRef`.
+* **SEO & Analytics:** Added `revalidate` timers to `sitemap.js` and added environment tags to Sentry configuration for accurate monitoring.
+* **Build System:** Fixed `serverExternalPackages` config in Next.js 14 and silenced `pg-cloudflare` warnings in webpack.

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useCallback, Fragment } from 'react';
-import { adminGetOrders, adminUpdateOrder } from '@/lib/api';
+import { adminGetOrders, adminUpdateOrder, adminRefundOrder } from '@/lib/api';
 import { useFetch } from '@/lib/hooks/useFetch';
 import { OrderStatusBadge } from '@/components/ui/Badge';
 import Spinner from '@/components/ui/Spinner';
@@ -34,6 +34,19 @@ export default function AdminOrdersPage() {
       refetch();
     } catch (err) {
       toast.error(err?.error || 'Failed to update order');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleRefund = async (orderId) => {
+    setUpdatingId(orderId);
+    try {
+      await adminRefundOrder(orderId);
+      toast.success('Refund processed successfully');
+      refetch();
+    } catch (err) {
+      toast.error(err?.error || 'Failed to process refund');
     } finally {
       setUpdatingId(null);
     }
@@ -146,6 +159,19 @@ export default function AdminOrdersPage() {
                                     <td colSpan={2} className="px-4 py-2.5 text-sm font-semibold text-gray-700">Total</td>
                                     <td className="px-4 py-2.5 text-right font-bold">₹{parseFloat(order.final_price).toLocaleString('en-IN')}</td>
                                   </tr>
+                                  {order.status === 'cancelled' && order.razorpay_payment_id && (
+                                    <tr>
+                                      <td colSpan={3} className="px-4 py-3 text-right border-t border-gray-100">
+                                        <button
+                                          onClick={() => handleRefund(order.id)}
+                                          disabled={updatingId === order.id}
+                                          className="text-sm px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
+                                        >
+                                          {updatingId === order.id ? <Spinner size="sm" /> : 'Issue Refund via Razorpay'}
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  )}
                                 </tfoot>
                               </table>
                             </div>

@@ -121,6 +121,8 @@ export default function CheckoutPage() {
     if (!address.line1 || !address.city || !address.state || !address.pincode || !address.phone) {
       return toast.error('Please fill in all required address fields');
     }
+    if (address.line1.length > 255) return toast.error('Address line 1 is too long (max 255 chars)');
+    if (address.line2 && address.line2.length > 255) return toast.error('Address line 2 is too long (max 255 chars)');
     if (!/^\d{6}$/.test(address.pincode)) return toast.error('Pincode must be 6 digits');
     if (!/^\d{10}$/.test(address.phone)) return toast.error('Phone must be 10 digits');
 

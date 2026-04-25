@@ -1,5 +1,7 @@
 import db from '@/lib/db';
 
+export const revalidate = 3600;
+
 export default async function sitemap() {
   const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://spraykart.vercel.app';
 

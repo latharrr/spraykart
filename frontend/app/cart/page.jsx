@@ -1,5 +1,5 @@
 'use client';
-import { useCartStore, useCartSubtotal, useCartTotal } from '@/lib/store';
+import { useCartStore, useCartSubtotal, useCartTotalAfterDiscount } from '@/lib/store';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag } from 'lucide-react';
@@ -7,7 +7,7 @@ import { Trash2, Plus, Minus, ArrowRight, ShoppingBag } from 'lucide-react';
 export default function CartPage() {
   const { items, removeItem, updateQuantity, discount, coupon, removeCoupon } = useCartStore();
   const subtotal = useCartSubtotal();
-  const total = useCartTotal();
+  const total = useCartTotalAfterDiscount();
   const shipping = subtotal >= 999 ? 0 : 49;
   const grandTotal = total + shipping;
 

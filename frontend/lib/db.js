@@ -27,14 +27,26 @@ function createPool() {
   return pool;
 }
 
-if (!globalForDb._pgPool) {
-  globalForDb._pgPool = createPool();
+let pool;
+
+function getPool() {
+  if (process.env.NODE_ENV === 'development') {
+    if (!globalForDb._pgPool) {
+      globalForDb._pgPool = createPool();
+    }
+    return globalForDb._pgPool;
+  }
+  
+  if (!pool) {
+    pool = createPool();
+  }
+  return pool;
 }
 
 export const db = {
-  query: (text, params) => globalForDb._pgPool.query(text, params),
-  connect: () => globalForDb._pgPool.connect(),
-  get pool() { return globalForDb._pgPool; },
+  query: (text, params) => getPool().query(text, params),
+  connect: () => getPool().connect(),
+  get pool() { return getPool(); },
 };
 
 export default db;

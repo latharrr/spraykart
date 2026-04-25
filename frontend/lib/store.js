@@ -67,7 +67,7 @@ export const useCartSubtotal = () =>
     return sum + itemPrice * i.quantity;
   }, 0));
 
-export const useCartTotal = () => {
+export const useCartTotalAfterDiscount = () => {
   const subtotal = useCartSubtotal();
   const discount = useCartStore((state) => state.discount);
   return Math.max(0, subtotal - discount);

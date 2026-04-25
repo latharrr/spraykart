@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useEffect, useState, useCallback, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getProducts } from '@/lib/api';
 import ProductCard from '@/components/product/ProductCard';
@@ -29,6 +29,7 @@ function ProductsContent() {
   const [error, setError] = useState(null);
   const [diagnostics, setDiagnostics] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const searchTimeout = useRef(null);
 
   const page = parseInt(searchParams.get('page') || '1');
   const category = searchParams.get('category') || '';
@@ -144,8 +145,8 @@ function ProductsContent() {
           placeholder="Search products..."
           defaultValue={search}
           onChange={(e) => {
-            clearTimeout(window._searchTimeout);
-            window._searchTimeout = setTimeout(() => updateParam('search', e.target.value), 400);
+            clearTimeout(searchTimeout.current);
+            searchTimeout.current = setTimeout(() => updateParam('search', e.target.value), 400);
           }}
         />
       </div>

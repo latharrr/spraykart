@@ -27,7 +27,7 @@ const StarRow = memo(function StarRow({ avgRating, reviewCount }) {
 
 function ProductCard({ product, priority = false }) {
   const discount = product.compare_price
-    ? Math.round(((product.compare_price - product.price) / product.compare_price) * 100)
+    ? Math.min(Math.round(((product.compare_price - product.price) / product.compare_price) * 100), 70)
     : 0;
 
   return (

@@ -24,6 +24,11 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', '@headlessui/react'],
   },
 
+  webpack: (config) => {
+    config.externals.push({ 'pg-cloudflare': 'pg-cloudflare' });
+    return config;
+  },
+
   // ─── HTTP caching headers ────────────────────────────────────────────────────
   async headers() {
     return [

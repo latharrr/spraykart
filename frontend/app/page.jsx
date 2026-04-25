@@ -23,18 +23,20 @@ async function getFeaturedProducts() {
         LIMIT 8
       )
       SELECT featured.*,
-        img.url AS image,
-        COALESCE(AVG(r.rating), 0)::NUMERIC(3,1) AS avg_rating,
-        COUNT(r.id) AS review_count
+        (
+          SELECT url FROM product_images
+          WHERE product_id = featured.id AND is_primary = true
+          LIMIT 1
+        ) AS image,
+        (
+          SELECT COALESCE(AVG(rating), 0)::NUMERIC(3,1) FROM reviews
+          WHERE product_id = featured.id AND is_approved = true
+        ) AS avg_rating,
+        (
+          SELECT COUNT(id) FROM reviews
+          WHERE product_id = featured.id AND is_approved = true
+        ) AS review_count
       FROM featured
-      LEFT JOIN LATERAL (
-        SELECT url
-        FROM product_images
-        WHERE product_id = featured.id AND is_primary = true
-        LIMIT 1
-      ) img ON true
-      LEFT JOIN reviews r ON r.product_id = featured.id AND r.is_approved = true
-      GROUP BY featured.id, img.url
       ORDER BY featured.created_at DESC
     `);
 

@@ -18,8 +18,8 @@ const nextConfig = {
   poweredByHeader: false,       // remove X-Powered-By leakage
 
   // ─── Bundle optimisation ─────────────────────────────────────────────────────
+  serverExternalPackages: ['pg', 'bcryptjs', 'jsonwebtoken'],
   experimental: {
-    serverComponentsExternalPackages: ['pg', 'bcryptjs', 'jsonwebtoken'],
     // Tree-shake these large packages — only bundle the icons/components used
     optimizePackageImports: ['lucide-react', '@headlessui/react'],
   },

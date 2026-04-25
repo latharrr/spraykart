@@ -15,7 +15,10 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.password.length < 6) return toast.error('Password must be at least 6 characters');
+    if (form.password.length < 8) return toast.error('Password must be at least 8 characters');
+    if (!/[A-Z]/.test(form.password)) return toast.error('Password must contain at least one uppercase letter');
+    if (!/[0-9]/.test(form.password)) return toast.error('Password must contain at least one number');
+    if (!/[^A-Za-z0-9]/.test(form.password)) return toast.error('Password must contain at least one special character');
     setLoading(true);
     try {
       const { data } = await register(form);
@@ -82,7 +85,7 @@ export default function RegisterPage() {
             {[
               { id: 'reg-name', label: 'Full name', type: 'text', placeholder: 'Jane Doe', key: 'name', autoComplete: 'name' },
               { id: 'reg-email', label: 'Email address', type: 'email', placeholder: 'you@example.com', key: 'email', autoComplete: 'email' },
-              { id: 'reg-password', label: 'Password', type: 'password', placeholder: 'At least 6 characters', key: 'password', autoComplete: 'new-password' },
+              { id: 'reg-password', label: 'Password', type: 'password', placeholder: 'At least 8 characters', key: 'password', autoComplete: 'new-password' },
             ].map(({ id, label, type, placeholder, key, autoComplete }) => (
               <div key={key}>
                 <label htmlFor={id} style={{ display: 'block', fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#737373', marginBottom: 8 }}>
@@ -96,7 +99,7 @@ export default function RegisterPage() {
                   value={form[key]}
                   onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                   required
-                  minLength={key === 'password' ? 6 : undefined}
+                  minLength={key === 'password' ? 8 : undefined}
                   autoComplete={autoComplete}
                 />
               </div>

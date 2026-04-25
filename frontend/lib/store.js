@@ -15,10 +15,12 @@ export const useCartStore = create(
             (i) => i.id === product.id && i.variant?.id === variant?.id
           );
           if (existing) {
+            const maxStock = variant ? variant.stock : product.stock;
+            const limit = typeof maxStock === 'number' ? maxStock : 999;
             return {
               items: state.items.map((i) =>
                 i.id === product.id && i.variant?.id === variant?.id
-                  ? { ...i, quantity: i.quantity + quantity }
+                  ? { ...i, quantity: Math.min(i.quantity + quantity, limit) }
                   : i
               ),
             };
@@ -37,7 +39,14 @@ export const useCartStore = create(
         set((state) => ({
           items: quantity <= 0
             ? state.items.filter((i) => i.cartKey !== cartKey)
-            : state.items.map((i) => (i.cartKey === cartKey ? { ...i, quantity } : i)),
+            : state.items.map((i) => {
+                if (i.cartKey === cartKey) {
+                  const maxStock = i.variant ? i.variant.stock : i.stock;
+                  const limit = typeof maxStock === 'number' ? maxStock : 999;
+                  return { ...i, quantity: Math.min(quantity, limit) };
+                }
+                return i;
+              }),
         })),
 
       clearCart: () => set({ items: [], coupon: null, discount: 0 }),

@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ShoppingCart, Zap, Star, Heart } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCartStore, useAuthStore, useWishlistStore, useIsWishlisted } from '@/lib/store';
@@ -11,6 +12,7 @@ export default function ProductInfo({ product }) {
   const { user } = useAuthStore();
   const { toggle: toggleWishlist } = useWishlistStore();
   const wishlisted = useIsWishlisted(product.id);
+  const router = useRouter();
 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -170,7 +172,7 @@ export default function ProductInfo({ product }) {
           {added ? 'Added!' : 'Add to cart'}
         </button>
         <button
-          onClick={() => { handleAddToCart(); window.location.href = '/checkout'; }}
+          onClick={() => { handleAddToCart(); router.push('/checkout'); }}
           disabled={!inStock}
           className="btn-secondary flex-1 py-3.5 gap-2"
         >

@@ -134,22 +134,35 @@ export default function WishlistPage() {
                     </span>
                   )}
                 </div>
-                <button
-                  onClick={() => handleAddToCart(product)}
-                  disabled={addedIds[product.id] || product.stock === 0}
-                  style={{
-                    width: '100%', padding: '10px 0',
-                    background: addedIds[product.id] ? '#4ade80' : '#0c0c0c',
-                    color: '#fff', border: 'none', cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
-                    fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    transition: 'background 0.2s',
-                    opacity: product.stock === 0 ? 0.5 : 1,
-                  }}
-                >
-                  <ShoppingCart size={12} />
-                  {product.stock === 0 ? 'Out of Stock' : addedIds[product.id] ? 'Added!' : 'Add to Cart'}
-                </button>
+                {product.variants?.length > 0 ? (
+                  <Link href={`/products/${product.slug}`} style={{ textDecoration: 'none' }}>
+                    <button style={{
+                      width: '100%', padding: '10px 0',
+                      background: '#0c0c0c', color: '#fff', border: 'none', cursor: 'pointer',
+                      fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    }}>
+                      Select Options
+                    </button>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => handleAddToCart(product)}
+                    disabled={addedIds[product.id] || product.stock === 0}
+                    style={{
+                      width: '100%', padding: '10px 0',
+                      background: addedIds[product.id] ? '#4ade80' : '#0c0c0c',
+                      color: '#fff', border: 'none', cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
+                      fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      transition: 'background 0.2s',
+                      opacity: product.stock === 0 ? 0.5 : 1,
+                    }}
+                  >
+                    <ShoppingCart size={12} />
+                    {product.stock === 0 ? 'Out of Stock' : addedIds[product.id] ? 'Added!' : 'Add to Cart'}
+                  </button>
+                )}
               </div>
             </div>
           ))}

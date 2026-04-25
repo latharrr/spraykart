@@ -14,6 +14,26 @@ async function requireAdmin(request) {
   return { user };
 }
 
+export async function GET(request, { params }) {
+  const { error } = await requireAdmin(request);
+  if (error) return error;
+
+  try {
+    const { rows } = await db.query('SELECT * FROM products WHERE id=$1', [params.id]);
+    if (!rows.length) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    const product = rows[0];
+
+    const [images, variants] = await Promise.all([
+      db.query('SELECT * FROM product_images WHERE product_id=$1 ORDER BY sort_order', [product.id]),
+      db.query('SELECT * FROM variants WHERE product_id=$1', [product.id])
+    ]);
+
+    return NextResponse.json({ ...product, images: images.rows, variants: variants.rows });
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
 export async function PUT(request, { params }) {
   const { error } = await requireAdmin(request);
   if (error) return error;
@@ -115,6 +135,11 @@ export async function DELETE(request, { params }) {
   try {
     const { rows: product } = await db.query('SELECT slug FROM products WHERE id=$1', [params.id]);
     if (!product.length) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+
+    const { rows: orderCheck } = await db.query('SELECT 1 FROM order_items WHERE product_id=$1 LIMIT 1', [params.id]);
+    if (orderCheck.length) {
+      return NextResponse.json({ error: 'Cannot delete product with existing orders. Deactivate it instead.' }, { status: 409 });
+    }
 
     const { rows: images } = await db.query('SELECT public_id FROM product_images WHERE product_id=$1', [params.id]);
     await Promise.allSettled(images.filter(img => img.public_id).map(img => deleteImage(img.public_id)));

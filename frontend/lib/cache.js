@@ -90,7 +90,11 @@ export const cache = {
   },
 
   expire: async (key, ttlSeconds) => {
-    if (!redis) return;
+    if (!redis) {
+      const current = LOCAL.get(key);
+      if (current !== null) LOCAL.set(key, current, ttlSeconds);
+      return;
+    }
     try {
       await redis.expire(key, ttlSeconds);
     } catch { /* silent */ }

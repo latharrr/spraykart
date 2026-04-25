@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { getAuthUser, unauthorized } from '@/lib/auth';
 
-const getRazorpay = () => new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'dummy_key',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_secret',
-});
+const getRazorpay = () => {
+  const key_id = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!key_id || !key_secret) throw new Error('Razorpay keys are not configured');
+  return new Razorpay({ key_id, key_secret });
+};
 
 export async function POST(request) {
   const user = await getAuthUser(request);

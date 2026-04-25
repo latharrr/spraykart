@@ -55,7 +55,12 @@ export default function CheckoutPage() {
   const { user } = useAuthStore();
 
   // Compute subtotal directly from items — avoids any selector timing issues
-  const subtotal = items.reduce((sum, i) => sum + parseFloat(i.price || 0) * (i.quantity || 1), 0);
+  const subtotal = items.reduce((sum, i) => {
+    const price = i.variant
+      ? parseFloat(i.price) + parseFloat(i.variant.price_modifier || 0)
+      : parseFloat(i.price);
+    return sum + price * (i.quantity || 1);
+  }, 0);
   const total = Math.max(0, subtotal - (discount || 0));
   const hasFreeShippingCoupon = coupon?.free_shipping === true;
   const shipping = (total >= 999 || hasFreeShippingCoupon) ? 0 : 49;
@@ -303,7 +308,9 @@ export default function CheckoutPage() {
           <div className="card p-6 space-y-4">
 
             {/* Items */}
-            {items.map((item) => (
+            {items.map((item) => {
+              const itemPrice = item.variant ? parseFloat(item.price) + parseFloat(item.variant.price_modifier || 0) : parseFloat(item.price);
+              return (
               <div key={item.cartKey} className="flex items-start justify-between text-sm gap-3">
                 <span className="text-gray-700 flex-1 min-w-0">
                   <span className="font-medium">{item.name}</span>
@@ -311,10 +318,10 @@ export default function CheckoutPage() {
                   <span className="text-gray-400"> ×{item.quantity}</span>
                 </span>
                 <span className="font-semibold shrink-0 text-gray-900">
-                  ₹{(parseFloat(item.price) * item.quantity).toLocaleString('en-IN')}
+                  ₹{(itemPrice * item.quantity).toLocaleString('en-IN')}
                 </span>
               </div>
-            ))}
+            )})}
 
             {/* Totals */}
             <div className="border-t border-gray-100 pt-4 space-y-2.5">

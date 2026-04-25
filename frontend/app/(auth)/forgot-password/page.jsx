@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import Spinner from '@/components/ui/Spinner';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '@/lib/store';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -32,10 +33,14 @@ export default function ForgotPasswordPage() {
   const handleReset = async (e) => {
     e.preventDefault();
     if (password !== confirm) return toast.error('Passwords do not match');
-    if (password.length < 6) return toast.error('Password must be at least 6 characters');
+    if (password.length < 8) return toast.error('Password must be at least 8 characters');
+    if (!/[A-Z]/.test(password)) return toast.error('Password must contain at least one uppercase letter');
+    if (!/[0-9]/.test(password)) return toast.error('Password must contain at least one number');
+    if (!/[^A-Za-z0-9]/.test(password)) return toast.error('Password must contain at least one special character');
     setLoading(true);
     try {
       await api.post('/auth/reset-password', { email, otp, password });
+      useAuthStore.getState().setUser(null);
       toast.success('Password reset! Please log in.');
       router.push('/login');
     } catch (err) {
@@ -124,7 +129,7 @@ export default function ForgotPasswordPage() {
                 id="reset-password"
                 type="password"
                 className="input"
-                placeholder="At least 6 characters"
+                placeholder="At least 8 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

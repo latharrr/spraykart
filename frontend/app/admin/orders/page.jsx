@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, Fragment } from 'react';
 import { adminGetOrders, adminUpdateOrder } from '@/lib/api';
 import { useFetch } from '@/lib/hooks/useFetch';
 import { OrderStatusBadge } from '@/components/ui/Badge';
@@ -84,8 +84,8 @@ export default function AdminOrdersPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {orders.map((order) => (
-                    <>
-                      <tr key={order.id} className="hover:bg-gray-50 transition">
+                    <Fragment key={order.id}>
+                      <tr className="hover:bg-gray-50 transition">
                         <td className="table-td w-8">
                           <button
                             onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
@@ -157,7 +157,7 @@ export default function AdminOrdersPage() {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </Fragment>
                   ))}
                 </tbody>
               </table>

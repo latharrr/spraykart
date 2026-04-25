@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
-import { adminGetProducts, adminDeleteProduct, adminCreateProduct, adminUpdateProduct } from '@/lib/api';
+import { adminGetProducts, adminGetProduct, adminDeleteProduct, adminCreateProduct, adminUpdateProduct } from '@/lib/api';
 import { useFetch } from '@/lib/hooks/useFetch';
 import Modal from '@/components/ui/Modal';
 import Badge from '@/components/ui/Badge';
@@ -60,6 +60,15 @@ export default function AdminProductsPage() {
       toast.error(err?.error || 'Failed to delete product');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleEditClick = async (p) => {
+    try {
+      const { data } = await adminGetProduct(p.id);
+      setEditProduct(data);
+    } catch (err) {
+      toast.error('Failed to load product details');
     }
   };
 
@@ -136,7 +145,7 @@ export default function AdminProductsPage() {
                     <td className="table-td text-gray-500">{p.units_sold || 0} sold</td>
                     <td className="table-td">
                       <div className="flex items-center gap-1">
-                        <button onClick={() => setEditProduct(p)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 hover:text-black transition">
+                        <button onClick={() => handleEditClick(p)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 hover:text-black transition">
                           <Pencil size={14} />
                         </button>
                         <button onClick={() => setDeleteTarget(p)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition">

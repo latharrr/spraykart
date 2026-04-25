@@ -71,6 +71,7 @@ export const submitReview = (data) => api.post('/reviews', data);
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
 export const adminGetProducts = () => api.get('/admin/products');
+export const adminGetProduct = (id) => api.get(`/admin/products/${id}`);
 export const adminCreateProduct = (data) => api.post('/admin/products', data);
 export const adminUpdateProduct = (id, data) => api.put(`/admin/products/${id}`, data);
 export const adminDeleteProduct = (id) => api.delete(`/admin/products/${id}`);

@@ -11,107 +11,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import { Plus, Pencil, Trash2, ImageOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const EMPTY_FORM = {
-  name: '', description: '', price: '', compare_price: '',
-  stock: '', category: '', is_featured: 'false', meta_title: '', meta_description: '', variantsStr: ''
-};
-
-function ProductForm({ initial = EMPTY_FORM, onSubmit, loading, submitLabel }) {
-  const [form, setForm] = useState(initial);
-  const [files, setFiles] = useState([]);
-
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const fd = new FormData();
-    Object.entries(form).forEach(([k, v]) => {
-      if (k === 'variantsStr' && v.trim()) {
-        const sizes = v.split(',').map(s => s.trim()).filter(s => s);
-        const variantsArr = sizes.map(sizeStr => {
-          const [size, priceStr] = sizeStr.split(':').map(s => s.trim());
-          const price = priceStr ? parseFloat(priceStr) : null;
-          return { type: 'Size', value: size, price, stock: parseInt(form.stock) || 0 };
-        });
-        fd.append('variants', JSON.stringify(variantsArr));
-      } else if (v !== '' && k !== 'variantsStr') {
-        fd.append(k, v);
-      }
-    });
-    files.forEach((f) => fd.append('images', f));
-    onSubmit(fd);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Product name *</label>
-          <input className="input text-sm" value={form.name} onChange={(e) => set('name', e.target.value)} required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹) *</label>
-          <input type="number" step="0.01" min="0" className="input text-sm" value={form.price} onChange={(e) => set('price', e.target.value)} required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Compare price (₹)</label>
-          <input type="number" step="0.01" min="0" className="input text-sm" value={form.compare_price} onChange={(e) => set('compare_price', e.target.value)} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Stock *</label>
-          <input type="number" min="0" className="input text-sm" value={form.stock} onChange={(e) => set('stock', e.target.value)} required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-          <select className="input text-sm" value={form.category} onChange={(e) => set('category', e.target.value)}>
-            <option value="">Select category</option>
-            {['Men', 'Women', 'Unisex', 'Attar', 'Gift Sets', 'Niche', 'Limited Edition'].map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Variants (comma separated sizes)</label>
-          <input className="input text-sm" placeholder="e.g. 25ml:999, 50ml:1499" value={form.variantsStr} onChange={(e) => set('variantsStr', e.target.value)} />
-        </div>
-        <div className="col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea className="input text-sm resize-none" rows={3} value={form.description} onChange={(e) => set('description', e.target.value)} />
-        </div>
-        <label className="col-span-2 flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" checked={form.is_featured === 'true'} onChange={(e) => set('is_featured', e.target.checked ? 'true' : 'false')} className="w-4 h-4 rounded" />
-          <span className="text-sm font-medium text-gray-700">Featured product</span>
-        </label>
-        <div className="col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Images</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            className="text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer"
-            onChange={(e) => setFiles([...files, ...Array.from(e.target.files)])}
-          />
-          {files.length > 0 && (
-            <div className="mt-2 flex flex-col gap-1">
-              <div className="text-xs font-medium text-gray-500 mb-1">{files.length} file(s) selected (New uploads will be added to the product):</div>
-              <div className="flex flex-wrap gap-2">
-                {files.map((f, i) => (
-                  <div key={i} className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded border border-gray-200">
-                    <span className="text-xs text-gray-700 max-w-[120px] truncate">{f.name}</span>
-                    <button type="button" onClick={() => setFiles(files.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500">×</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      <button type="submit" disabled={loading} className="btn-primary w-full py-3">
-        {loading ? <Spinner size="sm" /> : submitLabel}
-      </button>
-    </form>
-  );
-}
+import ProductForm from '@/components/admin/ProductForm';
 
 export default function AdminProductsPage() {
   const { data: products, loading, error, refetch } = useFetch(adminGetProducts);
@@ -253,19 +153,29 @@ export default function AdminProductsPage() {
       )}
 
       {/* Create modal */}
-      <Modal isOpen={createOpen} onClose={() => setCreateOpen(false)} title="Add Product" size="lg">
-        <ProductForm onSubmit={handleCreate} loading={formLoading} submitLabel="Create Product" />
+      <Modal isOpen={createOpen} onClose={() => setCreateOpen(false)} title="Add Product" size="xl">
+        <div className="bg-gray-50 -mx-6 -mb-6">
+          <ProductForm 
+            onSubmit={handleCreate} 
+            onCancel={() => setCreateOpen(false)}
+            loading={formLoading} 
+            submitLabel="Create Product" 
+          />
+        </div>
       </Modal>
 
       {/* Edit modal */}
-      <Modal isOpen={!!editProduct} onClose={() => setEditProduct(null)} title="Edit Product" size="lg">
+      <Modal isOpen={!!editProduct} onClose={() => setEditProduct(null)} title="Edit Product" size="xl">
         {editProduct && (
-          <ProductForm
-            initial={{ name: editProduct.name, description: editProduct.description || '', price: editProduct.price, compare_price: editProduct.compare_price || '', stock: editProduct.stock, category: editProduct.category || '', is_featured: editProduct.is_featured ? 'true' : 'false', meta_title: editProduct.meta_title || '', meta_description: editProduct.meta_description || '', variantsStr: '' }}
-            onSubmit={handleUpdate}
-            loading={formLoading}
-            submitLabel="Save Changes"
-          />
+          <div className="bg-gray-50 -mx-6 -mb-6">
+            <ProductForm
+              initial={editProduct}
+              onSubmit={handleUpdate}
+              onCancel={() => setEditProduct(null)}
+              loading={formLoading}
+              submitLabel="Save Changes"
+            />
+          </div>
         )}
       </Modal>
 

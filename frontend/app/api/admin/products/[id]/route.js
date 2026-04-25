@@ -81,6 +81,23 @@ export async function PUT(request, { params }) {
           const modifier = v.price !== null ? v.price - basePrice : 0;
           await db.query('INSERT INTO variants(product_id,type,value,price_modifier,stock) VALUES($1,$2,$3,$4,$5)', [params.id, v.type, v.value, modifier, v.stock || 0]);
         }
+      } else {
+        await db.query('DELETE FROM variants WHERE product_id=$1', [params.id]);
+      }
+    }
+
+    const deletedImagesRaw = formData.get('deleted_images');
+    if (deletedImagesRaw) {
+      const deletedImages = (() => { try { return JSON.parse(deletedImagesRaw); } catch { return []; } })();
+      if (deletedImages.length > 0) {
+        await Promise.allSettled(deletedImages.map(publicId => deleteImage(publicId)));
+        const placeholders = deletedImages.map((_, i) => `$${i + 2}`).join(',');
+        await db.query(`DELETE FROM product_images WHERE product_id=$1 AND public_id IN (${placeholders})`, [params.id, ...deletedImages]);
+        
+        const { rows: rem } = await db.query('SELECT id FROM product_images WHERE product_id=$1 AND is_primary=true', [params.id]);
+        if (rem.length === 0) {
+          await db.query('UPDATE product_images SET is_primary=true WHERE id IN (SELECT id FROM product_images WHERE product_id=$1 ORDER BY sort_order ASC LIMIT 1)', [params.id]);
+        }
       }
     }
 

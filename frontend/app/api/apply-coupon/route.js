@@ -2,11 +2,21 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser, unauthorized } from '@/lib/auth';
 
+import cache from '@/lib/cache';
+
 export async function POST(request) {
   const user = await getAuthUser(request);
   if (!user) return unauthorized();
 
   try {
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    if (ip !== 'unknown') {
+      const rlKey = `rl:coupon:${ip}`;
+      const attempts = await cache.incr(rlKey);
+      if (attempts === 1) await cache.expire(rlKey, 3600); // 1 hour
+      if (attempts > 10) return NextResponse.json({ error: 'Too many coupon attempts. Please try again later.' }, { status: 429 });
+    }
+
     const { code, cart_total, cart_items = [] } = await request.json();
     if (!code) return NextResponse.json({ error: 'Coupon code is required' }, { status: 400 });
     if (!cart_total || cart_total <= 0) return NextResponse.json({ error: 'Invalid cart total' }, { status: 400 });

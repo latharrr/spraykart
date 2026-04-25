@@ -6,7 +6,15 @@ import { email } from '@/lib/email';
 // Must receive raw body - configure in next.config.js
 export const dynamic = 'force-dynamic';
 
+const ALLOWED_IPS = ['14.97.75.20', '14.97.75.21', '14.97.75.22', '14.97.75.23', '127.0.0.1']; // localhost for testing
+
 export async function POST(request) {
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  const cleanIp = ip.split(',')[0].trim();
+  if (cleanIp !== 'unknown' && !ALLOWED_IPS.includes(cleanIp) && process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Unauthorized IP' }, { status: 403 });
+  }
+
   const signature = request.headers.get('x-razorpay-signature');
   if (!signature) return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
 

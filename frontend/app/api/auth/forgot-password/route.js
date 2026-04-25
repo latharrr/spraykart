@@ -2,8 +2,18 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { email as emailService } from '@/lib/email';
 
+import cache from '@/lib/cache';
+
 export async function POST(request) {
   try {
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    if (ip !== 'unknown') {
+      const rlKey = `rl:forgotpw:${ip}`;
+      const attempts = await cache.incr(rlKey);
+      if (attempts === 1) await cache.expire(rlKey, 3600); // 1 hour
+      if (attempts > 3) return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
+    }
+
     const { email } = await request.json();
     if (!email) return NextResponse.json({ error: 'Email is required' }, { status: 400 });
 

@@ -55,22 +55,20 @@ export async function GET(request) {
           LIMIT $${i++} OFFSET $${i++}
         )
         SELECT paged_products.*,
-          img.url AS image,
-          COALESCE(AVG(r.rating), 0)::NUMERIC(3,1) AS avg_rating,
-          COUNT(r.id) AS review_count
+          (
+            SELECT url FROM product_images 
+            WHERE product_id = paged_products.id AND is_primary = true 
+            LIMIT 1
+          ) AS image,
+          (
+            SELECT COALESCE(AVG(rating), 0)::NUMERIC(3,1) FROM reviews 
+            WHERE product_id = paged_products.id AND is_approved = true
+          ) AS avg_rating,
+          (
+            SELECT COUNT(id) FROM reviews 
+            WHERE product_id = paged_products.id AND is_approved = true
+          ) AS review_count
         FROM paged_products
-        LEFT JOIN LATERAL (
-          SELECT url
-          FROM product_images
-          WHERE product_id = paged_products.id AND is_primary = true
-          LIMIT 1
-        ) img ON true
-        LEFT JOIN reviews r ON r.product_id = paged_products.id AND r.is_approved = true
-        GROUP BY 
-          paged_products.id, paged_products.name, paged_products.slug, paged_products.description, 
-          paged_products.price, paged_products.compare_price, paged_products.stock, paged_products.category, 
-          paged_products.is_featured, paged_products.is_active, paged_products.meta_title, 
-          paged_products.meta_description, paged_products.created_at, img.url
         ORDER BY paged_products.${sortField} ${sortOrder}
       `, params),
       db.query(`SELECT COUNT(*) FROM products p WHERE ${where}`, countParams),

@@ -66,7 +66,11 @@ export async function GET(request) {
           LIMIT 1
         ) img ON true
         LEFT JOIN reviews r ON r.product_id = paged_products.id AND r.is_approved = true
-        GROUP BY paged_products.id, img.url
+        GROUP BY 
+          paged_products.id, paged_products.name, paged_products.slug, paged_products.description, 
+          paged_products.price, paged_products.compare_price, paged_products.stock, paged_products.category, 
+          paged_products.is_featured, paged_products.is_active, paged_products.meta_title, 
+          paged_products.meta_description, paged_products.created_at, img.url
         ORDER BY paged_products.${sortField} ${sortOrder}
       `, params),
       db.query(`SELECT COUNT(*) FROM products p WHERE ${where}`, countParams),

@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 
 const EMPTY_FORM = {
   name: '', description: '', price: '', compare_price: '',
-  stock: '', category: '', is_featured: 'false', meta_title: '', meta_description: '',
+  stock: '', category: '', is_featured: 'false', meta_title: '', meta_description: '', variantsStr: ''
 };
 
 function ProductForm({ initial = EMPTY_FORM, onSubmit, loading, submitLabel }) {
@@ -25,7 +25,15 @@ function ProductForm({ initial = EMPTY_FORM, onSubmit, loading, submitLabel }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     const fd = new FormData();
-    Object.entries(form).forEach(([k, v]) => v !== '' && fd.append(k, v));
+    Object.entries(form).forEach(([k, v]) => {
+      if (k === 'variantsStr' && v.trim()) {
+        const sizes = v.split(',').map(s => s.trim()).filter(s => s);
+        const variantsArr = sizes.map(size => ({ type: 'Size', value: size, stock: parseInt(form.stock) || 0 }));
+        fd.append('variants', JSON.stringify(variantsArr));
+      } else if (v !== '' && k !== 'variantsStr') {
+        fd.append(k, v);
+      }
+    });
     files.forEach((f) => fd.append('images', f));
     onSubmit(fd);
   };
@@ -58,14 +66,18 @@ function ProductForm({ initial = EMPTY_FORM, onSubmit, loading, submitLabel }) {
             ))}
           </select>
         </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Variants (comma separated sizes)</label>
+          <input className="input text-sm" placeholder="e.g. 25ml, 50ml, 100ml" value={form.variantsStr} onChange={(e) => set('variantsStr', e.target.value)} />
+        </div>
         <div className="col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
           <textarea className="input text-sm resize-none" rows={3} value={form.description} onChange={(e) => set('description', e.target.value)} />
         </div>
-        <div className="col-span-2 flex items-center gap-3">
-          <input type="checkbox" id="is_featured" checked={form.is_featured === 'true'} onChange={(e) => set('is_featured', e.target.checked ? 'true' : 'false')} className="w-4 h-4 rounded" />
-          <label htmlFor="is_featured" className="text-sm font-medium text-gray-700">Featured product</label>
-        </div>
+        <label className="col-span-2 flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" checked={form.is_featured === 'true'} onChange={(e) => set('is_featured', e.target.checked ? 'true' : 'false')} className="w-4 h-4 rounded" />
+          <span className="text-sm font-medium text-gray-700">Featured product</span>
+        </label>
         <div className="col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">Images</label>
           <input
@@ -73,9 +85,21 @@ function ProductForm({ initial = EMPTY_FORM, onSubmit, loading, submitLabel }) {
             accept="image/*"
             multiple
             className="text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer"
-            onChange={(e) => setFiles(Array.from(e.target.files))}
+            onChange={(e) => setFiles([...files, ...Array.from(e.target.files)])}
           />
-          {files.length > 0 && <p className="text-xs text-gray-400 mt-1">{files.length} file(s) selected</p>}
+          {files.length > 0 && (
+            <div className="mt-2 flex flex-col gap-1">
+              <div className="text-xs font-medium text-gray-500 mb-1">{files.length} file(s) selected (New uploads will be added to the product):</div>
+              <div className="flex flex-wrap gap-2">
+                {files.map((f, i) => (
+                  <div key={i} className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded border border-gray-200">
+                    <span className="text-xs text-gray-700 max-w-[120px] truncate">{f.name}</span>
+                    <button type="button" onClick={() => setFiles(files.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500">×</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <button type="submit" disabled={loading} className="btn-primary w-full py-3">
@@ -233,7 +257,7 @@ export default function AdminProductsPage() {
       <Modal isOpen={!!editProduct} onClose={() => setEditProduct(null)} title="Edit Product" size="lg">
         {editProduct && (
           <ProductForm
-            initial={{ name: editProduct.name, description: editProduct.description || '', price: editProduct.price, compare_price: editProduct.compare_price || '', stock: editProduct.stock, category: editProduct.category || '', is_featured: editProduct.is_featured ? 'true' : 'false', meta_title: editProduct.meta_title || '', meta_description: editProduct.meta_description || '' }}
+            initial={{ name: editProduct.name, description: editProduct.description || '', price: editProduct.price, compare_price: editProduct.compare_price || '', stock: editProduct.stock, category: editProduct.category || '', is_featured: editProduct.is_featured ? 'true' : 'false', meta_title: editProduct.meta_title || '', meta_description: editProduct.meta_description || '', variantsStr: '' }}
             onSubmit={handleUpdate}
             loading={formLoading}
             submitLabel="Save Changes"

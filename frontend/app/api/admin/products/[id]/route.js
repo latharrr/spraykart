@@ -71,6 +71,17 @@ export async function PUT(request, { params }) {
       }
     }
 
+    const variantsRaw = formData.get('variants');
+    if (variantsRaw) {
+      const variants = (() => { try { return JSON.parse(variantsRaw); } catch { return []; } })();
+      if (variants.length > 0) {
+        await db.query('DELETE FROM variants WHERE product_id=$1', [params.id]);
+        for (const v of variants) {
+          await db.query('INSERT INTO variants(product_id,type,value,stock) VALUES($1,$2,$3,$4)', [params.id, v.type, v.value, v.stock || 0]);
+        }
+      }
+    }
+
     await Promise.all([cache.delPattern('products:*'), cache.del(`product:${rows[0].slug}`)]);
     return NextResponse.json(rows[0]);
   } catch (err) {

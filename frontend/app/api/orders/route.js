@@ -91,6 +91,8 @@ export async function POST(request) {
     }
 
     let discount = 0;
+    let hasFreeShippingCoupon = false;
+    
     if (coupon_code) {
       const { rows: c } = await client.query(
         `SELECT * FROM coupons WHERE code=$1 AND is_active=true
@@ -100,11 +102,14 @@ export async function POST(request) {
       if (c.length && total >= c[0].min_order) {
         discount = c[0].type === 'percentage' ? (total * c[0].value) / 100 : c[0].value;
         discount = Math.min(discount, total);
+        hasFreeShippingCoupon = c[0].free_shipping === true;
         await client.query('UPDATE coupons SET used_count = used_count + 1 WHERE id=$1', [c[0].id]);
       }
     }
 
-    const final_price = Math.max(0, total - discount);
+    const subtotalAfterDiscount = Math.max(0, total - discount);
+    const shipping = (subtotalAfterDiscount >= 999 || hasFreeShippingCoupon) ? 0 : 49;
+    const final_price = subtotalAfterDiscount + shipping;
     
     if (payment_method === 'cod' && final_price > 2999) {
       throw new Error('COD is only available for orders up to ₹2,999');

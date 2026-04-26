@@ -13,7 +13,7 @@ export async function uploadImage(buffer, folder = 'shopcore/products') {
       {
         folder,
         allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-        transformation: [{ width: 1200, height: 1200, crop: 'limit', quality: 'auto' }],
+        transformation: [{ width: 800, height: 800, crop: 'limit', quality: 'auto:eco', fetch_format: 'auto' }],
       },
       (error, result) => {
         if (error) reject(error);

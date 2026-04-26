@@ -7,7 +7,7 @@ import { memo, useState } from 'react';
 function optimizeCloudinaryUrl(url) {
   if (!url || !url.includes('cloudinary.com')) return url;
   // Insert optimization params into existing Cloudinary URL
-  return url.replace('/upload/', '/upload/f_auto,q_auto,w_600/');
+  return url.replace('/upload/', '/upload/f_auto,q_auto,w_400,dpr_2/');
 }
 
 // ─── Star row is pure — memoize to avoid 5 Star rerenders per card ─────────────
@@ -58,6 +58,8 @@ function ProductCard({ product, priority = false }) {
                 priority={priority}
                 fetchPriority={priority ? "high" : "auto"}
                 quality={80}
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAEAwUC/8QAHRAAAQQDAQEAAAAAAAAAAAAAAQACAxESITFBUf/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwq1rXua1jQGgcABfLREH/2Q=="
               />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-[#f2f2f0]">

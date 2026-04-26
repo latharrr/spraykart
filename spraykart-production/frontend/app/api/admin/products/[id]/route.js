@@ -58,6 +58,21 @@ export async function PUT(request, { params }) {
       await db.query('INSERT INTO product_images(product_id,url,public_id,sort_order) VALUES($1,$2,$3,$4)', [params.id, url, public_id, i]);
     }
 
+    const variantsRaw = formData.get('variants');
+    if (variantsRaw) {
+      const variants = (() => { try { return JSON.parse(variantsRaw); } catch { return []; } })();
+      if (variants.length > 0) {
+        await db.query('DELETE FROM variants WHERE product_id=$1', [params.id]);
+        const basePrice = price ? parseFloat(price) : parseFloat(rows[0].price);
+        for (const v of variants) {
+          const modifier = v.price !== null && v.price !== undefined ? parseFloat(v.price) - basePrice : 0;
+          await db.query('INSERT INTO variants(product_id,type,value,price_modifier,stock) VALUES($1,$2,$3,$4,$5)', [params.id, v.type, v.value, modifier, v.stock || 0]);
+        }
+      } else {
+        await db.query('DELETE FROM variants WHERE product_id=$1', [params.id]);
+      }
+    }
+
     await Promise.all([cache.delPattern('products:*'), cache.del(`product:${rows[0].slug}`)]);
     return NextResponse.json(rows[0]);
   } catch (err) {

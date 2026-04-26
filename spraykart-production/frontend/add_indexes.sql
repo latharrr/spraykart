@@ -32,6 +32,10 @@ CREATE INDEX IF NOT EXISTS idx_order_items_order_id
 CREATE INDEX IF NOT EXISTS idx_order_items_product_id
   ON order_items (product_id);
 
+-- 8. Product images lookup by primary/sort_order
+CREATE INDEX IF NOT EXISTS idx_product_images_primary 
+  ON product_images(product_id, is_primary, sort_order);
+
 -- ============================================================
 --  Verify with:
 --  SELECT indexname, tablename FROM pg_indexes

@@ -21,7 +21,7 @@ export async function GET(request) {
   try {
     const { rows } = await db.query(`
       SELECT p.*,
-        (SELECT url FROM product_images WHERE product_id=p.id AND is_primary=true LIMIT 1) as image,
+        (SELECT url FROM product_images WHERE product_id=p.id ORDER BY is_primary DESC, sort_order ASC LIMIT 1) as image,
         (SELECT COUNT(*) FROM order_items oi JOIN orders o ON o.id=oi.order_id
          WHERE oi.product_id=p.id AND o.status!='cancelled') as units_sold
       FROM products p ORDER BY p.created_at DESC`);

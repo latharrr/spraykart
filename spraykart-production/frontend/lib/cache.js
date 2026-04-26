@@ -79,6 +79,24 @@ export const cache = {
       if (keys.length > 0) await Promise.all(keys.map((k) => redis.del(k)));
     } catch { /* silent */ }
   },
+
+  keys: async (pattern) => {
+    if (!redis) {
+      const keys = [];
+      const prefix = pattern.replace('*', '');
+      for (const k of lru.keys()) if (k.startsWith(prefix)) keys.push(k);
+      return keys;
+    }
+    try {
+      return await redis.keys(pattern);
+    } catch { return []; }
+  },
+
+  flushAll: async () => {
+    lru.clear();
+    if (!redis) return;
+    try { await redis.flushdb(); } catch { /* silent */ }
+  },
 };
 
 export default cache;

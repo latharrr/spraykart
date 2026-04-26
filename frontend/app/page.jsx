@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowRight, ShieldCheck, Truck, Gift, Star, Phone, BadgeCheck } from 'lucide-react';
 import db from '@/lib/db';
 import cache from '@/lib/cache';
+import HeroBanner from '@/components/HeroBanner';
 
 // Keep homepage statically rendered and refresh periodically.
 export const dynamic = 'force-static';
@@ -90,53 +91,7 @@ export default async function HomePage() {
   return (
     <div>
       {/* ── HERO ── */}
-      <section style={{ background: '#0c0c0c', minHeight: 'calc(100vh - 88px)', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1px', background: 'rgba(255,255,255,.05)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: 48, right: 40, writingMode: 'vertical-rl', fontSize: 9, letterSpacing: '0.25em', color: 'rgba(255,255,255,.2)', textTransform: 'uppercase', userSelect: 'none' }}>Est. 2024 &nbsp; India</div>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '80px 40px', width: '100%' }} className="hero-padding">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }} className="hero-grid">
-            <div>
-              <p style={{ fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginBottom: 32, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ width: 24, height: 1, background: 'rgba(255,255,255,.3)', display: 'inline-block' }} />
-                100% Authentic · Pan-India Delivery
-              </p>
-              {/* h1 uses CSS variable — no FOUT, no layout shift */}
-              <h1 className="hero-h1" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif', fontSize: 'clamp(52px, 7vw, 96px)', fontWeight: 300, lineHeight: 1.02, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: 32 }}>
-                Luxury<br />Fragrances.<br /><em style={{ fontStyle: 'italic', fontWeight: 300 }}>Accessible.</em>
-              </h1>
-              <p style={{ fontSize: 15, color: 'rgba(255,255,255,.45)', lineHeight: 1.8, maxWidth: 400, marginBottom: 44 }}>
-                100% authentic perfumes, attars &amp; niche fragrances — sourced from authorized distributors.
-              </p>
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                <Link href="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#ffffff', color: '#0c0c0c', padding: '14px 32px', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', textDecoration: 'none' }}>
-                  Shop Collection <ArrowRight size={14} />
-                </Link>
-                <Link href="/products?category=Gift+Sets" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: 'transparent', color: 'rgba(255,255,255,.7)', padding: '13px 32px', fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', border: '1px solid rgba(255,255,255,.2)', textDecoration: 'none' }}>
-                  Gift Sets
-                </Link>
-              </div>
-            </div>
-            <div className="hero-stats" style={{ borderLeft: '1px solid rgba(255,255,255,.08)', paddingLeft: 80 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px 32px' }}>
-                {[['10,000+','Happy Customers'],['500+','Luxury Fragrances'],['100%','Authenticity Guaranteed'],['2-Day','Express Delivery']].map(([num, label]) => (
-                  <div key={label}>
-                    <p style={{ fontFamily: 'var(--font-cormorant), Georgia, serif', fontSize: 44, fontWeight: 300, color: '#ffffff', lineHeight: 1, marginBottom: 8, letterSpacing: '-0.02em' }}>{num}</p>
-                    <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,.3)' }}>{label}</p>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: 56, paddingTop: 40, borderTop: '1px solid rgba(255,255,255,.08)' }}>
-                <p style={{ fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 16 }}>Shop by category</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {categories.map(({ label, href }) => (
-                    <Link key={label} href={href} style={{ display: 'inline-block', padding: '6px 16px', fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,.5)', border: '1px solid rgba(255,255,255,.12)', textDecoration: 'none' }}>{label}</Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroBanner />
 
       {/* ── FEATURED PRODUCTS ── */}
       <section style={{ background: '#ffffff', padding: '96px 0' }} className="section-padding">

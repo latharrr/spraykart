@@ -65,7 +65,13 @@ export default function SystemSettingsPage() {
             <div className="space-y-2">
               {lockedIps.map((ip) => (
                 <div key={ip.key} className="flex justify-between items-center bg-gray-50 p-3 rounded border border-gray-100">
-                  <span className="text-xs font-mono text-gray-600">{ip.key.replace('rl:', '')}</span>
+                  <div>
+                    <p className="text-xs font-mono font-bold text-gray-800">{ip.ip}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Action: <span className="text-gray-600">{ip.action}</span>
+                      {ip.ttl > 0 && ` · Unban in ${Math.ceil(ip.ttl / 60)} min`}
+                    </p>
+                  </div>
                   <span className="text-xs font-semibold text-red-600">{ip.attempts} attempts</span>
                 </div>
               ))}

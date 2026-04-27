@@ -117,6 +117,11 @@ export const cache = {
     if (!redis) return;
     try { await redis.flushdb(); } catch { /* silent */ }
   },
+
+  ttl: async (key) => {
+    if (!redis) return -1;
+    try { return await redis.ttl(key); } catch { return -1; }
+  },
 };
 
 export default cache;

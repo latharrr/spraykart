@@ -12,11 +12,22 @@ export async function GET(request) {
   try {
     const keys = await cache.keys('rl:*');
     const lockedIps = [];
-    
+
     for (const key of keys) {
       const val = await cache.get(key);
+      const ttl = await cache.ttl(key); // add this
       if (val) {
-        lockedIps.push({ key, attempts: parseInt(val, 10) });
+        // key format: rl:login:123.456.789.0
+        const parts = key.replace('rl:', '').split(':');
+        const action = parts[0];
+        const ip = parts.slice(1).join(':');
+        lockedIps.push({
+          key,
+          action,          // login / register / forgotpw / coupon
+          ip,              // actual IP
+          attempts: parseInt(val, 10),
+          ttl,             // seconds until unban
+        });
       }
     }
 

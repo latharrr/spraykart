@@ -4,6 +4,11 @@ import db from './db';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// Boot-time validation: ensure a strong JWT secret to avoid cryptic runtime errors
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+  throw new Error('JWT_SECRET must be set and be at least 32 characters long');
+}
+
 export const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',

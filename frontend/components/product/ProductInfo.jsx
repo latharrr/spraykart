@@ -40,7 +40,11 @@ export default function ProductInfo({ product }) {
   }, {});
 
   const handleAddToCart = () => {
-    addItem(product, selectedVariant, quantity);
+    const addedToCart = addItem(product, selectedVariant, quantity);
+    if (!addedToCart) {
+      toast.error('This item is currently out of stock');
+      return;
+    }
     setAdded(true);
     toast.success(`${product.name} added to cart`);
     setTimeout(() => setAdded(false), 1500);

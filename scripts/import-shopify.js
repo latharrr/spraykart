@@ -1,20 +1,35 @@
 const fs = require('fs');
+const path = require('path');
 const { parse } = require('csv-parse/sync');
 const { Pool } = require('pg');
 const https = require('https');
 const http = require('http');
 const { v2: cloudinary } = require('cloudinary');
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env.local') });
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
 
 // ── CONFIG ──────────────────────────────────────────────────────────────────
+const databaseUrl = process.env.DATABASE_URL;
+const cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME;
+const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
+const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
+
+if (!databaseUrl) {
+  throw new Error('Missing DATABASE_URL environment variable');
+}
+if (!cloudinaryCloudName || !cloudinaryApiKey || !cloudinaryApiSecret) {
+  throw new Error('Missing Cloudinary environment variables (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)');
+}
+
 const pool = new Pool({
-  connectionString: 'postgresql://spraykart_admin:spraykart_pass@127.0.0.1:5432/spraykart',
+  connectionString: databaseUrl,
   ssl: false
 });
 
 cloudinary.config({
-  cloud_name: 'dzl6yxscl',
-  api_key:    '278386419515551',
-  api_secret: 'Yv-Oq8v6p8Z4bV1tE3Q4Z4v9W8E' // Note: This should be in .env but script has it hardcoded
+  cloud_name: cloudinaryCloudName,
+  api_key: cloudinaryApiKey,
+  api_secret: cloudinaryApiSecret,
 });
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));

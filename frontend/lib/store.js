@@ -10,13 +10,19 @@ export const useCartStore = create(
       discount: 0,
 
       addItem: (product, variant = null, quantity = 1) => {
+        let added = false;
         set((state) => {
+          const maxStock = variant ? variant.stock : product.stock;
+          const limit = typeof maxStock === 'number' ? maxStock : 0;
+          if (limit <= 0) {
+            return state;
+          }
+
           const existing = state.items.find(
             (i) => i.id === product.id && i.variant?.id === variant?.id
           );
           if (existing) {
-            const maxStock = variant ? variant.stock : product.stock;
-            const limit = typeof maxStock === 'number' ? maxStock : 999;
+            added = true;
             return {
               items: state.items.map((i) =>
                 i.id === product.id && i.variant?.id === variant?.id
@@ -26,10 +32,12 @@ export const useCartStore = create(
             };
           }
           const cartKey = `${product.id}-${variant?.id || 'default'}`;
+          added = true;
           return {
-            items: [...state.items, { ...product, variant, quantity, cartKey }],
+            items: [...state.items, { ...product, variant, quantity: Math.min(quantity, limit), cartKey }],
           };
         });
+        return added;
       },
 
       removeItem: (cartKey) =>
@@ -42,11 +50,14 @@ export const useCartStore = create(
             : state.items.map((i) => {
                 if (i.cartKey === cartKey) {
                   const maxStock = i.variant ? i.variant.stock : i.stock;
-                  const limit = typeof maxStock === 'number' ? maxStock : 999;
+                  const limit = typeof maxStock === 'number' ? maxStock : 0;
+                  if (limit <= 0) {
+                    return null;
+                  }
                   return { ...i, quantity: Math.min(quantity, limit) };
                 }
                 return i;
-              }),
+              }).filter(Boolean),
         })),
 
       clearCart: () => set({ items: [], coupon: null, discount: 0 }),

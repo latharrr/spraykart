@@ -43,7 +43,8 @@ export async function POST(request) {
       }
     }
 
-    if (cart_total < parseFloat(coupon.min_order)) {
+    const thresholdTotal = isProductSpecific ? applicableTotal : cart_total;
+    if (thresholdTotal < parseFloat(coupon.min_order)) {
       return NextResponse.json({ error: `Minimum order of ₹${parseFloat(coupon.min_order).toLocaleString('en-IN')} required` }, { status: 400 });
     }
 

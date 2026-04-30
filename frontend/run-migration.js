@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const { Pool } = require('pg');
 require('dotenv').config({ path: '.env.local' });
 
@@ -9,7 +10,8 @@ const pool = new Pool({
 
 async function run() {
   try {
-    const sql = fs.readFileSync('../database/migrations/003_password_resets_and_cod.sql', 'utf8');
+    const migrationPath = path.resolve(__dirname, '../database/migrations/003_password_resets_and_cod.sql');
+    const sql = fs.readFileSync(migrationPath, 'utf8');
     await pool.query(sql);
     console.log('Migration applied successfully.');
   } catch (err) {

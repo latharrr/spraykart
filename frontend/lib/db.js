@@ -14,7 +14,7 @@ function createPool() {
     max: 5,
     min: 0,
     idleTimeoutMillis: 10_000,
-    connectionTimeoutMillis: 5_000,
+    connectionTimeoutMillis: 10_000,
 
     // ── Query safety ─────────────────────────────────────────────────────────
     query_timeout: 10_000,

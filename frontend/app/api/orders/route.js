@@ -65,7 +65,14 @@ export async function POST(request) {
       let name = '';
 
       if (item.variant_id) {
-        const { rows: vLock } = await client.query('SELECT id FROM variants WHERE id=$1 AND stock >= $2 FOR UPDATE', [item.variant_id, item.quantity]);
+        const { rows: vLock } = await client.query(
+          `SELECT v.id
+           FROM variants v
+           JOIN products p ON p.id = v.product_id
+           WHERE v.id=$1 AND v.product_id=$2 AND v.stock >= $3 AND p.is_active=true
+           FOR UPDATE OF v`,
+          [item.variant_id, item.product_id, item.quantity]
+        );
         if (!vLock.length) throw new Error(`Insufficient stock for variant`);
 
         const { rows: vRows } = await client.query(
@@ -73,7 +80,11 @@ export async function POST(request) {
           [item.quantity, item.variant_id]
         );
         
-        const { rows: pRows } = await client.query('SELECT name, price FROM products WHERE id=$1', [item.product_id]);
+        const { rows: pRows } = await client.query(
+          'SELECT name, price FROM products WHERE id=$1 AND is_active=true',
+          [item.product_id]
+        );
+        if (!pRows.length) throw new Error('Product is inactive or unavailable');
         price = parseFloat(pRows[0].price) + parseFloat(vRows[0].price_modifier || 0);
         name = `${pRows[0].name} - ${vRows[0].value}`;
       } else {

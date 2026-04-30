@@ -30,6 +30,7 @@ export async function GET(request) {
     params.push(status);
   }
 
+  const countParams = [...params];
   params.push(limit, offset);
   const limitIdx = i++;
   const offsetIdx = i;
@@ -43,7 +44,8 @@ export async function GET(request) {
         LEFT JOIN order_items oi ON oi.order_id = o.id
         ${where} GROUP BY o.id, u.name, u.email
         ORDER BY o.created_at DESC LIMIT $${limitIdx} OFFSET $${offsetIdx}`, params),
-      db.query(`SELECT COUNT(DISTINCT o.id) FROM orders o ${where}`, params.slice(0, -2)),
+      // Keep a dedicated param list for count query so future filters don't break argument ordering.
+      db.query(`SELECT COUNT(DISTINCT o.id) FROM orders o ${where}`, countParams),
     ]);
 
     return NextResponse.json({

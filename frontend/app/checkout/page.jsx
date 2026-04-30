@@ -141,7 +141,45 @@ export default function CheckoutPage() {
     const idempotencyKey = uuidv4();
 
     try {
+      const liveSubtotal = items.reduce((sum, i) => {
+        const price = i.variant
+          ? parseFloat(i.price) + parseFloat(i.variant.price_modifier || 0)
+          : parseFloat(i.price);
+        return sum + price * (i.quantity || 1);
+      }, 0);
+
+      let effectiveCoupon = coupon;
+      let effectiveDiscount = discount || 0;
+
+      if (coupon?.code) {
+        try {
+          const { data } = await applyCoupon({
+            code: coupon.code,
+            cart_total: liveSubtotal,
+            cart_items: items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })),
+          });
+          effectiveCoupon = data.coupon;
+          effectiveDiscount = data.discount;
+          setCoupon(data.coupon, data.discount);
+        } catch (err) {
+          removeCoupon();
+          toast.error(err?.error || 'Applied coupon is no longer valid. Please try again.');
+          setLoading(false);
+          return;
+        }
+      }
+
+      const totalAfterDiscount = Math.max(0, liveSubtotal - effectiveDiscount);
+      const effectiveShipping = (totalAfterDiscount >= 999 || effectiveCoupon?.free_shipping === true) ? 0 : 49;
+      const effectiveGrandTotal = totalAfterDiscount + effectiveShipping;
+
       if (paymentMethod === 'cod') {
+        if (effectiveGrandTotal > 2999) {
+          toast.error('COD is only available for orders up to ₹2,999');
+          setLoading(false);
+          return;
+        }
+
         await createOrder({
           items: items.map((i) => ({ product_id: i.id, variant_id: i.variant?.id || null, quantity: i.quantity })),
           shipping_address: {
@@ -149,7 +187,7 @@ export default function CheckoutPage() {
             name: user.name,          // snapshot customer name with order
             email: user.email,        // snapshot customer email with order
           },
-          coupon_code: coupon?.code,
+          coupon_code: effectiveCoupon?.code,
           idempotency_key: idempotencyKey,
           payment_method: 'cod'
         });
@@ -158,7 +196,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      const { data } = await createPayment({ amount: grandTotal });
+      const { data } = await createPayment({ amount: effectiveGrandTotal });
 
       await createOrder({
         items: items.map((i) => ({
@@ -171,7 +209,7 @@ export default function CheckoutPage() {
           name: user.name,          // snapshot customer name with order
           email: user.email,        // snapshot customer email with order
         },
-        coupon_code: coupon?.code,
+        coupon_code: effectiveCoupon?.code,
         razorpay_order_id: data.order_id,
         idempotency_key: idempotencyKey,
         payment_method: 'online'

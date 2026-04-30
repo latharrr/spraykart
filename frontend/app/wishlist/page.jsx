@@ -12,7 +12,11 @@ export default function WishlistPage() {
   const [addedIds, setAddedIds] = useState({});
 
   const handleAddToCart = (product) => {
-    addItem(product);
+    const addedToCart = addItem(product);
+    if (!addedToCart) {
+      toast.error('This item is currently out of stock');
+      return;
+    }
     setAddedIds((prev) => ({ ...prev, [product.id]: true }));
     toast.success(`${product.name} added to cart`);
     setTimeout(() => setAddedIds((prev) => ({ ...prev, [product.id]: false })), 1500);

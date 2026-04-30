@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import { pool } from '@/lib/db';
-import { getAuthUser } from '@/lib/auth';
-import { unauthorized, forbidden } from '@/lib/api-responses';
+import db from '@/lib/db';
+import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import { parse } from 'csv-parse/sync';
 import { v2 as cloudinary } from 'cloudinary';
 
@@ -146,7 +145,7 @@ export async function POST(request) {
         continue;
       }
 
-      const exists = await pool.query('SELECT id FROM products WHERE slug=$1', [handle]);
+      const exists = await db.query('SELECT id FROM products WHERE slug=$1', [handle]);
       if (exists.rows.length) { results.skipped++; continue; }
 
       p.images.sort((a, b) => a.position - b.position);
@@ -164,7 +163,7 @@ export async function POST(request) {
       );
       const hasVariants = p.variants.length > 1 || !fakeVariant;
 
-      const client = await pool.connect();
+      const client = await db.connect();
       let productId;
 
       try {
@@ -211,7 +210,7 @@ export async function POST(request) {
         try {
           const buffer = await downloadImage(p.images[i].src);
           const { url, public_id } = await uploadToCloudinary(buffer);
-          await pool.query(
+          await db.query(
             `INSERT INTO product_images (product_id, url, public_id, is_primary, sort_order)
              VALUES ($1,$2,$3,$4,$5)`,
             [productId, url, public_id, i === 0, i]

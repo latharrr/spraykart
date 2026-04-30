@@ -28,8 +28,8 @@ export async function GET(request) {
         SUM(oi.quantity) as units_sold, SUM(oi.quantity * oi.price) as revenue
         FROM order_items oi JOIN products p ON p.id = oi.product_id
         JOIN orders o ON o.id = oi.order_id
-        WHERE o.status != 'cancelled' AND o.created_at >= NOW() - INTERVAL '${safePeriod} days'
-        GROUP BY p.id, p.name, p.slug ORDER BY revenue DESC LIMIT 5`),
+        WHERE o.status != 'cancelled' AND o.created_at >= NOW() - ($1::int * INTERVAL '1 day')
+        GROUP BY p.id, p.name, p.slug ORDER BY revenue DESC LIMIT 5`, [safePeriod]),
       db.query(`SELECT o.id, o.final_price, o.status, o.created_at, u.name as customer
         FROM orders o JOIN users u ON u.id=o.user_id ORDER BY o.created_at DESC LIMIT 10`),
       db.query(`SELECT COUNT(*) as total FROM users WHERE role='customer'`),

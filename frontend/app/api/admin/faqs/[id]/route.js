@@ -27,6 +27,7 @@ export async function PATCH(request, { params }) {
     const question = formData.get('question')?.toString().trim();
     const answer = formData.get('answer')?.toString().trim();
     const sort_order = formData.get('sort_order');
+    const parsedSortOrder = parseInt(sort_order ?? '0', 10);
     const is_active = formData.get('is_active');
     const image = formData.get('image');
     const remove_image = formData.get('remove_image') === 'true';
@@ -61,7 +62,7 @@ export async function PATCH(request, { params }) {
       'is_active = $4',
       'updated_at = NOW()',
     ];
-    const vals = [question, answer, sort_order ?? 0, is_active !== 'false'];
+    const vals = [question, answer, Number.isNaN(parsedSortOrder) ? 0 : parsedSortOrder, is_active !== 'false'];
 
     if (updateImageUrl) {
       sets.push(`image_url = $${vals.length + 1}`);

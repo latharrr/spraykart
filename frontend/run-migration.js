@@ -10,7 +10,7 @@ const pool = new Pool({
 
 async function run() {
   try {
-    const migrationPath = path.resolve(__dirname, '../database/migrations/003_password_resets_and_cod.sql');
+    const migrationPath = path.resolve(__dirname, '../database/migrations/008_fragrance_finder_submissions.sql');
     const sql = fs.readFileSync(migrationPath, 'utf8');
     await pool.query(sql);
     console.log('Migration applied successfully.');

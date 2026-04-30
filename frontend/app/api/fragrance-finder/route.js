@@ -2,8 +2,32 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser } from '@/lib/auth';
 
+async function ensureFragranceFinderTable() {
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS fragrance_finder_submissions (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+      answers JSONB NOT NULL DEFAULT '{}'::jsonb,
+      result_url TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS idx_fragrance_finder_submissions_created_at
+      ON fragrance_finder_submissions(created_at DESC)
+  `);
+
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS idx_fragrance_finder_submissions_user
+      ON fragrance_finder_submissions(user_id)
+  `);
+}
+
 export async function POST(request) {
   try {
+    await ensureFragranceFinderTable();
+
     const body = await request.json();
     const answers = body?.answers;
     const resultUrl = body?.result_url;

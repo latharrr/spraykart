@@ -214,6 +214,7 @@ export default function CheckoutPage() {
             },
             coupon_code: effectiveCoupon?.code,
             razorpay_order_id: null,
+            paytm_order_id: paytm.orderId,
             idempotency_key: idempotencyKey,
             payment_method: 'online'
           });

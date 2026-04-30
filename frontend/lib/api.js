@@ -103,6 +103,11 @@ export const adminDeleteCoupon = (id) => api.delete(`/admin/coupons/${id}`);
 export const adminGetFragranceFinder = (params) => api.get('/admin/fragrance-finder', { params });
 export const adminGetContactMessages = (params) => api.get('/admin/contact-submissions', { params });
 
+export const adminGetTestimonials = () => api.get('/admin/testimonials');
+export const adminCreateTestimonial = (data) => api.post('/admin/testimonials', data);
+export const adminUpdateTestimonial = (id, data) => api.patch(`/admin/testimonials/${id}`, data);
+export const adminDeleteTestimonial = (id) => api.delete(`/admin/testimonials/${id}`);
+
 export const adminGetAnalytics = (params) => api.get('/admin/analytics', { params });
 export const adminGetPerf = () => api.get('/perf');
 

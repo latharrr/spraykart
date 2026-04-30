@@ -69,6 +69,9 @@ export const applyCoupon = (data) => api.post('/apply-coupon', data);
 // ─── Reviews ──────────────────────────────────────────────────────────────────
 export const submitReview = (data) => api.post('/reviews', data);
 
+// ─── Fragrance Finder ────────────────────────────────────────────────────────
+export const submitFragranceFinder = (data) => api.post('/fragrance-finder', data);
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 export const adminGetProducts = () => api.get('/admin/products');
 export const adminGetProduct = (id) => api.get(`/admin/products/${id}`);
@@ -93,6 +96,8 @@ export const adminGetCoupons = () => api.get('/admin/coupons');
 export const adminCreateCoupon = (data) => api.post('/admin/coupons', data);
 export const adminUpdateCoupon = (id, data) => api.put(`/admin/coupons/${id}`, data);
 export const adminDeleteCoupon = (id) => api.delete(`/admin/coupons/${id}`);
+
+export const adminGetFragranceFinder = (params) => api.get('/admin/fragrance-finder', { params });
 
 export const adminGetAnalytics = (params) => api.get('/admin/analytics', { params });
 export const adminGetPerf = () => api.get('/perf');

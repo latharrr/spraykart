@@ -17,6 +17,7 @@ const desktopNavLinks = [
   { href: '/products?category=Unisex', label: 'Unisex' },
   { href: '/products?category=Attar', label: 'Attar' },
   { href: '/products?category=Gift+Sets', label: 'Gift Sets' },
+  { href: '/fragrance-finder', label: 'Fragrance Finder' },
   { href: '/machine', label: 'Machine ⚡', badge: true },
 ];
 

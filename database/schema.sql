@@ -98,6 +98,15 @@ CREATE TABLE IF NOT EXISTS reviews (
   UNIQUE(user_id, product_id)
 );
 
+-- FRAGRANCE FINDER SUBMISSIONS
+CREATE TABLE IF NOT EXISTS fragrance_finder_submissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  answers JSONB NOT NULL DEFAULT '{}'::jsonb,
+  result_url TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- COUPONS
 CREATE TABLE IF NOT EXISTS coupons (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -130,3 +139,5 @@ CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id);
+CREATE INDEX IF NOT EXISTS idx_fragrance_finder_submissions_created_at ON fragrance_finder_submissions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_fragrance_finder_submissions_user ON fragrance_finder_submissions(user_id);

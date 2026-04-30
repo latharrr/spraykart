@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ArrowLeft, Check, Sparkles } from 'lucide-react';
+import { submitFragranceFinder } from '@/lib/api';
 
 
 
@@ -83,10 +84,22 @@ export default function FragranceFinderPage() {
   const [step, setStep] = useState(0); // -1 = intro, 0-4 = questions, 5 = result
   const [answers, setAnswers] = useState({});
   const [started, setStarted] = useState(false);
+  const [savingSubmission, setSavingSubmission] = useState(false);
 
   const current = QUESTIONS[step];
   const progress = started ? ((step + 1) / QUESTIONS.length) * 100 : 0;
   const resultUrl = buildResultUrl(answers);
+
+  const saveSubmission = async (payload) => {
+    setSavingSubmission(true);
+    try {
+      await submitFragranceFinder(payload);
+    } catch (err) {
+      console.error('Failed to save fragrance finder submission', err);
+    } finally {
+      setSavingSubmission(false);
+    }
+  };
 
   const handleSelect = (value) => {
     const newAnswers = { ...answers, [current.id]: value };
@@ -94,6 +107,7 @@ export default function FragranceFinderPage() {
     if (step < QUESTIONS.length - 1) {
       setTimeout(() => setStep(s => s + 1), 280);
     } else {
+      void saveSubmission({ answers: newAnswers, result_url: buildResultUrl(newAnswers) });
       setTimeout(() => setStep(QUESTIONS.length), 280);
     }
   };
@@ -163,6 +177,9 @@ export default function FragranceFinderPage() {
           <p style={{ fontSize: 15, color: '#737373', lineHeight: 1.7, marginBottom: 40 }}>
             Based on your preferences, we've curated a personalised selection just for you. Explore and find your signature scent.
           </p>
+          {savingSubmission ? (
+            <p style={{ fontSize: 12, color: '#a0a0a0', marginBottom: 20 }}>Saving your quiz response...</p>
+          ) : null}
 
           {/* Answer summary */}
           <div style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 4, padding: '20px 24px', marginBottom: 40, textAlign: 'left' }}>
@@ -181,7 +198,7 @@ export default function FragranceFinderPage() {
               See My Fragrances <ArrowRight size={14} />
             </Link>
             <button
-              onClick={() => { setStep(0); setAnswers({}); }}
+              onClick={() => { setStep(0); setAnswers({}); setSavingSubmission(false); }}
               className="btn-secondary"
               style={{ padding: '14px 28px', fontSize: 12 }}
             >

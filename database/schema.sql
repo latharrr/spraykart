@@ -98,6 +98,15 @@ CREATE TABLE IF NOT EXISTS reviews (
   UNIQUE(user_id, product_id)
 );
 
+-- CONTACT SUBMISSIONS
+CREATE TABLE IF NOT EXISTS contact_submissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(150) NOT NULL,
+  email VARCHAR(150) NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- FRAGRANCE FINDER SUBMISSIONS
 CREATE TABLE IF NOT EXISTS fragrance_finder_submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -139,5 +148,6 @@ CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id);
+CREATE INDEX IF NOT EXISTS idx_contact_submissions_created_at ON contact_submissions(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_fragrance_finder_submissions_created_at ON fragrance_finder_submissions(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_fragrance_finder_submissions_user ON fragrance_finder_submissions(user_id);

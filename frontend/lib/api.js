@@ -72,6 +72,9 @@ export const submitReview = (data) => api.post('/reviews', data);
 // ─── Fragrance Finder ────────────────────────────────────────────────────────
 export const submitFragranceFinder = (data) => api.post('/fragrance-finder', data);
 
+// ─── Contact ────────────────────────────────────────────────────────────────
+export const submitContactMessage = (data) => api.post('/contact', data);
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 export const adminGetProducts = () => api.get('/admin/products');
 export const adminGetProduct = (id) => api.get(`/admin/products/${id}`);
@@ -98,6 +101,7 @@ export const adminUpdateCoupon = (id, data) => api.put(`/admin/coupons/${id}`, d
 export const adminDeleteCoupon = (id) => api.delete(`/admin/coupons/${id}`);
 
 export const adminGetFragranceFinder = (params) => api.get('/admin/fragrance-finder', { params });
+export const adminGetContactMessages = (params) => api.get('/admin/contact-submissions', { params });
 
 export const adminGetAnalytics = (params) => api.get('/admin/analytics', { params });
 export const adminGetPerf = () => api.get('/perf');

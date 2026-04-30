@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 async function ensureFaqTable() {
   await db.query(`
     CREATE TABLE IF NOT EXISTS faqs (
@@ -29,7 +31,7 @@ export async function GET() {
     const { rows } = await db.query(
       'SELECT id, question, answer, image_url, sort_order FROM faqs WHERE is_active = true ORDER BY sort_order ASC, created_at ASC'
     );
-    return NextResponse.json({ faqs: rows });
+    return NextResponse.json({ faqs: rows }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

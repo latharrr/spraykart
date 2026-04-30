@@ -3,6 +3,8 @@ import db from '@/lib/db';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import { v2 as cloudinary } from 'cloudinary';
 
+export const dynamic = 'force-dynamic';
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -47,7 +49,7 @@ export async function GET(request) {
     const { rows } = await db.query(
       'SELECT * FROM faqs ORDER BY sort_order ASC, created_at ASC'
     );
-    return NextResponse.json({ faqs: rows });
+    return NextResponse.json({ faqs: rows }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
@@ -88,7 +90,7 @@ export async function POST(request) {
        VALUES ($1, $2, $3, $4) RETURNING *`,
       [question, answer, image_url, sort_order]
     );
-    return NextResponse.json({ faq: rows[0] }, { status: 201 });
+    return NextResponse.json({ faq: rows[0] }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
     console.error('FAQ create error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });

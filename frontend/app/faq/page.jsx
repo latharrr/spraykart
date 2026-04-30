@@ -6,7 +6,8 @@ export const metadata = {
   description: 'Find answers to common questions about Spraykart — shipping, returns, authenticity, payment, and more.',
 };
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getFaqs() {
   try {

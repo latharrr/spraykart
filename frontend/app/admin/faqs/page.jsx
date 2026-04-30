@@ -7,28 +7,28 @@ import { Plus, Pencil, Trash2, X, GripVertical, Eye, EyeOff, ImagePlus, Check } 
 
 // ── API helpers ───────────────────────────────────────────────────────────────
 async function apiFaqs() {
-  const res = await fetch('/api/admin/faqs', { credentials: 'include' });
+  const res = await fetch('/api/admin/faqs', { credentials: 'include', cache: 'no-store' });
   const data = await res.json();
   if (!res.ok) throw data.error || 'Failed to load FAQs';
   return data;
 }
 
 async function apiCreate(formData) {
-  const res = await fetch('/api/admin/faqs', { method: 'POST', body: formData, credentials: 'include' });
+  const res = await fetch('/api/admin/faqs', { method: 'POST', body: formData, credentials: 'include', cache: 'no-store' });
   const data = await res.json();
   if (!res.ok) throw data.error || 'Failed to create FAQ';
   return data;
 }
 
 async function apiUpdate(id, formData) {
-  const res = await fetch(`/api/admin/faqs/${id}`, { method: 'PATCH', body: formData, credentials: 'include' });
+  const res = await fetch(`/api/admin/faqs/${id}`, { method: 'PATCH', body: formData, credentials: 'include', cache: 'no-store' });
   const data = await res.json();
   if (!res.ok) throw data.error || 'Failed to update FAQ';
   return data;
 }
 
 async function apiDelete(id) {
-  const res = await fetch(`/api/admin/faqs/${id}`, { method: 'DELETE', credentials: 'include' });
+  const res = await fetch(`/api/admin/faqs/${id}`, { method: 'DELETE', credentials: 'include', cache: 'no-store' });
   if (!res.ok) { const d = await res.json(); throw d.error || 'Failed to delete'; }
 }
 

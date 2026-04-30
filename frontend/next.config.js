@@ -72,6 +72,7 @@ const nextConfig = {
         source: '/(.*)',
         headers: [
           { key: 'Cache-Control', value: 'public, s-maxage=3600, stale-while-revalidate=86400' },
+          { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://static.paytm.com https://securegw-stage.paytm.in https://securegw.paytm.in; frame-src 'self' https://checkout.razorpay.com https://static.paytm.com https://securegw-stage.paytm.in https://securegw.paytm.in; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' https:; style-src 'self' 'unsafe-inline' https:; media-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self' https://checkout.razorpay.com https://securegw-stage.paytm.in https://securegw.paytm.in" },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },

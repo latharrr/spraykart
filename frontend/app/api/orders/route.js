@@ -117,7 +117,14 @@ export async function POST(request) {
         discount = c[0].type === 'percentage' ? (total * c[0].value) / 100 : c[0].value;
         discount = Math.min(discount, total);
         hasFreeShippingCoupon = c[0].free_shipping === true;
-        await client.query('UPDATE coupons SET used_count = used_count + 1 WHERE id=$1', [c[0].id]);
+        // Atomically increment coupon used_count, ensuring it doesn't exceed max_uses
+        const { rows: updated } = await client.query(
+          `UPDATE coupons SET used_count = used_count + 1 WHERE id=$1 AND used_count < max_uses RETURNING *`,
+          [c[0].id]
+        );
+        if (!updated.length) {
+          throw new Error('Coupon usage limit reached');
+        }
       }
     }
 
@@ -139,10 +146,22 @@ export async function POST(request) {
       [user.id, total, discount, final_price, initialStatus, razorpay_order_id || null, paytm_order_id || null, coupon_code || null, JSON.stringify(shipping_address), idempotency_key || null, payment_method]
     );
 
+    let order;
     if (orderRows.length === 0) {
-      throw new Error('Duplicate order creation detected');
+      // Idempotency key conflict: fetch the existing order that was already created
+      if (idempotency_key) {
+        const { rows: existing } = await client.query(
+          'SELECT * FROM orders WHERE idempotency_key=$1 AND user_id=$2',
+          [idempotency_key, user.id]
+        );
+        if (existing.length) {
+          await client.query('COMMIT');
+          return NextResponse.json(existing[0], { status: 200 });
+        }
+      }
+      throw new Error('Duplicate order creation detected but could not retrieve existing order');
     }
-    const order = orderRows[0];
+    order = orderRows[0];
 
     for (const item of enrichedItems) {
       await client.query(

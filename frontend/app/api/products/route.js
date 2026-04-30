@@ -33,7 +33,7 @@ export async function GET(request) {
   let i = 1;
 
   if (category)    { conditions.push(`p.category = $${i++}`);    params.push(category); }
-  if (search)      { conditions.push(`p.name ILIKE $${i++}`);    params.push(`%${search}%`); }
+  if (search)      { conditions.push(`(p.name ILIKE $${i++} OR p.description ILIKE $${i-1})`);    params.push(`%${search}%`); }
   if (min_price)   { conditions.push(`p.price >= $${i++}`);      params.push(min_price); }
   if (max_price)   { conditions.push(`p.price <= $${i++}`);      params.push(max_price); }
   if (is_featured) { conditions.push(`p.is_featured = $${i++}`); params.push(is_featured === 'true'); }

@@ -26,9 +26,43 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
+  // Ensure webhook_events table exists for idempotency tracking
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS webhook_events (
+        event_key TEXT PRIMARY KEY,
+        event_type TEXT,
+        payload JSONB,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+  } catch (err) {
+    console.error('Failed to ensure webhook_events table:', err);
+  }
+
+  // Determine unique event key (use payment id when present)
+  const payment = event?.payload?.payment?.entity;
+  const eventId = payment?.id || event?.id || `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+  const eventKey = `${event.event}:${eventId}`;
+
+  try {
+    const { rows: inserted } = await db.query(
+      `INSERT INTO webhook_events(event_key, event_type, payload) VALUES($1,$2,$3)
+       ON CONFLICT DO NOTHING RETURNING *`,
+      [eventKey, event.event, rawBody]
+    );
+
+    // If this webhook was already processed, skip further handling
+    if (!inserted.length) {
+      return NextResponse.json({ received: true });
+    }
+  } catch (err) {
+    console.error('Failed to record webhook event for idempotency:', err);
+    // proceed (fail-open) but avoid crashing the handler
+  }
+
   if (event.event === 'payment.captured') {
-    const payment = event.payload.payment.entity;
-    const { order_id: razorpay_order_id, id: razorpay_payment_id, amount, currency } = payment;
+    const { order_id: razorpay_order_id, id: razorpay_payment_id, amount, currency } = payment || {};
 
     try {
       const { rows } = await db.query(
@@ -44,7 +78,13 @@ export async function POST(request) {
       const expectedAmount = Math.round(parseFloat(order.final_price) * 100);
       if (amount !== expectedAmount || currency !== 'INR') {
         console.error(`Webhook amount mismatch for order ${order.id}`);
-        return NextResponse.json({ error: 'Amount mismatch' }, { status: 400 });
+        try {
+          await db.query("UPDATE orders SET status='disputed' WHERE id=$1", [order.id]);
+        } catch (e) { console.error('Failed to mark order disputed:', e); }
+        try {
+          await email.sendAdminDispute({ orderId: order.id, expected: order.final_price, received: (amount/100), paymentId: razorpay_payment_id, gateway: 'Razorpay', details: event });
+        } catch (e) { console.error('Failed to email admin about dispute:', e); }
+        return NextResponse.json({ received: true });
       }
 
       const { rows: updated } = await db.query(
@@ -64,8 +104,7 @@ export async function POST(request) {
       console.error('Webhook processing error:', err);
     }
   } else if (event.event === 'payment.failed') {
-    const payment = event.payload.payment.entity;
-    const { order_id: razorpay_order_id } = payment;
+    const { order_id: razorpay_order_id } = payment || {};
 
     try {
       const { rows } = await db.query(

@@ -4,6 +4,12 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const FROM = process.env.EMAIL_FROM || 'Spraykart <onboarding@resend.dev>';
 const FRONTEND_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://spraykart.vercel.app';
 
+// Warn if critical env vars are missing
+if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
+  if (!process.env.ADMIN_EMAIL) console.warn('[email] ADMIN_EMAIL not set; admin notifications will be skipped');
+  if (!process.env.RESEND_API_KEY) console.warn('[email] RESEND_API_KEY not set; all email notifications will be skipped');
+}
+
 const shell = (body) => `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#f5f5f0;font-family:'Inter',Arial,sans-serif">
   <div style="max-width:600px;margin:40px auto;background:#fff;border:1px solid #e8e8e8">
@@ -45,7 +51,10 @@ export const email = {
   },
 
   sendAdminNewOrder: ({ orderId, customerName, customerEmail, total, itemCount }) => {
-    if (!process.env.ADMIN_EMAIL) return Promise.resolve();
+    if (!process.env.ADMIN_EMAIL) {
+      console.warn('[email] ADMIN_EMAIL not set; skipping admin notification for order', orderId?.slice?.(0, 8));
+      return Promise.resolve();
+    }
     return send({
       to: process.env.ADMIN_EMAIL,
       subject: `🛒 New Order ₹${parseFloat(total).toLocaleString('en-IN')} — ${customerName}`,
@@ -55,6 +64,23 @@ export const email = {
         <p><strong>Items:</strong> ${itemCount}</p>
         <p><strong>Total:</strong> ₹${parseFloat(total).toLocaleString('en-IN')}</p>
         <a href="${FRONTEND_URL}/admin/orders" style="display:inline-block;margin-top:20px;background:#0c0c0c;color:#fff;padding:12px 28px;text-decoration:none;font-size:11px;font-weight:600;text-transform:uppercase">View in Admin</a>`),
+    });
+  },
+
+  sendAdminDispute: ({ orderId, expected, received, paymentId, gateway, details }) => {
+    if (!process.env.ADMIN_EMAIL) return Promise.resolve();
+    const idShort = String(orderId).slice(0, 8).toUpperCase();
+    return send({
+      to: process.env.ADMIN_EMAIL,
+      subject: `⚠️ Payment Dispute — #${idShort} — ${gateway}`,
+      html: shell(`<h2 style="margin:0 0 16px;font-size:18px;font-weight:600">Payment Discrepancy Detected</h2>
+        <p><strong>Order:</strong> #${idShort}</p>
+        <p><strong>Gateway:</strong> ${gateway}</p>
+        <p><strong>Payment ID:</strong> ${paymentId || 'N/A'}</p>
+        <p><strong>Expected amount:</strong> ₹${parseFloat(expected || 0).toLocaleString('en-IN')}</p>
+        <p><strong>Received amount:</strong> ₹${parseFloat(received || 0).toLocaleString('en-IN')}</p>
+        <pre style="background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto">${typeof details === 'string' ? details : JSON.stringify(details, null, 2)}</pre>
+        <a href="${FRONTEND_URL}/admin/orders" style="display:inline-block;margin-top:20px;background:#0c0c0c;color:#fff;padding:12px 28px;text-decoration:none;font-size:11px;font-weight:600;text-transform:uppercase">View Orders</a>`),
     });
   },
 

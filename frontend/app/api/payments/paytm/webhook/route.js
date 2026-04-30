@@ -40,13 +40,39 @@ export async function POST(request) {
       console.error('Failed to persist paytm webhook:', err);
     }
 
-    // Example: handle payment success
+    // Example: handle payment success with amount verification and dispute handling
     if (json?.event === 'payment.succeeded' || json?.eventType === 'PAYMENT.SUCCESS') {
       const payment = json?.payload?.payment?.entity || json;
       const orderId = payment?.orderId || payment?.order_id;
       if (orderId) {
         try {
-          await db.query("UPDATE orders SET status='confirmed', paytm_txn_id=$1 WHERE razorpay_order_id=$2 OR id=$2 AND status='pending'", [payment?.id || payment?.txnId, orderId]);
+          // Find the order (may be stored in paytm_order_id or id)
+          const { rows } = await db.query(
+            `SELECT * FROM orders WHERE paytm_order_id = $1 OR id = $1 LIMIT 1`,
+            [orderId]
+          );
+          if (!rows.length) {
+            // fallback: try razorpay_order_id match
+            const { rows: r2 } = await db.query(`SELECT * FROM orders WHERE razorpay_order_id = $1 LIMIT 1`, [orderId]);
+            if (r2.length) rows.push(r2[0]);
+          }
+          if (!rows.length) return NextResponse.json({ received: true });
+          const order = rows[0];
+
+          const expected = parseFloat(order.final_price || 0);
+          // Try to extract received amount from Paytm payload (txnAmount.value is used during create)
+          const receivedRaw = payment?.txnAmount?.value ?? payment?.amount ?? payment?.amountPaid ?? payment?.orderAmount ?? null;
+          const received = receivedRaw ? parseFloat(receivedRaw) : null;
+
+          // If received amount is available and differs significantly, mark disputed and alert admin
+          if (received !== null && Math.abs(expected - received) > 1.0) {
+            try { await db.query("UPDATE orders SET status='disputed', paytm_txn_id=$1 WHERE id=$2", [payment?.id || payment?.txnId, order.id]); } catch (e) { console.error('Failed to mark paytm order disputed', e); }
+            try { await import('@/lib/email').then(m => m.email.sendAdminDispute({ orderId: order.id, expected, received, paymentId: payment?.id || payment?.txnId, gateway: 'Paytm', details: json })); } catch (e) { console.error('Failed to notify admin of paytm dispute', e); }
+            return NextResponse.json({ received: true });
+          }
+
+          // otherwise mark confirmed
+          await db.query("UPDATE orders SET status='confirmed', paytm_txn_id=$1 WHERE id=$2 AND status='pending'", [payment?.id || payment?.txnId, order.id]);
         } catch (e) { console.error('Failed to update order from paytm webhook', e); }
       }
     }

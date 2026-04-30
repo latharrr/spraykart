@@ -68,6 +68,8 @@ CREATE TABLE IF NOT EXISTS orders (
   status VARCHAR(30) DEFAULT 'pending',  -- pending|confirmed|shipped|delivered|cancelled
   razorpay_order_id TEXT,
   razorpay_payment_id TEXT,
+  paytm_txn_id TEXT,
+  payment_gateway VARCHAR(20) DEFAULT 'razorpay',
   payment_method VARCHAR(20) DEFAULT 'online', -- online|cod
   coupon_code VARCHAR(50),
   shipping_address JSONB,

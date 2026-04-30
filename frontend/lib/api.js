@@ -62,6 +62,7 @@ export const getMyOrder = (id) => api.get(`/orders/me/${id}`);
 // ─── Payments ─────────────────────────────────────────────────────────────────
 export const createPayment = (data) => api.post('/payments/create', data);
 export const verifyPayment = (data) => api.post('/payments/verify', data);
+export const createPaytmPayment = (data) => api.post('/payments/paytm/create', data);
 
 // ─── Coupon ───────────────────────────────────────────────────────────────────
 export const applyCoupon = (data) => api.post('/apply-coupon', data);

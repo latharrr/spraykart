@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCartStore, useAuthStore } from '@/lib/store';
-import { createPayment, verifyPayment, createOrder, applyCoupon } from '@/lib/api';
+import { createPayment, verifyPayment, createOrder, applyCoupon, createPaytmPayment } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 import Spinner from '@/components/ui/Spinner';
@@ -126,15 +126,17 @@ export default function CheckoutPage() {
     if (!/^\d{6}$/.test(address.pincode)) return toast.error('Pincode must be 6 digits');
     if (!/^\d{10}$/.test(address.phone)) return toast.error('Phone must be 10 digits');
 
-    // ── Defensive: verify Razorpay is configured and SDK is loaded ────────────
-    const rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-    if (!rzpKey || rzpKey.includes('xxxx')) {
-      toast.error('Online payments are temporarily unavailable. Please try again later.');
-      return;
-    }
-    if (typeof window === 'undefined' || typeof window.Razorpay === 'undefined') {
-      toast.error('Payment SDK not loaded. Please refresh the page and try again.');
-      return;
+    // ── Defensive: verify selected payment SDK is configured and loaded ───────
+    if (paymentMethod === 'online') {
+      const rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+      if (!rzpKey || rzpKey.includes('xxxx')) {
+        toast.error('Online payments are temporarily unavailable. Please try again later.');
+        return;
+      }
+      if (typeof window === 'undefined' || typeof window.Razorpay === 'undefined') {
+        toast.error('Payment SDK not loaded. Please refresh the page and try again.');
+        return;
+      }
     }
 
     setLoading(true);
@@ -194,6 +196,57 @@ export default function CheckoutPage() {
         clearCart();
         router.push('/order-confirmed');
         return;
+      }
+
+      // If Paytm selected, use Paytm flow
+      if (paymentMethod === 'paytm') {
+        try {
+          const { data: paytm } = await createPaytmPayment({ amount: effectiveGrandTotal });
+          if (!paytm?.txnToken) throw new Error('Failed to get Paytm token');
+
+          // Create order record (no razorpay_order_id)
+          await createOrder({
+            items: items.map((i) => ({ product_id: i.id, variant_id: i.variant?.id || null, quantity: i.quantity })),
+            shipping_address: {
+              ...address,
+              name: user.name,
+              email: user.email,
+            },
+            coupon_code: effectiveCoupon?.code,
+            razorpay_order_id: null,
+            idempotency_key: idempotencyKey,
+            payment_method: 'online'
+          });
+
+          // Load Paytm checkout script for merchant
+          const mid = paytm.mid;
+          const scriptSrc = `${process.env.NEXT_PUBLIC_PAYTM_HOST || 'https://securegw-stage.paytm.in'}/merchantpgpui/checkoutjs/merchants/${mid}.js`;
+          await new Promise((res, rej) => {
+            if (document.querySelector(`script[src="${scriptSrc}"]`)) return res();
+            const s = document.createElement('script');
+            s.src = scriptSrc;
+            s.async = true;
+            s.onload = res;
+            s.onerror = rej;
+            document.body.appendChild(s);
+          });
+
+          const config = {
+            root: '',
+            flow: 'DEFAULT',
+            data: { orderId: paytm.orderId, token: paytm.txnToken, tokenType: 'TXN_TOKEN', amount: effectiveGrandTotal.toString() },
+            handler: { notifyMerchant: (eventName, data) => console.log('Paytm event', eventName, data) },
+          };
+
+          // eslint-disable-next-line no-undef
+          window.Paytm?.CheckoutJS?.init(config).then(() => window.Paytm.CheckoutJS.invoke());
+          setLoading(false);
+          return;
+        } catch (err) {
+          toast.error(err?.error || 'Failed to initiate Paytm payment');
+          setLoading(false);
+          return;
+        }
       }
 
       const { data } = await createPayment({ amount: effectiveGrandTotal });
@@ -406,6 +459,10 @@ export default function CheckoutPage() {
                 <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
                   <input type="radio" name="payment" value="online" checked={paymentMethod === 'online'} onChange={() => setPaymentMethod('online')} className="w-4 h-4 text-black focus:ring-black" />
                   <span className="text-sm font-medium">Pay Online (Razorpay)</span>
+                </label>
+                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                  <input type="radio" name="payment" value="paytm" checked={paymentMethod === 'paytm'} onChange={() => setPaymentMethod('paytm')} className="w-4 h-4 text-black focus:ring-black" />
+                  <span className="text-sm font-medium">Pay via Paytm</span>
                 </label>
                 <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
                   <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="w-4 h-4 text-black focus:ring-black" />

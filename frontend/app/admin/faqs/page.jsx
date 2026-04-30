@@ -8,9 +8,9 @@ import { Plus, Pencil, Trash2, X, GripVertical, Eye, EyeOff, ImagePlus, Check } 
 // ── API helpers ───────────────────────────────────────────────────────────────
 async function apiFaqs() {
   const res = await fetch('/api/admin/faqs', { credentials: 'include', cache: 'no-store' });
-  const data = await res.json();
-  if (!res.ok) throw data.error || 'Failed to load FAQs';
-  return data;
+  const jsonData = await res.json();
+  if (!res.ok) throw jsonData.error || 'Failed to load FAQs';
+  return { data: jsonData };
 }
 
 async function apiCreate(formData) {

@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { email } from '@/lib/email';
+
+export const dynamic = 'force-dynamic';
 
 // This should be called by a cron job (e.g. every 15 minutes)
 export async function GET(request) {
-  // Simple security check to prevent public execution
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Check CRON_SECRET env var and compare with Authorization header
+  const secret = process.env.CRON_SECRET;
+  if (!secret) {
+    console.warn('[cron] CRON_SECRET not configured; cron endpoint is disabled');
+    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
+  }
+  
+  const authHeader = request.headers.get('authorization') || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  if (token !== secret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -44,10 +54,6 @@ export async function GET(request) {
 
     await client.query('COMMIT');
     return NextResponse.json({ success: true, reconciled: cancelledCount, deletedTokens });
-  } catch (err) {
-    await client.query('ROLLBACK');
-    console.error('Failed to reconcile orders:', err);
-    return NextResponse.json({ error: 'Reconciliation failed' }, { status: 500 });
   } finally {
     client.release();
   }

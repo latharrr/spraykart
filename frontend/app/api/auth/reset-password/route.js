@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import db from '@/lib/db';
 import { z } from 'zod';
 import { COOKIE_OPTIONS } from '@/lib/auth';
+import rateLimit from '@/lib/rateLimit';
 
 const schema = z.object({
   email: z.string().email().toLowerCase().trim(),
@@ -24,6 +25,17 @@ export async function POST(request) {
     }
 
     const { email, otp, password } = result.data;
+
+    // Apply rate limits per IP and per email to mitigate brute-force OTP attempts
+    try {
+      const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+      await rateLimit({ prefix: 'reset-ip', id: ip, limit: 10, windowSec: 900 }); // 10 attempts per 15m per IP
+      await rateLimit({ prefix: 'reset-email', id: email, limit: 5, windowSec: 3600 }); // 5 attempts per hour per email
+    } catch (rlErr) {
+      if (rlErr && rlErr.code === 'RATE_LIMIT_EXCEEDED') {
+        return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 });
+      }
+    }
 
     const { rows: updateRows } = await db.query(
       'UPDATE password_resets SET attempts = attempts + 1 WHERE email=$1 AND expires_at > NOW() RETURNING *',

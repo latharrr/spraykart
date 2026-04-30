@@ -10,15 +10,15 @@ const schema = z.object({
 });
 
 import cache from '@/lib/cache';
+import rateLimit from '@/lib/rateLimit';
 
 export async function POST(request) {
   try {
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    if (ip !== 'unknown') {
-      const rlKey = `rl:login:${ip}`;
-      const attempts = await cache.incr(rlKey);
-      if (attempts === 1) await cache.expire(rlKey, 900); // 15 mins
-      if (attempts > 5) return NextResponse.json({ error: 'Too many login attempts. Please try again in 15 minutes.' }, { status: 429 });
+    try {
+      await rateLimit({ prefix: 'login', id: ip, limit: 5, windowSec: 900 });
+    } catch (rlErr) {
+      if (rlErr && rlErr.code === 'RATE_LIMIT_EXCEEDED') return NextResponse.json({ error: 'Too many login attempts. Please try again in 15 minutes.' }, { status: 429 });
     }
 
     const body = await request.json();

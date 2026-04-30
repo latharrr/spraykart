@@ -3,6 +3,7 @@ import db from '@/lib/db';
 import { getAuthUser, unauthorized } from '@/lib/auth';
 
 import cache from '@/lib/cache';
+import rateLimit from '@/lib/rateLimit';
 
 export async function POST(request) {
   const user = await getAuthUser(request);
@@ -10,11 +11,10 @@ export async function POST(request) {
 
   try {
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    if (ip !== 'unknown') {
-      const rlKey = `rl:coupon:${ip}`;
-      const attempts = await cache.incr(rlKey);
-      if (attempts === 1) await cache.expire(rlKey, 3600); // 1 hour
-      if (attempts > 10) return NextResponse.json({ error: 'Too many coupon attempts. Please try again later.' }, { status: 429 });
+    try {
+      await rateLimit({ prefix: 'coupon', id: ip, limit: 10, windowSec: 3600 });
+    } catch (rlErr) {
+      if (rlErr && rlErr.code === 'RATE_LIMIT_EXCEEDED') return NextResponse.json({ error: 'Too many coupon attempts. Please try again later.' }, { status: 429 });
     }
 
     const { code, cart_total, cart_items = [] } = await request.json();

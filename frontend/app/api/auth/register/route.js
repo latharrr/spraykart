@@ -18,15 +18,15 @@ const schema = z.object({
 });
 
 import cache from '@/lib/cache';
+import rateLimit from '@/lib/rateLimit';
 
 export async function POST(request) {
   try {
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    if (ip !== 'unknown') {
-      const rlKey = `rl:register:${ip}`;
-      const attempts = await cache.incr(rlKey);
-      if (attempts === 1) await cache.expire(rlKey, 3600); // 1 hour
-      if (attempts > 3) return NextResponse.json({ error: 'Too many registration attempts. Please try again later.' }, { status: 429 });
+    try {
+      await rateLimit({ prefix: 'register', id: ip, limit: 3, windowSec: 3600 });
+    } catch (rlErr) {
+      if (rlErr && rlErr.code === 'RATE_LIMIT_EXCEEDED') return NextResponse.json({ error: 'Too many registration attempts. Please try again later.' }, { status: 429 });
     }
 
     const body = await request.json();

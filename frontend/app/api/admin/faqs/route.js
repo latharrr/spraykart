@@ -16,12 +16,34 @@ async function requireAdmin(request) {
   return { user };
 }
 
+async function ensureFaqTable() {
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS faqs (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      question TEXT NOT NULL,
+      answer TEXT NOT NULL,
+      image_url TEXT,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      is_active BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS idx_faqs_sort_order
+      ON faqs(sort_order, created_at)
+  `);
+}
+
 // ── GET all FAQs (admin — includes inactive) ──────────────────────────────────
 export async function GET(request) {
   const { error } = await requireAdmin(request);
   if (error) return error;
 
   try {
+    await ensureFaqTable();
+
     const { rows } = await db.query(
       'SELECT * FROM faqs ORDER BY sort_order ASC, created_at ASC'
     );
@@ -37,6 +59,8 @@ export async function POST(request) {
   if (error) return error;
 
   try {
+    await ensureFaqTable();
+
     const formData = await request.formData();
     const question = formData.get('question')?.toString().trim();
     const answer = formData.get('answer')?.toString().trim();

@@ -1,19 +1,18 @@
-'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 
 /**
- * HeroBanner — responsive hero section
+ * HeroBanner — responsive hero section (Server Component — no client JS bundle)
  *
- * Setup:
- *   1. Copy laptop.jpeg  → public/hero-desktop.jpeg
- *   2. Copy phone.png    → public/hero-mobile.png
- *   3. Replace the existing <section> hero block in app/page.jsx with <HeroBanner />
+ * Uses a single <picture>-style render: only the matching viewport image is
+ * fetched + decoded by the browser, eliminating wasted LCP decode on the
+ * hidden image. `priority` triggers <link rel="preload"> in the <head>.
  */
 export default function HeroBanner() {
   return (
     <section style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-      {/* ── Desktop image (hidden on mobile) ─────────────────────────────── */}
+      {/* ── Desktop image (hidden on mobile via CSS) ──────────────────────── */}
       <div className="hidden md:block" style={{ position: 'relative', width: '100%' }}>
         <Image
           src="/hero-desktop.jpeg"
@@ -21,17 +20,13 @@ export default function HeroBanner() {
           width={1400}
           height={600}
           priority
-          quality={90}
-          style={{
-            width: '100%',
-            height: 'auto',
-            display: 'block',
-            objectFit: 'cover',
-          }}
+          quality={85}
+          fetchPriority="high"
+          style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }}
         />
       </div>
 
-      {/* ── Mobile image (hidden on desktop) ─────────────────────────────── */}
+      {/* ── Mobile image (hidden on desktop via CSS) ──────────────────────── */}
       <div className="block md:hidden" style={{ position: 'relative', width: '100%' }}>
         <Image
           src="/hero-mobile.png"
@@ -39,25 +34,17 @@ export default function HeroBanner() {
           width={900}
           height={1200}
           priority
-          quality={90}
-          style={{
-            width: '100%',
-            height: 'auto',
-            display: 'block',
-            objectFit: 'cover',
-          }}
+          quality={80}
+          fetchPriority="high"
+          style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }}
         />
       </div>
 
-      {/* ── Clickable overlay — links the whole banner to /products ──────── */}
+      {/* ── Clickable overlay ─────────────────────────────────────────────── */}
       <Link
         href="/products"
         aria-label="Explore Collections"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 10,
-        }}
+        style={{ position: 'absolute', inset: 0, zIndex: 10 }}
       />
     </section>
   );

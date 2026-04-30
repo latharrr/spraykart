@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Instagram, Twitter, Facebook, Mail } from 'lucide-react';
 
 const footerLinks = {
@@ -9,18 +10,23 @@ const footerLinks = {
     { label: 'Attar & Unisex',     href: '/products?category=Attar' },
     { label: 'Gift Sets',          href: '/products?category=Gift+Sets' },
   ],
+  Explore: [
+    { label: 'Fragrance Finder',   href: '/fragrance-finder' },
+    { label: 'Spraykart Machine',  href: '/machine' },
+    { label: 'About Us',           href: '/#about' },
+    { label: 'Contact Us',         href: '/contact' },
+  ],
   Account: [
-    { label: 'My Orders',  href: '/orders' },
-    { label: 'Track Order',href: '/orders' },
-    { label: 'My Account', href: '/account' },
-    { label: 'Sign In',    href: '/login' },
+    { label: 'My Orders',          href: '/orders' },
+    { label: 'Track Order',        href: '/orders' },
+    { label: 'My Account',         href: '/account' },
+    { label: 'Sign In',            href: '/login' },
   ],
   Support: [
-    { label: 'Contact Us',       href: '/contact' },
-    { label: 'Privacy Policy',   href: '/privacy-policy' },
+    { label: 'Privacy Policy',     href: '/privacy-policy' },
     { label: 'Terms & Conditions', href: '/terms' },
-    { label: 'Refund Policy',    href: '/refund-policy' },
-    { label: 'Shipping Policy',  href: '/shipping-policy' },
+    { label: 'Refund Policy',      href: '/refund-policy' },
+    { label: 'Shipping Policy',    href: '/shipping-policy' },
   ],
 };
 
@@ -79,16 +85,34 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Bottom */}
-        <div className="border-t border-white/8 mt-14 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-neutral-700 flex flex-wrap gap-3">
-            <span>© {new Date().getFullYear()} Spraykart</span>
-            <span>·</span>
-            <span>Pan-India Delivery</span>
-          </p>
-          <p className="text-xs text-neutral-700 flex items-center gap-2">
-            Payments secured by <span className="text-neutral-500 font-medium">Razorpay</span>
-          </p>
+        {/* Bottom bar with logo */}
+        <div className="border-t border-white/8 mt-14 pt-8">
+          {/* Spraykart Logo — centered, prominent */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
+            <Link href="/" aria-label="Spraykart Home">
+              <span style={{
+                display: 'inline-flex', alignItems: 'baseline', gap: 0,
+                fontFamily: "'Cormorant', Georgia, serif",
+                fontSize: 42, fontWeight: 500,
+                color: '#ffffff', letterSpacing: '-0.03em',
+                lineHeight: 1,
+              }}>
+                Spray<em style={{ fontWeight: 300, fontStyle: 'italic' }}>kart</em>
+              </span>
+            </Link>
+          </div>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-neutral-700 flex flex-wrap gap-3">
+              <span>© {new Date().getFullYear()} Spraykart</span>
+              <span>·</span>
+              <span>Pan-India Delivery</span>
+              <span>·</span>
+              <span>100% Authentic</span>
+            </p>
+            <p className="text-xs text-neutral-700 flex items-center gap-2">
+              Payments secured by <span className="text-neutral-500 font-medium">Razorpay</span>
+            </p>
+          </div>
         </div>
       </div>
     </footer>

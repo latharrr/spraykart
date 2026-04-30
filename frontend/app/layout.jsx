@@ -50,6 +50,27 @@ export default function RootLayout({ children }) {
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
         <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://checkout.razorpay.com" crossOrigin="anonymous" />
+        {/*
+          Preload hero images before React hydrates.
+          Desktop image preloaded on md+ screens, mobile on smaller screens.
+          fetchpriority=high tells browser: load this before anything else.
+        */}
+        <link
+          rel="preload"
+          as="image"
+          href="/hero-desktop.jpeg"
+          media="(min-width: 768px)"
+          // @ts-ignore — fetchpriority is valid HTML but not in TS types yet
+          fetchpriority="high"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href="/hero-mobile.png"
+          media="(max-width: 767px)"
+          fetchpriority="high"
+        />
       </head>
       <body>
         <Navbar />

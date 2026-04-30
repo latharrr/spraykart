@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Star, Activity, LogOut, Server } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Star, Activity, LogOut, Server, HelpCircle } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 import clsx from 'clsx';
 
@@ -13,6 +13,7 @@ const navItems = [
   { href: '/admin/coupons', label: 'Coupons', icon: Tag },
   { href: '/admin/reviews', label: 'Reviews', icon: Star },
   { href: '/admin/performance', label: 'Performance', icon: Activity },
+  { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
   { href: '/admin/system', label: 'System', icon: Server },
 ];
 

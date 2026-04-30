@@ -10,7 +10,7 @@ import Spinner from '@/components/ui/Spinner';
 export default function RegisterPage() {
   const router = useRouter();
   const { setUser } = useAuthStore();
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' });
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -19,6 +19,7 @@ export default function RegisterPage() {
     if (!/[A-Z]/.test(form.password)) return toast.error('Password must contain at least one uppercase letter');
     if (!/[0-9]/.test(form.password)) return toast.error('Password must contain at least one number');
     if (!/[^A-Za-z0-9]/.test(form.password)) return toast.error('Password must contain at least one special character');
+    if (form.phone && !/^\d{10}$/.test(form.phone)) return toast.error('Phone number must be 10 digits');
     setLoading(true);
     try {
       const { data } = await register(form);
@@ -83,10 +84,11 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {[
-              { id: 'reg-name', label: 'Full name', type: 'text', placeholder: 'Jane Doe', key: 'name', autoComplete: 'name' },
-              { id: 'reg-email', label: 'Email address', type: 'email', placeholder: 'you@example.com', key: 'email', autoComplete: 'email' },
-              { id: 'reg-password', label: 'Password', type: 'password', placeholder: 'At least 8 characters', key: 'password', autoComplete: 'new-password' },
-            ].map(({ id, label, type, placeholder, key, autoComplete }) => (
+              { id: 'reg-name',     label: 'Full name',               type: 'text',     placeholder: 'Jane Doe',            key: 'name',     autoComplete: 'name',         required: true  },
+              { id: 'reg-email',    label: 'Email address',            type: 'email',    placeholder: 'you@example.com',     key: 'email',    autoComplete: 'email',        required: true  },
+              { id: 'reg-phone',    label: 'Mobile number (optional)', type: 'tel',      placeholder: '10-digit mobile no.', key: 'phone',    autoComplete: 'tel',          required: false, inputMode: 'numeric', maxLength: 10 },
+              { id: 'reg-password', label: 'Password',                 type: 'password', placeholder: 'At least 8 chars',   key: 'password', autoComplete: 'new-password', required: true  },
+            ].map(({ id, label, type, placeholder, key, autoComplete, required, inputMode, maxLength }) => (
               <div key={key}>
                 <label htmlFor={id} style={{ display: 'block', fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#737373', marginBottom: 8 }}>
                   {label}
@@ -98,9 +100,11 @@ export default function RegisterPage() {
                   className="input"
                   value={form[key]}
                   onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                  required
+                  required={required}
                   minLength={key === 'password' ? 8 : undefined}
+                  maxLength={maxLength}
                   autoComplete={autoComplete}
+                  inputMode={inputMode}
                 />
               </div>
             ))}

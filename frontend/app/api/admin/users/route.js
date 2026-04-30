@@ -18,8 +18,8 @@ export async function GET(request) {
   let i = 1;
 
   if (search) {
-    where += ` AND (name ILIKE $${i++} OR email ILIKE $${i++})`;
-    params.push(`%${search}%`, `%${search}%`);
+    where += ` AND (name ILIKE $${i++} OR email ILIKE $${i++} OR phone ILIKE $${i++})`;
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
   }
 
   params.push(limit, offset);
@@ -27,7 +27,7 @@ export async function GET(request) {
   try {
     const [{ rows }, { rows: countRows }] = await Promise.all([
       db.query(`
-        SELECT id, name, email, role, is_blocked, created_at,
+        SELECT id, name, email, phone, role, is_blocked, created_at,
           (SELECT COUNT(*) FROM orders WHERE user_id=users.id) as order_count,
           (SELECT COALESCE(SUM(final_price),0) FROM orders WHERE user_id=users.id AND status!='cancelled') as total_spent
         FROM users ${where} ORDER BY created_at DESC LIMIT $${i++} OFFSET $${i}`, params),

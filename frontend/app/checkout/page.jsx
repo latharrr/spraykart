@@ -144,7 +144,11 @@ export default function CheckoutPage() {
       if (paymentMethod === 'cod') {
         await createOrder({
           items: items.map((i) => ({ product_id: i.id, variant_id: i.variant?.id || null, quantity: i.quantity })),
-          shipping_address: address,
+          shipping_address: {
+            ...address,
+            name: user.name,          // snapshot customer name with order
+            email: user.email,        // snapshot customer email with order
+          },
           coupon_code: coupon?.code,
           idempotency_key: idempotencyKey,
           payment_method: 'cod'
@@ -162,7 +166,11 @@ export default function CheckoutPage() {
           variant_id: i.variant?.id || null,
           quantity: i.quantity,
         })),
-        shipping_address: address,
+        shipping_address: {
+          ...address,
+          name: user.name,          // snapshot customer name with order
+          email: user.email,        // snapshot customer email with order
+        },
         coupon_code: coupon?.code,
         razorpay_order_id: data.order_id,
         idempotency_key: idempotencyKey,

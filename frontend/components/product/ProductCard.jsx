@@ -2,12 +2,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Star } from 'lucide-react';
-import { memo, useState } from 'react';
+import { memo } from 'react';
 
+// Memoized at module level — no recomputation per render
+const CLOUDINARY_RE = /\/upload\//;
 function optimizeCloudinaryUrl(url) {
   if (!url || !url.includes('cloudinary.com')) return url;
-  // Insert optimization params into existing Cloudinary URL
-  return url.replace('/upload/', '/upload/f_auto,q_auto,w_400,dpr_2/');
+  return url.replace(CLOUDINARY_RE, '/upload/f_auto,q_auto,w_400,dpr_auto/');
 }
 
 // ─── Star row is pure — memoize to avoid 5 Star rerenders per card ─────────────
@@ -32,7 +33,6 @@ const StarRow = memo(function StarRow({ avgRating, reviewCount }) {
 });
 
 function ProductCard({ product, priority = false }) {
-  const [isLoaded, setIsLoaded] = useState(false);
   const discount = product.compare_price
     ? Math.min(Math.round(((product.compare_price - product.price) / product.compare_price) * 100), 70)
     : 0;
@@ -43,9 +43,6 @@ function ProductCard({ product, priority = false }) {
 
         {/* Image — rock solid aspect ratio container */}
         <div className="relative w-full aspect-[3/4] bg-[#f7f7f5] overflow-hidden shrink-0">
-          {!isLoaded && product.image && (
-            <div className="absolute inset-0 bg-gray-200 animate-pulse z-0" />
-          )}
           
           {product.image ? (
               <Image
@@ -53,13 +50,12 @@ function ProductCard({ product, priority = false }) {
                 alt={product.name}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className={`object-cover transition-all duration-700 ease-out group-hover:scale-105 z-10 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-                onLoad={() => setIsLoaded(true)}
+                className="object-cover transition-transform duration-500 ease-out group-hover:scale-105 z-10"
                 priority={priority}
-                fetchPriority={priority ? "high" : "auto"}
-                quality={80}
+                fetchPriority={priority ? 'high' : 'auto'}
+                quality={75}
                 placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAEAwUC/8QAHRAAAQQDAQEAAAAAAAAAAAAAAQACAxESITFBUf/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwq1rXua1jQGgcABfLREH/2Q=="
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAEAwUC/8QAHRAAAQQDAQEAAAAAAAAAAAAAAQACAxESITFBUf/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwq1rXua1jQGgcABfLREH/2Q=="
               />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-[#f2f2f0]">

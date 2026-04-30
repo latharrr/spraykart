@@ -8,6 +8,7 @@ import { z } from 'zod';
 const schema = z.object({
   name: z.string().min(2).max(100).trim(),
   email: z.string().email().toLowerCase().trim(),
+  phone: z.string().regex(/^\d{10}$/, 'Phone must be 10 digits').optional().or(z.literal('')),
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
     .max(100)
@@ -33,7 +34,7 @@ export async function POST(request) {
     if (!result.success) {
       return NextResponse.json({ error: 'Validation failed', details: result.error.flatten().fieldErrors }, { status: 400 });
     }
-    const { name, email, password } = result.data;
+    const { name, email, phone, password } = result.data;
 
     const existing = await db.query('SELECT id FROM users WHERE email=$1', [email]);
     if (existing.rows.length) {
@@ -42,8 +43,8 @@ export async function POST(request) {
 
     const hash = await bcrypt.hash(password, 12);
     const { rows } = await db.query(
-      'INSERT INTO users(name,email,password) VALUES($1,$2,$3) RETURNING id,name,email,role',
-      [name, email, hash]
+      'INSERT INTO users(name,email,phone,password) VALUES($1,$2,$3,$4) RETURNING id,name,email,phone,role',
+      [name, email, phone || null, hash]
     );
     const user = rows[0];
 

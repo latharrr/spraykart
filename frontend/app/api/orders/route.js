@@ -11,12 +11,14 @@ const orderItemSchema = z.object({
 });
 
 const shippingSchema = z.object({
+  name: z.string().min(2).max(100).trim(),          // customer name saved with order
   line1: z.string().min(5).max(255).trim(),
   line2: z.string().max(255).trim().optional(),
   city: z.string().min(2).max(100).trim(),
   state: z.string().min(2).max(100).trim(),
   pincode: z.string().regex(/^\d{6}$/),
   phone: z.string().regex(/^\d{10}$/),
+  email: z.string().email().max(255).trim().optional(), // snapshot email with order
 });
 
 const schema = z.object({

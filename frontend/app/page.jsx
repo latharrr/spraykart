@@ -8,7 +8,7 @@ import HeroBanner from '@/components/HeroBanner';
 
 // Keep homepage statically rendered and refresh periodically.
 export const dynamic = 'force-static';
-export const revalidate = 1800;
+export const revalidate = 3600; // 1 hour — reduces ISR regenerations by 50%
 
 async function getFeaturedProducts() {
   try {
@@ -109,7 +109,8 @@ export default async function HomePage() {
           {featuredProducts.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }} className="featured-grid">
               {featuredProducts.map((p, i) => (
-                <ProductCard key={p.id} product={p} />
+                // priority on first 4 → browser preloads those images immediately (LCP)
+                <ProductCard key={p.id} product={p} priority={i < 4} />
               ))}
             </div>
           ) : (

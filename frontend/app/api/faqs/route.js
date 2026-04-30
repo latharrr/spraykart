@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 60; // Cache for 60 seconds
 
 async function ensureFaqTable() {
   await db.query(`
@@ -31,7 +32,7 @@ export async function GET() {
     const { rows } = await db.query(
       'SELECT id, question, answer, image_url, sort_order FROM faqs WHERE is_active = true ORDER BY sort_order ASC, created_at ASC'
     );
-    return NextResponse.json({ faqs: rows }, { headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json({ faqs: rows }, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

@@ -6,8 +6,7 @@ export const metadata = {
   description: 'Find answers to common questions about Spraykart — shipping, returns, authenticity, payment, and more.',
 };
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 async function getFaqs() {
   try {

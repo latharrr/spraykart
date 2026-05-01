@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import logger from '@/lib/logger';
 
 async function ensureContactTable() {
   await db.query(`
@@ -40,7 +41,7 @@ export async function POST(request) {
 
     return NextResponse.json({ submission: rows[0] }, { status: 201 });
   } catch (err) {
-    console.error('Contact submission error:', err);
+    logger.error('Contact submission error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

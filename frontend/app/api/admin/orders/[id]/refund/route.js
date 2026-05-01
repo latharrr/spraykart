@@ -4,6 +4,7 @@ import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import Razorpay from 'razorpay';
 import PaytmChecksum from 'paytmchecksum';
 import { logAdminAction } from '@/lib/audit';
+import logger from '@/lib/logger';
 
 function getRazorpay() {
   const key_id = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
@@ -111,7 +112,7 @@ export async function POST(request, { params }) {
     const statusCode = gatewayRefund.status === 'failed' ? 502 : 200;
     return NextResponse.json({ success: gatewayRefund.status !== 'failed', refund: inserted[0], gateway: gatewayRefund.gateway_response }, { status: statusCode });
   } catch (err) {
-    console.error('Refund error:', err);
+    logger.error('Refund error:', err);
     return NextResponse.json({ error: 'Failed to process refund. Check payment gateway dashboard.' }, { status: 500 });
   }
 }

@@ -1,4 +1,5 @@
 import db from '@/lib/db';
+import logger from '@/lib/logger';
 
 export const revalidate = 3600;
 
@@ -24,7 +25,7 @@ export default async function sitemap() {
       priority: 0.7,
     }));
   } catch (err) {
-    console.error('Sitemap products error:', err);
+    logger.error('Sitemap products error:', err);
   }
 
   return [...staticPages, ...productPages];

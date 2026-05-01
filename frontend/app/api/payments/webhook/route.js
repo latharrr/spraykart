@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import db from '@/lib/db';
 import { enqueueEmailJob } from '@/lib/emailJobs';
 import { insertWebhookEvent, markWebhookProcessed, stableEventId } from '@/lib/webhookEvents';
+import logger from '@/lib/logger';
 
 // Must receive raw body - configure in next.config.js
 export const dynamic = 'force-dynamic';
@@ -51,13 +52,13 @@ export async function POST(request) {
       const order = rows[0];
       const expectedAmount = Math.round(parseFloat(order.final_price) * 100);
       if (amount !== expectedAmount || currency !== 'INR') {
-        console.error(`Webhook amount mismatch for order ${order.id}`);
+        logger.error('Webhook amount mismatch', { orderId: order.id, amount, currency });
         try {
           await db.query("UPDATE orders SET status='disputed' WHERE id=$1", [order.id]);
-        } catch (e) { console.error('Failed to mark order disputed:', e); }
+        } catch (e) { logger.error('Failed to mark order disputed:', e); }
         try {
           await enqueueEmailJob({ type: 'admin_dispute', args: { orderId: order.id, expected: order.final_price, received: (amount / 100), paymentId: razorpay_payment_id, gateway: 'Razorpay', details: event } });
-        } catch (e) { console.error('Failed to email admin about dispute:', e); }
+        } catch (e) { logger.error('Failed to email admin about dispute:', e); }
         await markWebhookProcessed(eventRecord.id);
         return NextResponse.json({ received: true });
       }
@@ -73,10 +74,10 @@ export async function POST(request) {
         Promise.all([
           enqueueEmailJob({ type: 'order_confirmation', args: { to: order.customer_email, name: order.customer_name, orderId: order.id, items, total: order.final_price, discount: order.discount } }),
           enqueueEmailJob({ type: 'admin_new_order', args: { orderId: order.id, customerName: order.customer_name, customerEmail: order.customer_email, total: order.final_price, itemCount: items.length } }),
-        ]).catch(console.error);
+        ]).catch((err) => logger.error('Failed to enqueue Razorpay webhook email job:', err));
       }
     } catch (err) {
-      console.error('Webhook processing error:', err);
+      logger.error('Webhook processing error:', err);
     }
   } else if (event.event === 'payment.failed') {
     const { order_id: razorpay_order_id } = payment || {};
@@ -109,13 +110,13 @@ export async function POST(request) {
           await client.query('COMMIT');
         } catch (err) {
           await client.query('ROLLBACK');
-          console.error('Failed to restore stock on payment failure:', err);
+          logger.error('Failed to restore stock on payment failure:', err);
         } finally {
           client.release();
         }
       }
     } catch (err) {
-      console.error('Webhook processing error (payment.failed):', err);
+      logger.error('Webhook processing error (payment.failed):', err);
     }
   }
 

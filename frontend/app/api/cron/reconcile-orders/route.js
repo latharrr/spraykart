@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { email } from '@/lib/email';
+import logger from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,7 @@ export async function GET(request) {
   // Check CRON_SECRET env var and compare with Authorization header
   const secret = process.env.CRON_SECRET;
   if (!secret) {
-    console.warn('[cron] CRON_SECRET not configured; cron endpoint is disabled');
+    logger.warn('[cron] CRON_SECRET not configured; cron endpoint is disabled');
     return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
   }
   

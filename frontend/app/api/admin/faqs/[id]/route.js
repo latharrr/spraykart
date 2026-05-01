@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import { v2 as cloudinary } from 'cloudinary';
+import logger from '@/lib/logger';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -78,7 +79,7 @@ export async function PATCH(request, { params }) {
     if (!rows.length) return NextResponse.json({ error: 'FAQ not found' }, { status: 404 });
     return NextResponse.json({ faq: rows[0] });
   } catch (err) {
-    console.error('FAQ update error:', err);
+    logger.error('FAQ update error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

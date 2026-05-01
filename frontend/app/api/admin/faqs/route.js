@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import { v2 as cloudinary } from 'cloudinary';
+import logger from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -92,7 +93,7 @@ export async function POST(request) {
     );
     return NextResponse.json({ faq: rows[0] }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
-    console.error('FAQ create error:', err);
+    logger.error('FAQ create error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

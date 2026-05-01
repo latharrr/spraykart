@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { CSRF_HEADER_NAME, CSRF_COOKIE_NAME, getCookieFromDocument, isStateChangingMethod } from './csrf';
+import logger from './logger';
 
 const api = axios.create({
   // Use relative URL — Next.js rewrites proxy this to localhost:5000 server-side.
@@ -27,7 +28,7 @@ api.interceptors.response.use(
     const data = err.response?.data;
 
     if (typeof window !== 'undefined') {
-      console.error('[API request failed]', {
+      logger.error('[API request failed]', {
         method: err.config?.method?.toUpperCase(),
         url: err.config?.url,
         status: err.response?.status,

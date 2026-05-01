@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import db from '@/lib/db';
 import { signToken, COOKIE_OPTIONS } from '@/lib/auth';
 import { CSRF_COOKIE_NAME, generateCsrfToken, getCsrfCookieOptions } from '@/lib/csrf';
+import logger from '@/lib/logger';
 import { z } from 'zod';
 
 const schema = z.object({
@@ -44,7 +45,7 @@ export async function POST(request) {
     response.cookies.set(CSRF_COOKIE_NAME, generateCsrfToken(), getCsrfCookieOptions());
     return response;
   } catch (err) {
-    console.error('Login error:', err);
+    logger.error('Login error:', err);
     return NextResponse.json({ error: 'Login failed' }, { status: 500 });
   }
 }

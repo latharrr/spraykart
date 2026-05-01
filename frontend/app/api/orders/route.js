@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser, unauthorized } from '@/lib/auth';
 import { email } from '@/lib/email';
+import logger from '@/lib/logger';
 import { z } from 'zod';
 
 const orderItemSchema = z.object({
@@ -214,21 +215,21 @@ export async function POST(request) {
         items: enrichedItems,
         total: order.final_price,
         discount: order.discount,
-      }).catch(console.error);
+      }).catch((err) => logger.error('Order confirmation email failed:', err));
       email.sendAdminNewOrder({
         orderId: order.id,
         customerName: user.name,
         customerEmail: user.email,
         total: order.final_price,
         itemCount: enrichedItems.length,
-      }).catch(console.error);
+      }).catch((err) => logger.error('Admin new order email failed:', err));
     }
 
     await client.query('COMMIT');
     return NextResponse.json(order, { status: 201 });
   } catch (err) {
     await client.query('ROLLBACK');
-    console.error('Order creation failed:', err);
+    logger.error('Order creation failed:', err);
     return NextResponse.json({ error: err.message }, { status: 400 });
   } finally {
     client.release();

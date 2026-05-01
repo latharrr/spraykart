@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ArrowLeft, Check, Sparkles } from 'lucide-react';
 import { submitFragranceFinder } from '@/lib/api';
+import logger from '@/lib/logger';
 
 
 
@@ -95,7 +96,7 @@ export default function FragranceFinderPage() {
     try {
       await submitFragranceFinder(payload);
     } catch (err) {
-      console.error('Failed to save fragrance finder submission', err);
+      logger.error('Failed to save fragrance finder submission', err);
     } finally {
       setSavingSubmission(false);
     }

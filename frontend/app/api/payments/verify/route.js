@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import db from '@/lib/db';
 import { getAuthUser, unauthorized } from '@/lib/auth';
+import logger from '@/lib/logger';
 
 export async function POST(request) {
   const user = await getAuthUser(request);
@@ -31,7 +32,7 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, message: 'Payment confirmed' });
   } catch (err) {
-    console.error('Payment verify error:', err);
+    logger.error('Payment verify error:', err);
     return NextResponse.json({ error: 'Failed to confirm payment' }, { status: 500 });
   }
 }

@@ -9,6 +9,7 @@ import Spinner from '@/components/ui/Spinner';
 import EmptyState from '@/components/ui/EmptyState';
 import Link from 'next/link';
 import { Tag, X, ChevronDown } from 'lucide-react';
+import logger from '@/lib/logger';
 
 // ─── Indian States & UTs ──────────────────────────────────────────────────────
 const INDIAN_STATES = [
@@ -236,7 +237,7 @@ export default function CheckoutPage() {
             root: '',
             flow: 'DEFAULT',
             data: { orderId: paytm.orderId, token: paytm.txnToken, tokenType: 'TXN_TOKEN', amount: effectiveGrandTotal.toString() },
-            handler: { notifyMerchant: (eventName, data) => console.log('Paytm event', eventName, data) },
+            handler: { notifyMerchant: (eventName, data) => logger.info('Paytm event', { eventName, data }) },
           };
 
           // eslint-disable-next-line no-undef

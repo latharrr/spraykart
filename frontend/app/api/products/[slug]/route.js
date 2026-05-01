@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import cache from '@/lib/cache';
+import logger from '@/lib/logger';
 
 export async function GET(request, { params }) {
   const { slug } = params;
@@ -48,7 +49,7 @@ export async function GET(request, { params }) {
       },
     });
   } catch (err) {
-    console.error('Product detail error:', err);
+    logger.error('Product detail error:', err);
     return NextResponse.json({ error: 'Failed to fetch product' }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { fetchWithCsrf } from '@/lib/csrf';
+import logger from '@/lib/logger';
 
 export default function SystemSettingsPage() {
   const [lockedIps, setLockedIps] = useState([]);
@@ -13,7 +14,7 @@ export default function SystemSettingsPage() {
       const data = await res.json();
       if (res.ok) setLockedIps(data.lockedIps || []);
     } catch (err) {
-      console.error(err);
+      logger.error('Redis admin fetch failed', err);
     }
   };
 

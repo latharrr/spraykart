@@ -13,9 +13,9 @@ async function run() {
     const migrationPath = path.resolve(__dirname, '../database/migrations/008_fragrance_finder_submissions.sql');
     const sql = fs.readFileSync(migrationPath, 'utf8');
     await pool.query(sql);
-    console.log('Migration applied successfully.');
+    process.stdout.write('Migration applied successfully.\n');
   } catch (err) {
-    console.error('Migration failed:', err);
+    process.stderr.write(`Migration failed: ${err?.message || err}\n`);
   } finally {
     pool.end();
   }

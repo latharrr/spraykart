@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { email as emailService } from '@/lib/email';
+import logger from '@/lib/logger';
 
 import cache from '@/lib/cache';
 
@@ -43,7 +44,7 @@ export async function POST(request) {
     emailService.sendPasswordReset({ to: email, name: rows[0].name, otp }).catch(() => {});
     return respond({ success: true, message: 'If that email exists, you will receive an OTP.' });
   } catch (err) {
-    console.error('Forgot password error:', err);
+    logger.error('Forgot password error:', err);
     return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
   }
 }

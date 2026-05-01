@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import cache from '@/lib/cache';
+import logger from '@/lib/logger';
 
 const ALLOWED_SORTS = ['price', 'created_at', 'name'];
 
@@ -88,7 +89,7 @@ export async function GET(request) {
       },
     });
   } catch (err) {
-    console.error('Products list error:', err);
+    logger.error('Products list error:', err);
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
   }
 }

@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import logger from './logger';
 
 // ─── Global singleton prevents pool recreation on every hot-reload in dev ──────
 const globalForDb = globalThis;
@@ -21,7 +22,7 @@ function createPool() {
   });
 
   pool.on('error', (err) => {
-    console.error('[DB] Pool error:', err.message);
+    logger.error('[DB] Pool error:', err.message);
   });
 
   return pool;

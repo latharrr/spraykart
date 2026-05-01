@@ -4,6 +4,7 @@ import db from '@/lib/db';
 import { z } from 'zod';
 import { COOKIE_OPTIONS } from '@/lib/auth';
 import rateLimit from '@/lib/rateLimit';
+import logger from '@/lib/logger';
 
 const schema = z.object({
   email: z.string().email().toLowerCase().trim(),
@@ -59,7 +60,7 @@ export async function POST(request) {
     response.cookies.set('token', '', { ...COOKIE_OPTIONS, maxAge: 0 });
     return response;
   } catch (err) {
-    console.error('Reset password error:', err);
+    logger.error('Reset password error:', err);
     return NextResponse.json({ error: 'Failed to reset password' }, { status: 500 });
   }
 }

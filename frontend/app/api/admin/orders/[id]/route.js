@@ -3,6 +3,7 @@ import db from '@/lib/db';
 import { email } from '@/lib/email';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import { logAdminAction } from '@/lib/audit';
+import logger from '@/lib/logger';
 
 const VALID_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 const ALLOWED_TRANSITIONS = {
@@ -131,7 +132,7 @@ export async function PUT(request, { params }) {
     }
     if (['shipped', 'delivered', 'cancelled'].includes(status)) {
       email.sendOrderStatusUpdate({ to: order.customer_email, name: order.customer_name, orderId: order.id, status })
-        .catch(console.error);
+        .catch((err) => logger.error('Order status email failed:', err));
     }
 
     return NextResponse.json(order);

@@ -1,8 +1,9 @@
 import * as Sentry from '@sentry/nextjs';
+import logger, { redactForLogging } from './lib/logger';
 
 export function register() {
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
-    console.error('CRITICAL: JWT_SECRET must be at least 32 characters long for production security.');
+    logger.error('CRITICAL: JWT_SECRET must be at least 32 characters long for production security.');
     if (process.env.NODE_ENV === 'production') {
       process.exit(1);
     }
@@ -14,6 +15,7 @@ export function register() {
       environment: process.env.NODE_ENV,
       tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.2 : 1.0,
       debug: false,
+      beforeSend: (event) => redactForLogging(event),
     });
   }
 
@@ -23,6 +25,7 @@ export function register() {
       environment: process.env.NODE_ENV,
       tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.2 : 1.0,
       debug: false,
+      beforeSend: (event) => redactForLogging(event),
     });
   }
 }

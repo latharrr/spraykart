@@ -4,6 +4,7 @@ import cache from '@/lib/cache';
 import { uploadImage } from '@/lib/cloudinary';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import { validateProductImageFiles } from '@/lib/uploadLimits';
+import logger from '@/lib/logger';
 import slugify from 'slugify';
 
 export const config = { api: { bodyParser: false } };
@@ -97,7 +98,7 @@ export async function POST(request) {
     return NextResponse.json(product, { status: 201 });
   } catch (err) {
     await client.query('ROLLBACK');
-    console.error('Product creation failed:', err);
+    logger.error('Product creation failed:', err);
     return NextResponse.json({ error: err.message }, { status: 400 });
   } finally {
     client.release();

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import PaytmChecksum from 'paytmchecksum';
 import db from '@/lib/db';
+import logger from '@/lib/logger';
 
 export async function POST(request) {
   try {
@@ -11,7 +12,7 @@ export async function POST(request) {
 
     const merchantKey = process.env.PAYTM_MERCHANT_KEY;
     if (!merchantKey) {
-      console.error('PAYTM_MERCHANT_KEY not configured');
+      logger.error('PAYTM_MERCHANT_KEY not configured');
       return NextResponse.redirect('/checkout?error=invalid');
     }
 
@@ -35,14 +36,14 @@ export async function POST(request) {
           [verify.body.txnId, body.ORDERID]
         );
       } catch (err) {
-        console.error('Failed to update order after Paytm callback', err);
+        logger.error('Failed to update order after Paytm callback', err);
       }
       return NextResponse.redirect('/orders?success=1');
     }
 
     return NextResponse.redirect('/checkout?error=failed');
   } catch (err) {
-    console.error('Paytm callback error:', err);
+    logger.error('Paytm callback error:', err);
     return NextResponse.redirect('/checkout?error=failed');
   }
 }

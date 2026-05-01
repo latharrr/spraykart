@@ -5,6 +5,7 @@ import { ArrowRight, ShieldCheck, Truck, Gift, Star, Phone, BadgeCheck } from 'l
 import db from '@/lib/db';
 import cache from '@/lib/cache';
 import HeroBanner from '@/components/HeroBanner';
+import logger from '@/lib/logger';
 
 // Keep homepage statically rendered and refresh periodically.
 export const dynamic = 'force-static';
@@ -44,7 +45,7 @@ async function getFeaturedProducts() {
     await cache.set('products:featured:home', rows, 1800);
     return rows;
   } catch (err) {
-    console.error('Failed to fetch featured products:', err);
+    logger.error('Failed to fetch featured products:', err);
     return [];
   }
 }

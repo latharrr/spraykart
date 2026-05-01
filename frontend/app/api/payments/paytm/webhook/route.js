@@ -3,6 +3,7 @@ import PaytmChecksum from 'paytmchecksum';
 import db from '@/lib/db';
 import { enqueueEmailJob } from '@/lib/emailJobs';
 import { insertWebhookEvent, markWebhookProcessed, stableEventId } from '@/lib/webhookEvents';
+import logger from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,8 +68,8 @@ export async function POST(request) {
 
           // If received amount is available and differs significantly, mark disputed and alert admin
           if (received !== null && Math.abs(expected - received) > 1.0) {
-            try { await db.query("UPDATE orders SET status='disputed', paytm_txn_id=$1 WHERE id=$2", [payment?.id || payment?.txnId, order.id]); } catch (e) { console.error('Failed to mark paytm order disputed', e); }
-            try { await enqueueEmailJob({ type: 'admin_dispute', args: { orderId: order.id, expected, received, paymentId: payment?.id || payment?.txnId, gateway: 'Paytm', details: json } }); } catch (e) { console.error('Failed to notify admin of paytm dispute', e); }
+            try { await db.query("UPDATE orders SET status='disputed', paytm_txn_id=$1 WHERE id=$2", [payment?.id || payment?.txnId, order.id]); } catch (e) { logger.error('Failed to mark paytm order disputed', e); }
+            try { await enqueueEmailJob({ type: 'admin_dispute', args: { orderId: order.id, expected, received, paymentId: payment?.id || payment?.txnId, gateway: 'Paytm', details: json } }); } catch (e) { logger.error('Failed to notify admin of paytm dispute', e); }
             await markWebhookProcessed(eventRecord.id);
             return NextResponse.json({ received: true });
           }
@@ -85,14 +86,14 @@ export async function POST(request) {
               enqueueEmailJob({ type: 'admin_new_order', args: { orderId: order.id, customerName: order.customer_name, customerEmail: order.customer_email, total: order.final_price, itemCount: items.length } }),
             ]);
           }
-        } catch (e) { console.error('Failed to update order from paytm webhook', e); }
+        } catch (e) { logger.error('Failed to update order from paytm webhook', e); }
       }
     }
 
     await markWebhookProcessed(eventRecord.id);
     return NextResponse.json({ received: true });
   } catch (err) {
-    console.error('Paytm webhook error:', err);
+    logger.error('Paytm webhook error:', err);
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
 }

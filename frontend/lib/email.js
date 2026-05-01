@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import logger from './logger';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM = process.env.EMAIL_FROM || 'Spraykart <onboarding@resend.dev>';
@@ -6,8 +7,8 @@ const FRONTEND_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://spraykart.verc
 
 // Warn if critical env vars are missing
 if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
-  if (!process.env.ADMIN_EMAIL) console.warn('[email] ADMIN_EMAIL not set; admin notifications will be skipped');
-  if (!process.env.RESEND_API_KEY) console.warn('[email] RESEND_API_KEY not set; all email notifications will be skipped');
+  if (!process.env.ADMIN_EMAIL) logger.warn('[email] ADMIN_EMAIL not set; admin notifications will be skipped');
+  if (!process.env.RESEND_API_KEY) logger.warn('[email] RESEND_API_KEY not set; all email notifications will be skipped');
 }
 
 const shell = (body) => `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
@@ -24,11 +25,11 @@ const shell = (body) => `<!DOCTYPE html><html><head><meta charset="utf-8"></head
 </body></html>`;
 
 async function send({ to, subject, html }) {
-  if (!resend) { console.warn('RESEND_API_KEY not set'); return; }
+  if (!resend) { logger.warn('RESEND_API_KEY not set'); return; }
   try {
     await resend.emails.send({ from: FROM, to, subject, html });
   } catch (err) {
-    console.error('Email failed:', err.message);
+    logger.error('Email failed:', err.message);
   }
 }
 
@@ -52,7 +53,7 @@ export const email = {
 
   sendAdminNewOrder: ({ orderId, customerName, customerEmail, total, itemCount }) => {
     if (!process.env.ADMIN_EMAIL) {
-      console.warn('[email] ADMIN_EMAIL not set; skipping admin notification for order', orderId?.slice?.(0, 8));
+      logger.warn('[email] ADMIN_EMAIL not set; skipping admin notification for order', orderId?.slice?.(0, 8));
       return Promise.resolve();
     }
     return send({

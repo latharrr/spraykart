@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser } from '@/lib/auth';
+import logger from '@/lib/logger';
 
 async function ensureFragranceFinderTable() {
   await db.query(`
@@ -50,7 +51,7 @@ export async function POST(request) {
 
     return NextResponse.json({ submission: rows[0] }, { status: 201 });
   } catch (err) {
-    console.error('Fragrance finder submission error:', err);
+    logger.error('Fragrance finder submission error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

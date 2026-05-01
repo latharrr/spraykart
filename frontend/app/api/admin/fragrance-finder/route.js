@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
+import logger from '@/lib/logger';
 
 async function requireAdmin(request) {
   const user = await getAuthUser(request);
@@ -65,7 +66,7 @@ export async function GET(request) {
       pages: Math.max(Math.ceil(total / limit), 1),
     });
   } catch (err) {
-    console.error('Fragrance finder admin fetch error:', err);
+    logger.error('Fragrance finder admin fetch error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

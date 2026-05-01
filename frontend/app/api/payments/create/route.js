@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { getAuthUser, unauthorized } from '@/lib/auth';
+import logger from '@/lib/logger';
 
 const getRazorpay = () => {
   const key_id = process.env.RAZORPAY_KEY_ID;
@@ -25,7 +26,7 @@ export async function POST(request) {
 
     return NextResponse.json({ order_id: order.id, currency: order.currency, amount: order.amount });
   } catch (err) {
-    console.error('Razorpay create order failed:', err);
+    logger.error('Razorpay create order failed:', err);
     return NextResponse.json({ error: 'Failed to initiate payment' }, { status: 500 });
   }
 }

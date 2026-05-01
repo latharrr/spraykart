@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import PaytmChecksum from 'paytmchecksum';
 import { getAuthUser, unauthorized } from '@/lib/auth';
+import logger from '@/lib/logger';
 
 // POST /api/payments/paytm/create
 export async function POST(request) {
@@ -42,7 +43,7 @@ export async function POST(request) {
 
     const data = await res.json();
     if (!data || !data.body) {
-      console.error('Paytm create returned unexpected response', data);
+      logger.error('Paytm create returned unexpected response', data);
       return NextResponse.json({ error: 'Failed to initiate Paytm transaction' }, { status: 500 });
     }
 
@@ -52,7 +53,7 @@ export async function POST(request) {
 
     return NextResponse.json({ txnToken: data.body.txnToken, orderId: txnOrderId, mid, amount });
   } catch (err) {
-    console.error('Paytm create error:', err);
+    logger.error('Paytm create error:', err);
     return NextResponse.json({ error: 'Failed to initiate Paytm transaction' }, { status: 500 });
   }
 }

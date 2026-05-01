@@ -2,6 +2,7 @@ import { Cormorant, Inter } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import CookieBanner from '@/components/layout/CookieBanner';
 import './globals.css';
 
 // ─── Fonts loaded server-side — ZERO render-blocking, ZERO layout shift ───────
@@ -76,6 +77,7 @@ export default function RootLayout({ children }) {
         <Navbar />
         <main className="min-h-screen">{children}</main>
         <Footer />
+        <CookieBanner />
         <Toaster
           position="top-right"
           toastOptions={{

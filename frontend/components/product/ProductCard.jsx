@@ -6,9 +6,20 @@ import { memo } from 'react';
 
 // Memoized at module level — no recomputation per render
 const CLOUDINARY_RE = /\/upload\//;
+const FALLBACK_BLUR_DATA_URL = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAEAwUC/8QAHRAAAQQDAQEAAAAAAAAAAAAAAQACAxESITFBUf/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwq1rXua1jQGgcABfLREH/2Q==';
+
 function optimizeCloudinaryUrl(url) {
   if (!url || !url.includes('cloudinary.com')) return url;
   return url.replace(CLOUDINARY_RE, '/upload/f_auto,q_auto,w_400,dpr_auto/');
+}
+
+function getBlurDataUrl(url) {
+  if (!url || !url.includes('cloudinary.com')) return FALLBACK_BLUR_DATA_URL;
+  if (CLOUDINARY_RE.test(url)) {
+    return url.replace(CLOUDINARY_RE, '/upload/w_10,q_10,e_blur:1000/');
+  }
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}w=10&q=10&blur=1000`;
 }
 
 // ─── Star row is pure — memoize to avoid 5 Star rerenders per card ─────────────
@@ -55,7 +66,7 @@ function ProductCard({ product, priority = false }) {
                 fetchPriority={priority ? 'high' : 'auto'}
                 quality={75}
                 placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAEAwUC/8QAHRAAAQQDAQEAAAAAAAAAAAAAAQACAxESITFBUf/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwq1rXua1jQGgcABfLREH/2Q=="
+                blurDataURL={getBlurDataUrl(product.image)}
               />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-[#f2f2f0]">

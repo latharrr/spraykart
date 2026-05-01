@@ -49,12 +49,19 @@ async function getProduct(slug) {
 export async function generateMetadata({ params }) {
   const product = await getProduct(params.slug);
   if (!product) return {};
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spraykart.vercel.app';
+  const canonical = `${siteUrl}/products/${product.slug || params.slug}`;
+
   return {
     title: product.meta_title || product.name,
     description: product.meta_description || product.description?.substring(0, 160),
+    alternates: {
+      canonical,
+    },
     openGraph: {
       title: product.name,
       description: product.description?.substring(0, 160),
+      url: canonical,
       images: product.images?.[0]?.url ? [{ url: product.images[0].url }] : [],
     },
   };

@@ -1,7 +1,7 @@
-import { ShoppingBag, Package, Users, Tag, Star, FileX } from 'lucide-react';
+import { ShoppingBag, Package, Users, Tag, Star, FileX, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
-const ICONS = { bag: ShoppingBag, package: Package, users: Users, tag: Tag, star: Star, file: FileX };
+const ICONS = { bag: ShoppingBag, package: Package, users: Users, tag: Tag, star: Star, file: FileX, alert: AlertTriangle };
 
 export default function EmptyState({
   icon = 'bag',

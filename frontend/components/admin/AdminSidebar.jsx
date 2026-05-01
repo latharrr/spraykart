@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Star, Activity, LogOut, Server, HelpCircle, Sparkles, MessageSquareText, MessageCircle, ScrollText } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Star, Activity, LogOut, Server, HelpCircle, Sparkles, MessageSquareText, MessageCircle, ScrollText, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 import clsx from 'clsx';
 
@@ -17,6 +17,7 @@ const navItems = [
   { href: '/admin/fragrance-finder', label: 'Fragrance Finder', icon: Sparkles },
   { href: '/admin/performance', label: 'Performance', icon: Activity },
   { href: '/admin/audit', label: 'Audit Log', icon: ScrollText },
+  { href: '/admin/webhooks/dlq', label: 'Webhook DLQ', icon: AlertTriangle },
   { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
   { href: '/admin/system', label: 'System', icon: Server },
 ];

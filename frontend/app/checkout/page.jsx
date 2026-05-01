@@ -24,6 +24,15 @@ const INDIAN_STATES = [
   'Ladakh','Lakshadweep','Puducherry',
 ];
 
+const ADDRESS_AUTOCOMPLETE = {
+  line1: 'street-address',
+  line2: 'address-line2',
+  city: 'address-level2',
+  state: 'address-level1',
+  pincode: 'postal-code',
+  phone: 'tel',
+};
+
 const selectStyle = {
   width: '100%',
   padding: '12px 36px 12px 14px',
@@ -309,12 +318,15 @@ export default function CheckoutPage() {
     <input
       key={name}
       id={`address-${name}`}
+      name={name}
       type={type}
       placeholder={placeholder}
       value={address[name]}
       onChange={(e) => setAddress({ ...address, [name]: e.target.value })}
       className="input"
-      inputMode={type === 'tel' ? 'numeric' : undefined}
+      autoComplete={ADDRESS_AUTOCOMPLETE[name]}
+      inputMode={['pincode', 'phone'].includes(name) ? 'numeric' : undefined}
+      maxLength={name === 'pincode' ? 6 : name === 'phone' ? 10 : undefined}
     />
   );
 
@@ -335,8 +347,10 @@ export default function CheckoutPage() {
             <SelectWrapper>
               <select
                 id="address-state"
+                name="state"
                 style={selectStyle}
                 value={address.state}
+                autoComplete={ADDRESS_AUTOCOMPLETE.state}
                 onChange={(e) => setAddress({ ...address, state: e.target.value })}
               >
                 <option value="">Select State / UT *</option>
@@ -385,9 +399,11 @@ export default function CheckoutPage() {
               <div style={{ display: 'flex', gap: 8 }}>
                 <input
                   id="coupon-input"
+                  name="coupon"
                   className="input text-sm"
                   placeholder="Enter coupon code"
                   value={couponCode}
+                  autoComplete="off"
                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
                   style={{ flex: 1 }}

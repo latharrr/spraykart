@@ -202,8 +202,8 @@ export async function POST(request) {
     for (const item of enrichedItems) {
       await client.query(
         `INSERT INTO order_items(order_id,product_id,variant_id,name,price,quantity,hsn_code,gst_rate,reserved_until)
-         VALUES($1,$2,$3,$4,$5,$6,$7,$8,CASE WHEN $9='pending' THEN NOW() + INTERVAL '10 minutes' ELSE NULL END)`,
-        [order.id, item.product_id, item.variant_id || null, item.name, item.price, item.quantity, item.hsn_code || null, item.gst_rate || 18, initialStatus]
+         VALUES($1,$2,$3,$4,$5,$6,$7,$8,CASE WHEN $9='pending' THEN $10::timestamptz + INTERVAL '10 minutes' ELSE NULL END)`,
+        [order.id, item.product_id, item.variant_id || null, item.name, item.price, item.quantity, item.hsn_code || null, item.gst_rate || 18, initialStatus, order.created_at]
       );
     }
 

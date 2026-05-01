@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
-import { email } from '@/lib/email';
 import logger from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
-// This should be called by a cron job (e.g. every 15 minutes)
+// This should be called by a cron job every 10 minutes.
 export async function GET(request) {
   // Check CRON_SECRET env var and compare with Authorization header
   const secret = process.env.CRON_SECRET;
@@ -16,7 +15,8 @@ export async function GET(request) {
   
   const authHeader = request.headers.get('authorization') || '';
   const token = authHeader.replace(/^Bearer\s+/i, '');
-  if (token !== secret) {
+  const headerSecret = request.headers.get('x-cron-secret');
+  if (token !== secret && headerSecret !== secret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -24,10 +24,16 @@ export async function GET(request) {
   try {
     await client.query('BEGIN');
     
-    // Find orders that have been pending for more than 30 minutes
+    // Short-term reservation model: unpaid online orders hold stock for 10 minutes.
+    // This reduces abandoned-checkout stock lockups while preserving the current
+    // decrement-at-order-creation contract until a full reservation ledger exists.
     const { rows: pendingOrders } = await client.query(
-      `SELECT id, coupon_code FROM orders 
-       WHERE status = 'pending' AND created_at < NOW() - INTERVAL '30 minutes'`
+      `SELECT o.id, o.coupon_code
+       FROM orders o
+       JOIN order_items oi ON oi.order_id = o.id
+       WHERE o.status = 'pending'
+       GROUP BY o.id, o.coupon_code, o.created_at
+       HAVING COALESCE(MIN(oi.reserved_until), o.created_at + INTERVAL '10 minutes') <= NOW()`
     );
 
     let cancelledCount = 0;

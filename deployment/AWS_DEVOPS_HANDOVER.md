@@ -81,6 +81,12 @@ pm2 logs spraykart --lines 100
 ## 7. Database Backups & Restores
 A daily automated cron job runs at 3:00 AM, executing `deployment/db_backup.sh`. Backups are saved to `/home/ubuntu/backups/`.
 
+Add the weekly restore verification cron. It restores the latest backup into `spraykart_verify`, checks `products`, `orders`, and `users` all have rows, drops the temp DB, and emails `ADMIN_EMAIL` when `mail` is available.
+
+```bash
+0 4 * * 0 ADMIN_EMAIL="$ADMIN_EMAIL" /home/ubuntu/spraykart/deployment/verify_backup.sh
+```
+
 ### How to Restore a Database Backup
 If you ever need to restore the database from a backup, use the following sequence carefully. This will OVERWRITE current data.
 

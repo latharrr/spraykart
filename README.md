@@ -40,6 +40,20 @@ NEXT_PUBLIC_SITE_URL=https://yourdomain.com
 
 # Security
 CRON_SECRET=<strong-random-secret>
+
+# Monitoring
+SENTRY_DSN=<server_sentry_dsn>
+NEXT_PUBLIC_SENTRY_DSN=<browser_sentry_dsn>
+
+# Legal / GST invoice placeholders
+BUSINESS_NAME=SprayKart
+BUSINESS_ADDRESS=<registered_business_address>
+BUSINESS_EMAIL=support@yourdomain.com
+BUSINESS_PHONE=<support_phone>
+BUSINESS_GSTIN=<gstin>
+BUSINESS_STATE=<registered_business_state>
+BUSINESS_HSN_DEFAULT=3303
+FREE_SHIPPING_THRESHOLD=999
 ```
 
 ## Database Setup
@@ -67,6 +81,8 @@ node reset-and-verify.js
 - [ ] Paytm callback URL whitelisted
 - [ ] Admin email configured for alerts
 - [ ] Cron secret set for `/api/cron/reconcile-orders`
+- [ ] Sentry DSN configured and alert rules from `deployment/sentry-error-budget.md` created
+- [ ] Business GSTIN/state configured for invoice generation
 
 ## Key Features
 

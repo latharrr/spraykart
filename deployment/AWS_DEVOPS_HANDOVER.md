@@ -55,6 +55,12 @@ bash deployment/deploy.sh
 
 The deploy script refuses to run unless `scripts/preflight.md` is marked `Status: PASS`, has no unchecked rows, and was modified within the last 24 hours.
 
+### Cron Jobs
+```bash
+* * * * * curl -H "x-cron-secret: $CRON_SECRET" https://yourdomain.com/api/cron/email-worker
+*/10 * * * * curl -H "Authorization: Bearer $CRON_SECRET" https://yourdomain.com/api/cron/reconcile-orders
+```
+
 ### Viewing Logs & Debugging
 If the application throws a 500 error, PM2 captures all `console.error` outputs.
 

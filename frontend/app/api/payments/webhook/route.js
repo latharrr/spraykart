@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import db from '@/lib/db';
-import { email } from '@/lib/email';
+import { enqueueEmailJob } from '@/lib/emailJobs';
 
 // Must receive raw body - configure in next.config.js
 export const dynamic = 'force-dynamic';
@@ -82,7 +82,7 @@ export async function POST(request) {
           await db.query("UPDATE orders SET status='disputed' WHERE id=$1", [order.id]);
         } catch (e) { console.error('Failed to mark order disputed:', e); }
         try {
-          await email.sendAdminDispute({ orderId: order.id, expected: order.final_price, received: (amount/100), paymentId: razorpay_payment_id, gateway: 'Razorpay', details: event });
+          await enqueueEmailJob({ type: 'admin_dispute', args: { orderId: order.id, expected: order.final_price, received: (amount / 100), paymentId: razorpay_payment_id, gateway: 'Razorpay', details: event } });
         } catch (e) { console.error('Failed to email admin about dispute:', e); }
         return NextResponse.json({ received: true });
       }
@@ -96,8 +96,8 @@ export async function POST(request) {
       if (updated.length) {
         const { rows: items } = await db.query('SELECT * FROM order_items WHERE order_id=$1', [order.id]);
         Promise.all([
-          email.sendOrderConfirmation({ to: order.customer_email, name: order.customer_name, orderId: order.id, items, total: order.final_price, discount: order.discount }),
-          email.sendAdminNewOrder({ orderId: order.id, customerName: order.customer_name, customerEmail: order.customer_email, total: order.final_price, itemCount: items.length }),
+          enqueueEmailJob({ type: 'order_confirmation', args: { to: order.customer_email, name: order.customer_name, orderId: order.id, items, total: order.final_price, discount: order.discount } }),
+          enqueueEmailJob({ type: 'admin_new_order', args: { orderId: order.id, customerName: order.customer_name, customerEmail: order.customer_email, total: order.final_price, itemCount: items.length } }),
         ]).catch(console.error);
       }
     } catch (err) {

@@ -103,6 +103,17 @@ CREATE TABLE IF NOT EXISTS invoices (
   generated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS email_jobs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  payload JSONB NOT NULL,
+  attempts INT NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'pending',
+  scheduled_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_error TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- REVIEWS
 CREATE TABLE IF NOT EXISTS reviews (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -191,6 +202,7 @@ CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_razorpay_order_id ON orders(razorpay_order_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_order_id ON invoices(order_id);
+CREATE INDEX IF NOT EXISTS idx_email_jobs_pending ON email_jobs(status, scheduled_at);
 CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id);
 CREATE INDEX IF NOT EXISTS idx_faqs_sort_order ON faqs(sort_order, created_at);
 CREATE INDEX IF NOT EXISTS idx_contact_submissions_created_at ON contact_submissions(created_at DESC);

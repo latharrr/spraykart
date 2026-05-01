@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import PaytmChecksum from 'paytmchecksum';
 import db from '@/lib/db';
+import { enqueueEmailJob } from '@/lib/emailJobs';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,12 +49,19 @@ export async function POST(request) {
         try {
           // Find the order (may be stored in paytm_order_id or id)
           const { rows } = await db.query(
-            `SELECT * FROM orders WHERE paytm_order_id = $1 OR id = $1 LIMIT 1`,
+            `SELECT o.*, u.name as customer_name, u.email as customer_email
+             FROM orders o JOIN users u ON u.id=o.user_id
+             WHERE o.paytm_order_id = $1 OR o.id = $1 LIMIT 1`,
             [orderId]
           );
           if (!rows.length) {
             // fallback: try razorpay_order_id match
-            const { rows: r2 } = await db.query(`SELECT * FROM orders WHERE razorpay_order_id = $1 LIMIT 1`, [orderId]);
+            const { rows: r2 } = await db.query(
+              `SELECT o.*, u.name as customer_name, u.email as customer_email
+               FROM orders o JOIN users u ON u.id=o.user_id
+               WHERE o.razorpay_order_id = $1 LIMIT 1`,
+              [orderId]
+            );
             if (r2.length) rows.push(r2[0]);
           }
           if (!rows.length) return NextResponse.json({ received: true });
@@ -67,12 +75,22 @@ export async function POST(request) {
           // If received amount is available and differs significantly, mark disputed and alert admin
           if (received !== null && Math.abs(expected - received) > 1.0) {
             try { await db.query("UPDATE orders SET status='disputed', paytm_txn_id=$1 WHERE id=$2", [payment?.id || payment?.txnId, order.id]); } catch (e) { console.error('Failed to mark paytm order disputed', e); }
-            try { await import('@/lib/email').then(m => m.email.sendAdminDispute({ orderId: order.id, expected, received, paymentId: payment?.id || payment?.txnId, gateway: 'Paytm', details: json })); } catch (e) { console.error('Failed to notify admin of paytm dispute', e); }
+            try { await enqueueEmailJob({ type: 'admin_dispute', args: { orderId: order.id, expected, received, paymentId: payment?.id || payment?.txnId, gateway: 'Paytm', details: json } }); } catch (e) { console.error('Failed to notify admin of paytm dispute', e); }
             return NextResponse.json({ received: true });
           }
 
           // otherwise mark confirmed
-          await db.query("UPDATE orders SET status='confirmed', paytm_txn_id=$1 WHERE id=$2 AND status='pending'", [payment?.id || payment?.txnId, order.id]);
+          const { rows: updated } = await db.query(
+            "UPDATE orders SET status='confirmed', paytm_txn_id=$1 WHERE id=$2 AND status='pending' RETURNING *",
+            [payment?.id || payment?.txnId, order.id]
+          );
+          if (updated.length) {
+            const { rows: items } = await db.query('SELECT * FROM order_items WHERE order_id=$1', [order.id]);
+            await Promise.all([
+              enqueueEmailJob({ type: 'order_confirmation', args: { to: order.customer_email, name: order.customer_name, orderId: order.id, items, total: order.final_price, discount: order.discount } }),
+              enqueueEmailJob({ type: 'admin_new_order', args: { orderId: order.id, customerName: order.customer_name, customerEmail: order.customer_email, total: order.final_price, itemCount: items.length } }),
+            ]);
+          }
         } catch (e) { console.error('Failed to update order from paytm webhook', e); }
       }
     }

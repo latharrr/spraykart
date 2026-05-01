@@ -88,21 +88,34 @@ Add the weekly restore verification cron. It restores the latest backup into `sp
 ```
 
 ### How to Restore a Database Backup
-If you ever need to restore the database from a backup, use the following sequence carefully. This will OVERWRITE current data.
+If you ever need to restore the database from a backup, use the following sequence carefully. This will OVERWRITE current data. Prefer running the non-destructive drill in `DR-DRILL.md` first when time allows.
 
 ```bash
-# 1. Locate the backup file you want to restore
-ls -lh /home/ubuntu/backups/
+# 1. Put the app in maintenance mode or stop writes before destructive restore.
+pm2 stop spraykart
 
-# 2. Decompress the chosen backup file (e.g., spraykart_backup_2026-04-25.sql.gz)
-gunzip /home/ubuntu/backups/spraykart_backup_2026-04-25.sql.gz
+# 2. Take a just-before-restore safety backup.
+bash /home/ubuntu/spraykart/deployment/db_backup.sh
 
-# 3. Drop existing connections and restore the database using psql
-# (This pipes the decompressed .sql file directly into the spraykart database)
-cat /home/ubuntu/backups/spraykart_backup_2026-04-25.sql | sudo -u postgres psql -d spraykart
+# 3. Pick the backup file to restore.
+BACKUP=/home/ubuntu/backups/spraykart_backup_2026-04-25.sql.gz
 
-# 4. (Optional) Recompress the backup file to save space
-gzip /home/ubuntu/backups/spraykart_backup_2026-04-25.sql
+# 4. Terminate active database connections, recreate an empty database, and restore.
+sudo -u postgres psql -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'spraykart' AND pid <> pg_backend_pid();"
+sudo -u postgres dropdb --if-exists spraykart
+sudo -u postgres createdb -O spraykart_admin spraykart
+zcat "$BACKUP" | sudo -u postgres psql -v ON_ERROR_STOP=1 -d spraykart
+
+# 5. Smoke-check core tables before restarting traffic.
+sudo -u postgres psql -d spraykart -v ON_ERROR_STOP=1 <<'SQL'
+SELECT count(*) AS products_count FROM products;
+SELECT count(*) AS orders_count FROM orders;
+SELECT count(*) AS users_count FROM users;
+SELECT id, email, created_at FROM users ORDER BY created_at DESC LIMIT 1;
+SQL
+
+# 6. Restart the app.
+pm2 restart spraykart --update-env
 ```
 ### Viewing Nginx Logs
 ```bash

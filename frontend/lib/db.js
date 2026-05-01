@@ -28,21 +28,20 @@ function createPool() {
   return pool;
 }
 
-let pool;
-
 function getPool() {
-  if (process.env.NODE_ENV === 'development') {
-    if (!globalForDb._pgPool) {
-      globalForDb._pgPool = createPool();
-    }
-    return globalForDb._pgPool;
+  if (!globalForDb._pgPool) {
+    globalForDb._pgPool = createPool();
   }
-  
-  if (!pool) {
-    pool = createPool();
-  }
-  return pool;
+  return globalForDb._pgPool;
 }
+
+globalForDb.__spraykartCloseDbPool = async () => {
+  const activePool = globalForDb._pgPool;
+  if (activePool) {
+    await activePool.end();
+    globalForDb._pgPool = null;
+  }
+};
 
 export const db = {
   query: (text, params) => getPool().query(text, params),

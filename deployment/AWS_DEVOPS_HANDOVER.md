@@ -55,6 +55,15 @@ bash deployment/deploy.sh
 
 The deploy script refuses to run unless `scripts/preflight.md` is marked `Status: PASS`, has no unchecked rows, and was modified within the last 24 hours.
 
+PM2 must run the custom Next.js wrapper so SIGTERM drains the HTTP server and PostgreSQL pool before exit:
+
+```bash
+pm2 start deployment/ecosystem.config.js --update-env
+pm2 save
+```
+
+The PM2 app uses `kill_timeout: 30000`; keep it aligned with `SHUTDOWN_TIMEOUT_MS=30000`.
+
 ### Cron Jobs
 ```bash
 * * * * * curl -H "x-cron-secret: $CRON_SECRET" https://yourdomain.com/api/cron/email-worker
@@ -62,7 +71,7 @@ The deploy script refuses to run unless `scripts/preflight.md` is marked `Status
 ```
 
 ### Viewing Logs & Debugging
-If the application throws a 500 error, PM2 captures all `console.error` outputs.
+If the application throws a 500 error, PM2 captures all redacted application logger output.
 
 ```bash
 # View live application logs

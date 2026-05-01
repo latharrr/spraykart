@@ -51,7 +51,7 @@ export async function PUT(request, { params }) {
       await client.query('BEGIN');
 
       const currentOrder = await client.query(
-        `SELECT status, payment_method, razorpay_payment_id, paytm_txn_id FROM orders WHERE id=$1 FOR UPDATE`,
+        `SELECT status, payment_method, razorpay_payment_id, paytm_txn_id, final_price FROM orders WHERE id=$1 FOR UPDATE`,
         [params.id]
       );
       if (!currentOrder.rows.length) {
@@ -74,11 +74,19 @@ export async function PUT(request, { params }) {
 
       // Prevent cancellation of online orders without explicit refund
       if (status === 'cancelled' && prevStatus !== 'cancelled' && paymentMethod === 'online' && hasOnlinePayment) {
-        await client.query('ROLLBACK');
-        return NextResponse.json(
-          { error: 'Cannot cancel online orders directly. Use the refund endpoint to process refunds first.' },
-          { status: 409 }
+        const { rows: refundRows } = await client.query(
+          "SELECT COALESCE(SUM(amount),0) as refunded FROM refunds WHERE order_id=$1 AND status <> 'failed'",
+          [params.id]
         );
+        const refundedPaise = Math.round(Number(refundRows[0].refunded || 0));
+        const requiredPaise = Math.round(Number(currentOrder.rows[0].final_price || 0) * 100);
+        if (refundedPaise < requiredPaise) {
+          await client.query('ROLLBACK');
+          return NextResponse.json(
+            { error: 'Cannot cancel paid online orders until the full amount has been refunded.', refunded: refundedPaise, required: requiredPaise },
+            { status: 409 }
+          );
+        }
       }
 
       const { rows } = await client.query(

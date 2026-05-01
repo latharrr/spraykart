@@ -54,9 +54,20 @@ export default function AdminOrdersPage() {
   };
 
   const handleRefund = async (orderId) => {
+    const amountInput = window.prompt('Refund amount in rupees. Leave blank to refund the remaining amount.');
+    if (amountInput === null) return;
+    const payload = {};
+    if (amountInput.trim()) {
+      const rupees = Number(amountInput);
+      if (!Number.isFinite(rupees) || rupees <= 0) {
+        toast.error('Enter a valid refund amount');
+        return;
+      }
+      payload.amount = Math.round(rupees * 100);
+    }
     setUpdatingId(orderId);
     try {
-      await adminRefundOrder(orderId);
+      await adminRefundOrder(orderId, payload);
       toast.success('Refund processed successfully');
       refetch();
     } catch (err) {

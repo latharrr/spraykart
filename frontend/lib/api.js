@@ -87,7 +87,7 @@ export const adminDeleteProductImage = (productId, imageId) => api.delete(`/admi
 export const adminGetOrders = (params) => api.get('/admin/orders', { params });
 export const adminGetOrder = (id) => api.get(`/admin/orders/${id}`);
 export const adminUpdateOrder = (id, data) => api.put(`/admin/orders/${id}`, data);
-export const adminRefundOrder = (id) => api.post(`/admin/orders/${id}/refund`);
+export const adminRefundOrder = (id, data = {}) => api.post(`/admin/orders/${id}/refund`, data);
 
 export const adminGetUsers = (params) => api.get('/admin/users', { params });
 export const adminToggleBlock = (id) => api.put(`/admin/users/${id}/toggle-block`);

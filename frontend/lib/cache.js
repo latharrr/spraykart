@@ -122,6 +122,16 @@ export const cache = {
     if (!redis) return -1;
     try { return await redis.ttl(key); } catch { return -1; }
   },
+
+  ping: async () => {
+    if (!redis) return { ok: false, status: 'not_configured' };
+    try {
+      const result = await redis.ping();
+      return { ok: result === 'PONG', status: result };
+    } catch (err) {
+      return { ok: false, status: err.message };
+    }
+  },
 };
 
 export default cache;

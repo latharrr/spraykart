@@ -3,7 +3,7 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { submitContactMessage } from '@/lib/api';
 
-export default function ContactClient() {
+export default function ContactClient({ business }) {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [loading, setLoading] = useState(false);
 
@@ -35,14 +35,21 @@ export default function ContactClient() {
           <div className="card p-6 border border-gray-100">
             <h3 className="font-semibold text-lg mb-2">Customer Support</h3>
             <p className="text-sm text-gray-500 mb-4">For order inquiries, tracking, and product questions.</p>
-            <p className="text-sm font-medium">Email: <a href="mailto:support@spraykart.in" className="text-black hover:underline">support@spraykart.in</a></p>
+            <p className="text-sm font-medium">Email: <a href={`mailto:${business.email}`} className="text-black hover:underline">{business.email}</a></p>
+            <p className="text-sm font-medium mt-2">Phone: <a href={`tel:${business.phone}`} className="text-black hover:underline">{business.phone}</a></p>
+          </div>
+
+          <div className="card p-6 border border-gray-100">
+            <h3 className="font-semibold text-lg mb-2">Business Details</h3>
+            <p className="text-sm text-gray-500 whitespace-pre-line">{business.legalName}</p>
+            <p className="text-sm text-gray-500 whitespace-pre-line mt-2">{business.address}</p>
+            <p className="text-sm text-gray-500 mt-2">GSTIN: {business.gstin}</p>
           </div>
 
           <div className="card p-6 border border-gray-100">
             <h3 className="font-semibold text-lg mb-2">Business Hours</h3>
-            <p className="text-sm text-gray-500">Monday - Friday: 10:00 AM - 6:00 PM (IST)</p>
-            <p className="text-sm text-gray-500 mt-1">Saturday: 10:00 AM - 2:00 PM (IST)</p>
-            <p className="text-sm text-gray-400 mt-2 text-xs">Closed on Sundays and Public Holidays.</p>
+            <p className="text-sm text-gray-500">{business.supportHours}</p>
+            <p className="text-sm text-gray-400 mt-2 text-xs">Closed on Sundays and public holidays unless otherwise notified.</p>
           </div>
         </div>
 
@@ -50,11 +57,11 @@ export default function ContactClient() {
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-              <input type="text" className="input" placeholder="Your full name" required value={form.name} onChange={handleChange('name')} />
+              <input type="text" className="input" placeholder="Your full name" required value={form.name} onChange={handleChange('name')} autoComplete="name" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input type="email" className="input" placeholder="you@example.com" required value={form.email} onChange={handleChange('email')} />
+              <input type="email" className="input" placeholder="you@example.com" required value={form.email} onChange={handleChange('email')} autoComplete="email" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>

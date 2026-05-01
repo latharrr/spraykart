@@ -23,10 +23,10 @@ const footerLinks = {
     { label: 'Sign In',            href: '/login' },
   ],
   Support: [
-    { label: 'Privacy Policy',     href: '/privacy-policy' },
+    { label: 'Privacy Policy',     href: '/privacy' },
     { label: 'Terms & Conditions', href: '/terms' },
-    { label: 'Refund Policy',      href: '/refund-policy' },
-    { label: 'Shipping Policy',    href: '/shipping-policy' },
+    { label: 'Refund Policy',      href: '/refund' },
+    { label: 'Shipping Policy',    href: '/shipping' },
   ],
 };
 

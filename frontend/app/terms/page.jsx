@@ -1,57 +1,36 @@
+import { getBusinessProfile, FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE, formatInr } from '@/lib/business';
+
+export const metadata = {
+  title: 'Terms & Conditions | Spraykart',
+  description: 'Terms and conditions for shopping on Spraykart.',
+  alternates: { canonical: '/terms' },
+};
+
 export default function TermsPage() {
-  const updated = 'April 21, 2025';
+  const business = getBusinessProfile();
+  const sections = [
+    ['1. Acceptance of Terms', 'By accessing Spraykart, creating an account, or placing an order, you agree to these Terms & Conditions, the Privacy Policy, Refund & Cancellation Policy, and Shipping Policy.'],
+    ['2. Products & Authenticity', 'Products are intended to be authentic and sourced from authorised or verified supply channels. Product images are representative; bottle design, packaging, and batch details may vary. Prices are inclusive of applicable GST unless stated otherwise.'],
+    ['3. Account Responsibility', 'You are responsible for keeping your login credentials confidential and for activity under your account. We may suspend accounts involved in fraudulent, abusive, or unlawful activity.'],
+    ['4. Ordering & Payment', 'Orders are confirmed on successful online payment through Razorpay or Paytm, or on acceptance of Cash on Delivery where available. Prices are in Indian Rupees. We may cancel orders if stock becomes unavailable, with a refund for any amount paid.'],
+    ['5. Shipping', `Orders are usually dispatched within 1-2 business days. Estimated delivery is 3-7 business days depending on location. Free shipping applies above ${formatInr(FREE_SHIPPING_THRESHOLD)}; a flat ${formatInr(STANDARD_SHIPPING_FEE)} charge applies below that threshold.`],
+    ['6. Returns & Refunds', 'Opened or used fragrance products are not returnable unless damaged or incorrect. Damaged, missing, or wrong products must be reported within 48 hours of delivery with clear evidence. See the Refund & Cancellation Policy for details.'],
+    ['7. Intellectual Property', 'All website content, branding, layout, product copy, and imagery owned by Spraykart or its licensors is protected by applicable intellectual property laws and may not be copied without permission.'],
+    ['8. Limitation of Liability', "Spraykart's liability for a purchase is limited to the order value paid by the customer, to the maximum extent permitted by law. We are not liable for indirect, incidental, or consequential loss."],
+    ['9. Governing Law', `These Terms are governed by Indian law. Disputes are subject to competent courts in the state where ${business.legalName} is registered, unless applicable law requires otherwise.`],
+    ['10. Contact', `For queries:\n${business.legalName}\n${business.address}\nEmail: ${business.email}\nPhone: ${business.phone}\nGSTIN: ${business.gstin}`],
+  ];
+
   return (
     <div style={{ maxWidth: 760, margin: '0 auto', padding: '60px 24px 80px' }}>
       <p style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a0a0a0', marginBottom: 8 }}>Legal</p>
-      <h1 style={{ fontFamily: "'Cormorant', Georgia, serif", fontSize: 40, fontWeight: 400, color: '#0c0c0c', letterSpacing: '-0.01em', marginBottom: 8 }}>Terms & Conditions</h1>
-      <p style={{ fontSize: 13, color: '#a0a0a0', marginBottom: 48 }}>Last updated: {updated}</p>
-
-      {[
-        {
-          title: '1. Acceptance of Terms',
-          body: 'By accessing or using the Spraykart website and placing orders, you agree to be bound by these Terms & Conditions and our Privacy Policy. If you do not agree, please do not use our services.',
-        },
-        {
-          title: '2. Products & Authenticity',
-          body: 'All fragrances sold on Spraykart are 100% authentic. We source directly from authorised distributors. Product images are representative; actual bottle design may vary slightly by batch. Prices are inclusive of applicable GST unless stated otherwise.',
-        },
-        {
-          title: '3. Account Responsibility',
-          body: 'You are responsible for maintaining the confidentiality of your account credentials. You agree not to share your login with others. We reserve the right to suspend accounts found engaging in fraudulent activity.',
-        },
-        {
-          title: '4. Ordering & Payment',
-          body: 'Orders are confirmed only upon successful payment via Razorpay. We accept all major credit/debit cards, UPI, net banking, and wallets. Prices are in Indian Rupees (INR). We reserve the right to cancel orders if stock becomes unavailable, with a full refund.',
-        },
-        {
-          title: '5. Shipping',
-          body: 'We ship pan-India. Orders are dispatched within 1–2 business days. Estimated delivery is 3–7 business days depending on your location. Free shipping on orders above ₹999. A flat ₹49 shipping charge applies below ₹999. We are not responsible for delays caused by courier partners or natural events.',
-        },
-        {
-          title: '6. Returns & Refunds',
-          body: 'Please refer to our Refund Policy for complete details. In general: opened/used products cannot be returned unless defective. Damaged or wrong products must be reported within 48 hours of delivery with photographic evidence.',
-        },
-        {
-          title: '7. Intellectual Property',
-          body: 'All content on this website — including logos, product images, text, and design — is the property of Spraykart and is protected under Indian copyright law. Unauthorised reproduction is prohibited.',
-        },
-        {
-          title: '8. Limitation of Liability',
-          body: 'Spraykart\'s liability for any claim arising out of the use of this website or purchase of products is limited to the value of the order placed. We are not liable for indirect, incidental, or consequential damages.',
-        },
-        {
-          title: '9. Governing Law',
-          body: 'These Terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of courts in [Your City], India.',
-        },
-        {
-          title: '10. Contact',
-          body: 'For any queries: support@spraykart.in\nSpaykart, [Registered Address], India',
-        },
-      ].map(({ title, body }) => (
-        <div key={title} style={{ marginBottom: 36 }}>
+      <h1 style={{ fontFamily: "'Cormorant', Georgia, serif", fontSize: 40, fontWeight: 400, color: '#0c0c0c', marginBottom: 8 }}>Terms & Conditions</h1>
+      <p style={{ fontSize: 13, color: '#a0a0a0', marginBottom: 48 }}>Last updated: May 1, 2026</p>
+      {sections.map(([title, body]) => (
+        <section key={title} style={{ marginBottom: 36 }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, color: '#0c0c0c', marginBottom: 10 }}>{title}</h2>
-          <p style={{ fontSize: 14, color: '#555', lineHeight: 1.8 }}>{body}</p>
-        </div>
+          <p style={{ fontSize: 14, color: '#555', lineHeight: 1.8, whiteSpace: 'pre-line' }}>{body}</p>
+        </section>
       ))}
     </div>
   );

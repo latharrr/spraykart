@@ -47,6 +47,8 @@ export async function POST(request) {
     const is_featured = formData.get('is_featured') === 'true';
     const meta_title = formData.get('meta_title');
     const meta_description = formData.get('meta_description');
+    const hsn = formData.get('hsn');
+    const gst = formData.get('gst');
     const variantsRaw = formData.get('variants');
 
     if (!name || !price) return NextResponse.json({ error: 'Name and price are required' }, { status: 400 });
@@ -55,10 +57,11 @@ export async function POST(request) {
 
     await client.query('BEGIN');
     const { rows } = await client.query(
-      `INSERT INTO products(name,slug,description,price,compare_price,stock,category,is_featured,meta_title,meta_description)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      `INSERT INTO products(name,slug,description,price,compare_price,stock,category,is_featured,meta_title,meta_description,hsn_code,gst_rate)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
       [name, slug, stripTags(description), parseFloat(price), compare_price ? parseFloat(compare_price) : null,
-       parseInt(stock) || 0, category || null, is_featured, meta_title || null, meta_description || null]
+       parseInt(stock) || 0, category || null, is_featured, meta_title || null, meta_description || null,
+       hsn || null, gst ? parseFloat(gst) : 18]
     );
     const product = rows[0];
 

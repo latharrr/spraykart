@@ -35,6 +35,8 @@ CREATE TABLE IF NOT EXISTS products (
   is_active BOOLEAN DEFAULT true,
   meta_title VARCHAR(255),
   meta_description TEXT,
+  hsn_code TEXT,
+  gst_rate NUMERIC(5,2) DEFAULT 18,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -86,7 +88,19 @@ CREATE TABLE IF NOT EXISTS order_items (
   variant_id UUID REFERENCES variants(id),
   name VARCHAR(255),
   price NUMERIC(10,2) NOT NULL,
-  quantity INTEGER NOT NULL
+  quantity INTEGER NOT NULL,
+  hsn_code TEXT,
+  gst_rate NUMERIC(5,2) DEFAULT 18,
+  reserved_until TIMESTAMPTZ
+);
+
+CREATE SEQUENCE IF NOT EXISTS invoice_seq START 1001;
+
+CREATE TABLE IF NOT EXISTS invoices (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID UNIQUE REFERENCES orders(id) ON DELETE CASCADE,
+  invoice_number TEXT UNIQUE NOT NULL,
+  generated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- REVIEWS
@@ -176,6 +190,7 @@ CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_razorpay_order_id ON orders(razorpay_order_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_order_id ON invoices(order_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id);
 CREATE INDEX IF NOT EXISTS idx_faqs_sort_order ON faqs(sort_order, created_at);
 CREATE INDEX IF NOT EXISTS idx_contact_submissions_created_at ON contact_submissions(created_at DESC);

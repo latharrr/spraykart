@@ -48,6 +48,8 @@ export async function PUT(request, { params }) {
     const category = formData.get('category');
     const is_featured = formData.get('is_featured');
     const is_active = formData.get('is_active');
+    const hsn = formData.get('hsn');
+    const gst = formData.get('gst');
     const slug = name ? slugify(name, { lower: true, strict: true }) : undefined;
 
     const { rows } = await db.query(
@@ -57,8 +59,10 @@ export async function PUT(request, { params }) {
         compare_price=$5, stock=COALESCE($6,stock),
         category=COALESCE($7,category),
         is_featured=COALESCE($8,is_featured),
-        is_active=COALESCE($9,is_active)
-       WHERE id=$10 RETURNING *`,
+        is_active=COALESCE($9,is_active),
+        hsn_code=COALESCE($10,hsn_code),
+        gst_rate=COALESCE($11,gst_rate)
+       WHERE id=$12 RETURNING *`,
       [name, slug,
        description !== null ? stripTags(description) : undefined,
        price ? parseFloat(price) : undefined,
@@ -66,6 +70,8 @@ export async function PUT(request, { params }) {
        stock ? parseInt(stock) : undefined, category || undefined,
        is_featured !== null ? is_featured === 'true' : undefined,
        is_active !== null ? is_active === 'true' : undefined,
+       hsn || undefined,
+       gst ? parseFloat(gst) : undefined,
        params.id]
     );
     if (!rows.length) return NextResponse.json({ error: 'Product not found' }, { status: 404 });

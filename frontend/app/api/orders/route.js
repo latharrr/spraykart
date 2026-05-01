@@ -82,26 +82,30 @@ export async function POST(request) {
         );
         
         const { rows: pRows } = await client.query(
-          'SELECT name, price FROM products WHERE id=$1 AND is_active=true',
+          'SELECT name, price, hsn_code, gst_rate FROM products WHERE id=$1 AND is_active=true',
           [item.product_id]
         );
         if (!pRows.length) throw new Error('Product is inactive or unavailable');
         price = parseFloat(pRows[0].price) + parseFloat(vRows[0].price_modifier || 0);
         name = `${pRows[0].name} - ${vRows[0].value}`;
+        item.hsn_code = pRows[0].hsn_code;
+        item.gst_rate = pRows[0].gst_rate;
       } else {
         const { rows: pLock } = await client.query('SELECT id FROM products WHERE id=$1 AND is_active=true AND stock >= $2 FOR UPDATE', [item.product_id, item.quantity]);
         if (!pLock.length) throw new Error(`Insufficient stock for product`);
 
         const { rows } = await client.query(
-          `UPDATE products SET stock = stock - $1 WHERE id = $2 RETURNING name, price`,
+          `UPDATE products SET stock = stock - $1 WHERE id = $2 RETURNING name, price, hsn_code, gst_rate`,
           [item.quantity, item.product_id]
         );
         price = parseFloat(rows[0].price);
         name = rows[0].name;
+        item.hsn_code = rows[0].hsn_code;
+        item.gst_rate = rows[0].gst_rate;
       }
 
       total += price * item.quantity;
-      enrichedItems.push({ ...item, price, name });
+      enrichedItems.push({ ...item, price, name, hsn_code: item.hsn_code, gst_rate: item.gst_rate || 18 });
     }
 
     let discount = 0;
@@ -165,8 +169,9 @@ export async function POST(request) {
 
     for (const item of enrichedItems) {
       await client.query(
-        'INSERT INTO order_items(order_id,product_id,variant_id,name,price,quantity) VALUES($1,$2,$3,$4,$5,$6)',
-        [order.id, item.product_id, item.variant_id || null, item.name, item.price, item.quantity]
+        `INSERT INTO order_items(order_id,product_id,variant_id,name,price,quantity,hsn_code,gst_rate,reserved_until)
+         VALUES($1,$2,$3,$4,$5,$6,$7,$8,CASE WHEN $9='pending' THEN NOW() + INTERVAL '10 minutes' ELSE NULL END)`,
+        [order.id, item.product_id, item.variant_id || null, item.name, item.price, item.quantity, item.hsn_code || null, item.gst_rate || 18, initialStatus]
       );
     }
 

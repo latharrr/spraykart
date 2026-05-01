@@ -18,8 +18,8 @@ export default function ProductForm({ initial, onSubmit, onCancel, loading, subm
     meta_description: initial?.meta_description || '',
     sku: initial?.sku || '',
     weight: initial?.weight || '',
-    hsn: initial?.hsn || '',
-    gst: initial?.gst || '18',
+    hsn: initial?.hsn_code || initial?.hsn || '',
+    gst: initial?.gst_rate || initial?.gst || '18',
   });
 
   const [variants, setVariants] = useState(

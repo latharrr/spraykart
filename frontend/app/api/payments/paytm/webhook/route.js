@@ -8,6 +8,7 @@ import {
 } from '@/lib/webhookEvents';
 import { processPaytmWebhookEvent } from '@/lib/webhookProcessors';
 import logger from '@/lib/logger';
+import { capturePaymentSignatureFailure } from '@/lib/sentryAlerts';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,12 +60,19 @@ export async function POST(request) {
     const eventId = stableEventId('paytm', json?.event || json?.eventType, json?.id || paymentForId?.txnId || paymentForId?.id || paymentForId?.orderId || paymentForId?.ORDERID, json);
 
     if (!isValid) {
+      const error = new Error('Invalid Paytm signature');
       await recordFailedWebhook({
         provider: 'paytm',
         eventId: `invalid_signature:${eventId}`,
         eventType: 'signature.invalid',
         payload: json,
-        error: new Error('Invalid Paytm signature'),
+        error,
+      });
+      await capturePaymentSignatureFailure({
+        provider: 'paytm',
+        paymentEventType: json?.event || json?.eventType,
+        failureType: 'signature.invalid',
+        error,
       });
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
     }

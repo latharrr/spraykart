@@ -8,11 +8,20 @@ import {
 } from '@/lib/webhookEvents';
 import { processRazorpayWebhookEvent } from '@/lib/webhookProcessors';
 import logger from '@/lib/logger';
+import { capturePaymentSignatureFailure } from '@/lib/sentryAlerts';
 
 export const dynamic = 'force-dynamic';
 
 function hashPayload(rawBody) {
   return crypto.createHash('sha256').update(rawBody || '').digest('hex');
+}
+
+function getEventType(rawBody) {
+  try {
+    return JSON.parse(rawBody)?.event;
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(request) {
@@ -23,12 +32,19 @@ export async function POST(request) {
   try {
     rawBody = await request.text();
     if (!signature) {
+      const error = new Error('Missing Razorpay webhook signature');
       await recordFailedWebhook({
         provider: 'razorpay',
         eventId: `missing_signature:${hashPayload(rawBody)}`,
         eventType: 'signature.missing',
         payload: rawBody || '{}',
-        error: new Error('Missing signature'),
+        error,
+      });
+      await capturePaymentSignatureFailure({
+        provider: 'razorpay',
+        paymentEventType: getEventType(rawBody),
+        failureType: 'signature.missing',
+        error,
       });
       return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
     }
@@ -39,12 +55,19 @@ export async function POST(request) {
       .digest('hex');
 
     if (expectedSig !== signature) {
+      const error = new Error('Invalid Razorpay webhook signature');
       await recordFailedWebhook({
         provider: 'razorpay',
         eventId: `invalid_signature:${hashPayload(rawBody)}`,
         eventType: 'signature.invalid',
         payload: rawBody || '{}',
-        error: new Error('Invalid webhook signature'),
+        error,
+      });
+      await capturePaymentSignatureFailure({
+        provider: 'razorpay',
+        paymentEventType: getEventType(rawBody),
+        failureType: 'signature.invalid',
+        error,
       });
       return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 400 });
     }

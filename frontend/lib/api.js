@@ -124,6 +124,7 @@ export const adminUpdateTestimonial = (id, data) => api.patch(`/admin/testimonia
 export const adminDeleteTestimonial = (id) => api.delete(`/admin/testimonials/${id}`);
 
 export const adminGetAnalytics = (params) => api.get('/admin/analytics', { params });
+export const adminGetMetrics = () => api.get('/admin/metrics');
 export const adminGetPerf = () => api.get('/perf');
 export const adminGetAudit = (params) => api.get('/admin/audit', { params });
 export const adminGetWebhookDlq = (params) => api.get('/admin/webhooks/dlq', { params });

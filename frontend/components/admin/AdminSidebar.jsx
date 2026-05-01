@@ -1,12 +1,13 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Star, Activity, LogOut, Server, HelpCircle, Sparkles, MessageSquareText, MessageCircle, ScrollText, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Star, Activity, LogOut, Server, HelpCircle, Sparkles, MessageSquareText, MessageCircle, ScrollText, AlertTriangle, BarChart3 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 import clsx from 'clsx';
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { href: '/admin/metrics', label: 'Metrics', icon: BarChart3 },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
   { href: '/admin/users', label: 'Users', icon: Users },

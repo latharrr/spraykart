@@ -3,14 +3,15 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, RotateCcw } from 'lucide-react';
-import * as Sentry from '@sentry/nextjs';
 
 export default function Error({ error, reset }) {
   const [eventId, setEventId] = useState('');
 
   useEffect(() => {
     if (error) {
-      setEventId(Sentry.captureException(error));
+      import('@sentry/nextjs')
+        .then((Sentry) => setEventId(Sentry.captureException(error)))
+        .catch(() => setEventId(error.digest || ''));
     }
   }, [error]);
 

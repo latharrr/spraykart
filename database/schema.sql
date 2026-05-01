@@ -114,6 +114,21 @@ CREATE TABLE IF NOT EXISTS email_jobs (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS webhook_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  provider TEXT NOT NULL,
+  event_id TEXT NOT NULL,
+  event_type TEXT,
+  payload JSONB,
+  status TEXT NOT NULL DEFAULT 'processing',
+  last_error TEXT,
+  retry_count INT NOT NULL DEFAULT 0,
+  processed_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  event_key TEXT UNIQUE,
+  UNIQUE(provider, event_id)
+);
+
 -- REVIEWS
 CREATE TABLE IF NOT EXISTS reviews (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -203,6 +218,7 @@ CREATE INDEX IF NOT EXISTS idx_orders_razorpay_order_id ON orders(razorpay_order
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_order_id ON invoices(order_id);
 CREATE INDEX IF NOT EXISTS idx_email_jobs_pending ON email_jobs(status, scheduled_at);
+CREATE INDEX IF NOT EXISTS idx_webhook_events_status ON webhook_events(status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id);
 CREATE INDEX IF NOT EXISTS idx_faqs_sort_order ON faqs(sort_order, created_at);
 CREATE INDEX IF NOT EXISTS idx_contact_submissions_created_at ON contact_submissions(created_at DESC);

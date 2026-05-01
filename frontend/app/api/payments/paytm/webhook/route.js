@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import PaytmChecksum from 'paytmchecksum';
 import db from '@/lib/db';
 import { enqueueEmailJob } from '@/lib/emailJobs';
+import { insertWebhookEvent, markWebhookProcessed, stableEventId } from '@/lib/webhookEvents';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,21 +26,10 @@ export async function POST(request) {
 
     if (!isValid) return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
 
-    // Record webhook for audit and idempotency
-    try {
-      await db.query(`
-        CREATE TABLE IF NOT EXISTS paytm_webhooks (
-          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          event_id TEXT,
-          payload JSONB,
-          created_at TIMESTAMPTZ DEFAULT NOW()
-        )
-      `);
-      const eventId = json?.id || json?.payload?.payment?.entity?.id || null;
-      await db.query('INSERT INTO paytm_webhooks(event_id, payload) VALUES($1,$2)', [eventId, json]);
-    } catch (err) {
-      console.error('Failed to persist paytm webhook:', err);
-    }
+    const paymentForId = json?.payload?.payment?.entity || json;
+    const eventId = stableEventId('paytm', json?.event || json?.eventType, json?.id || paymentForId?.txnId || paymentForId?.id || paymentForId?.orderId || paymentForId?.ORDERID, json);
+    const eventRecord = await insertWebhookEvent({ provider: 'paytm', eventId, eventType: json?.event || json?.eventType, payload: json });
+    if (!eventRecord.inserted) return NextResponse.json({ received: true });
 
     // Example: handle payment success with amount verification and dispute handling
     if (json?.event === 'payment.succeeded' || json?.eventType === 'PAYMENT.SUCCESS') {
@@ -64,7 +54,10 @@ export async function POST(request) {
             );
             if (r2.length) rows.push(r2[0]);
           }
-          if (!rows.length) return NextResponse.json({ received: true });
+          if (!rows.length) {
+            await markWebhookProcessed(eventRecord.id);
+            return NextResponse.json({ received: true });
+          }
           const order = rows[0];
 
           const expected = parseFloat(order.final_price || 0);
@@ -76,6 +69,7 @@ export async function POST(request) {
           if (received !== null && Math.abs(expected - received) > 1.0) {
             try { await db.query("UPDATE orders SET status='disputed', paytm_txn_id=$1 WHERE id=$2", [payment?.id || payment?.txnId, order.id]); } catch (e) { console.error('Failed to mark paytm order disputed', e); }
             try { await enqueueEmailJob({ type: 'admin_dispute', args: { orderId: order.id, expected, received, paymentId: payment?.id || payment?.txnId, gateway: 'Paytm', details: json } }); } catch (e) { console.error('Failed to notify admin of paytm dispute', e); }
+            await markWebhookProcessed(eventRecord.id);
             return NextResponse.json({ received: true });
           }
 
@@ -95,6 +89,7 @@ export async function POST(request) {
       }
     }
 
+    await markWebhookProcessed(eventRecord.id);
     return NextResponse.json({ received: true });
   } catch (err) {
     console.error('Paytm webhook error:', err);

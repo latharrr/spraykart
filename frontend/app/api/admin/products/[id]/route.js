@@ -5,6 +5,9 @@ import { uploadImage, deleteImage } from '@/lib/cloudinary';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import slugify from 'slugify';
 import { logAdminAction } from '@/lib/audit';
+import { validateProductImageFiles } from '@/lib/uploadLimits';
+
+export const config = { api: { bodyParser: false } };
 
 const stripTags = (str) => str ? str.replace(/<[^>]*>/g, '').replace(/[<>]/g, '').trim().slice(0, 5000) : null;
 
@@ -54,6 +57,10 @@ export async function PUT(request, { params }) {
     const hsn = formData.get('hsn');
     const gst = formData.get('gst');
     const slug = name ? slugify(name, { lower: true, strict: true }) : undefined;
+    const { files: imageFiles, error: uploadError } = validateProductImageFiles(formData);
+    if (uploadError) {
+      return NextResponse.json({ error: uploadError.message }, { status: uploadError.status });
+    }
 
     const { rows } = await db.query(
       `UPDATE products SET
@@ -90,7 +97,6 @@ export async function PUT(request, { params }) {
       });
     }
 
-    const imageFiles = formData.getAll('images');
     if (imageFiles.length > 0) {
       // Check if product already has any images (to determine if first new one should be primary)
       const { rows: existingImages } = await db.query('SELECT id FROM product_images WHERE product_id = $1 AND is_primary = true', [params.id]);
@@ -98,7 +104,6 @@ export async function PUT(request, { params }) {
 
       for (let i = 0; i < imageFiles.length; i++) {
         const file = imageFiles[i];
-        if (!(file instanceof File) || file.size === 0) continue;
 
         const buffer = Buffer.from(await file.arrayBuffer());
         const { url, public_id } = await uploadImage(buffer);

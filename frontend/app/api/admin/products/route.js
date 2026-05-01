@@ -3,7 +3,10 @@ import db from '@/lib/db';
 import cache from '@/lib/cache';
 import { uploadImage } from '@/lib/cloudinary';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
+import { validateProductImageFiles } from '@/lib/uploadLimits';
 import slugify from 'slugify';
+
+export const config = { api: { bodyParser: false } };
 
 const stripTags = (str) => str ? str.replace(/<[^>]*>/g, '').replace(/[<>]/g, '').trim().slice(0, 5000) : null;
 
@@ -50,6 +53,10 @@ export async function POST(request) {
     const hsn = formData.get('hsn');
     const gst = formData.get('gst');
     const variantsRaw = formData.get('variants');
+    const { files: imageFiles, error: uploadError } = validateProductImageFiles(formData);
+    if (uploadError) {
+      return NextResponse.json({ error: uploadError.message }, { status: uploadError.status });
+    }
 
     if (!name || !price) return NextResponse.json({ error: 'Name and price are required' }, { status: 400 });
 
@@ -65,11 +72,9 @@ export async function POST(request) {
     );
     const product = rows[0];
 
-    const imageFiles = formData.getAll('images');
     let uploadedCount = 0;
     for (let i = 0; i < imageFiles.length; i++) {
       const file = imageFiles[i];
-      if (!(file instanceof File) || file.size === 0) continue;
 
       const buffer = Buffer.from(await file.arrayBuffer());
       const { url, public_id } = await uploadImage(buffer);

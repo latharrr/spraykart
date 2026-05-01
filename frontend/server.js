@@ -9,7 +9,7 @@ function readArg(name, shortName) {
   return inline ? inline.split('=').slice(1).join('=') : undefined;
 }
 
-const dev = process.env.NODE_ENV !== 'production';
+const dev = process.env.NODE_ENV === 'development';
 const hostname = process.env.HOSTNAME || readArg('--hostname', '-H') || '127.0.0.1';
 const port = Number.parseInt(process.env.PORT || readArg('--port', '-p') || '3000', 10);
 const shutdownTimeoutMs = Number.parseInt(process.env.SHUTDOWN_TIMEOUT_MS || '30000', 10);

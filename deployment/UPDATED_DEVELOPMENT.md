@@ -34,3 +34,16 @@ This document tracks the completed tasks from the Production Readiness Checklist
 * **Performance:** Optimized Admin Product List API to use a fetch-on-edit pattern, significantly speeding up the dashboard load time. Fixed React debouncing bug in Product Search by adopting `useRef`.
 * **SEO & Analytics:** Added `revalidate` timers to `sitemap.js` and added environment tags to Sentry configuration for accurate monitoring.
 * **Build System:** Fixed `serverExternalPackages` config in Next.js 14 and silenced `pg-cloudflare` warnings in webpack.
+
+## SSL Renewal Smoke Test
+Let's Encrypt renewal is automated by Certbot, but production should run a monthly dry-run and email on failure:
+
+```bash
+sudo certbot renew --dry-run
+```
+
+Suggested cron:
+
+```bash
+0 5 1 * * sudo certbot renew --dry-run >/tmp/spraykart_certbot_dry_run.log 2>&1 || cat /tmp/spraykart_certbot_dry_run.log | mail -s "[SprayKart] SSL renewal dry-run failed" "$ADMIN_EMAIL"
+```

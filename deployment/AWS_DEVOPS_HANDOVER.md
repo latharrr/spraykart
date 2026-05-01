@@ -115,5 +115,12 @@ The SSL certificate was issued by Let's Encrypt via Certbot. It is configured to
 sudo certbot renew
 ```
 
+Run a monthly dry-run smoke test and email on failure:
+
+```bash
+sudo certbot renew --dry-run
+0 5 1 * * sudo certbot renew --dry-run >/tmp/spraykart_certbot_dry_run.log 2>&1 || cat /tmp/spraykart_certbot_dry_run.log | mail -s "[SprayKart] SSL renewal dry-run failed" "$ADMIN_EMAIL"
+```
+
 ## 6. Nginx Configuration
 The Nginx configuration file is located at \`/etc/nginx/sites-available/spraykart\`. It acts as a reverse proxy, forwarding traffic from port 80/443 to the Node.js PM2 process running on port 3000. It handles the `Upgrade` headers necessary for Next.js hot-reloading and WebSockets.

@@ -8,7 +8,8 @@ export async function GET(request) {
   if (user.role !== 'admin') return forbidden();
 
   const { searchParams } = new URL(request.url);
-  const safePeriod = parseInt(searchParams.get('period') || '30') || 30;
+  const parsedPeriod = parseInt(searchParams.get('period') || '30', 10);
+  const safePeriod = Number.isFinite(parsedPeriod) ? Math.min(Math.max(parsedPeriod, 1), 365) : 30;
 
   try {
     const [revenue, orders, topProducts, recentOrders, userCount, dailyRevenue] = await Promise.all([
@@ -34,8 +35,8 @@ export async function GET(request) {
         FROM orders o JOIN users u ON u.id=o.user_id ORDER BY o.created_at DESC LIMIT 10`),
       db.query(`SELECT COUNT(*) as total FROM users WHERE role='customer'`),
       db.query(`SELECT DATE(created_at) as date, COALESCE(SUM(final_price),0) as revenue
-        FROM orders WHERE status != 'cancelled' AND created_at >= NOW() - INTERVAL '30 days'
-        GROUP BY DATE(created_at) ORDER BY date ASC`),
+        FROM orders WHERE status != 'cancelled' AND created_at >= NOW() - ($1::int * INTERVAL '1 day')
+        GROUP BY DATE(created_at) ORDER BY date ASC`, [safePeriod]),
     ]);
 
     return NextResponse.json({

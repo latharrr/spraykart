@@ -17,9 +17,28 @@ export async function POST(request) {
       if (rlErr && rlErr.code === 'RATE_LIMIT_EXCEEDED') return NextResponse.json({ error: 'Too many coupon attempts. Please try again later.' }, { status: 429 });
     }
 
-    const { code, cart_total, cart_items = [] } = await request.json();
+    const { code, cart_items = [] } = await request.json();
     if (!code) return NextResponse.json({ error: 'Coupon code is required' }, { status: 400 });
-    if (!cart_total || cart_total <= 0) return NextResponse.json({ error: 'Invalid cart total' }, { status: 400 });
+    if (!cart_items || !Array.isArray(cart_items) || cart_items.length === 0) {
+      return NextResponse.json({ error: 'Cart items are required' }, { status: 400 });
+    }
+
+    // Recompute cart total server-side using DB prices (fix(25): prevent client price manipulation)
+    const productIds = cart_items.map(item => item.product_id).filter(Boolean);
+    let cart_total = 0;
+    if (productIds.length > 0) {
+      const placeholders = productIds.map((_, i) => `$${i + 1}`).join(',');
+      const { rows: dbProducts } = await db.query(`SELECT id, price FROM products WHERE id IN (${placeholders})`, productIds);
+      const priceMap = new Map(dbProducts.map(p => [p.id, parseFloat(p.price)]));
+      
+      for (const item of cart_items) {
+        const dbPrice = priceMap.get(item.product_id);
+        if (dbPrice) {
+          cart_total += dbPrice * (item.quantity || 1);
+        }
+      }
+    }
+    if (cart_total <= 0) return NextResponse.json({ error: 'Invalid cart total' }, { status: 400 });
 
     const { rows } = await db.query(
       `SELECT * FROM coupons WHERE code=$1 AND is_active=true

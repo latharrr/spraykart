@@ -31,7 +31,7 @@ export async function POST(request) {
     const { rows } = await db.query(
       `INSERT INTO reviews(user_id, product_id, rating, comment)
        VALUES($1,$2,$3,$4)
-       ON CONFLICT (user_id, product_id) DO UPDATE SET rating=$3, comment=$4
+       ON CONFLICT (user_id, product_id) DO UPDATE SET rating=$3, comment=$4, is_approved=false
        RETURNING *`,
       [user.id, product_id, rating, sanitize(comment)]
     );

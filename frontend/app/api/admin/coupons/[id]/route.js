@@ -94,9 +94,16 @@ export async function DELETE(request, { params }) {
   if (error) return error;
 
   try {
+    const { rows: couponRows } = await db.query('SELECT id, used_count FROM coupons WHERE id=$1', [params.id]);
+    if (!couponRows.length) return NextResponse.json({ error: 'Coupon not found' }, { status: 404 });
+
+    if (couponRows[0].used_count > 0) {
+      const { rows } = await db.query('UPDATE coupons SET is_active=false WHERE id=$1 RETURNING id, is_active', [params.id]);
+      return NextResponse.json({ success: true, soft_deleted: true, coupon: rows[0] });
+    }
+
     const { rows } = await db.query('DELETE FROM coupons WHERE id=$1 RETURNING id', [params.id]);
-    if (!rows.length) return NextResponse.json({ error: 'Coupon not found' }, { status: 404 });
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, soft_deleted: false, coupon: rows[0] });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

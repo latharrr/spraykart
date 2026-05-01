@@ -3,7 +3,6 @@
 
 -- 1. Razorpay Webhook lookups (CRITICAL)
 CREATE INDEX IF NOT EXISTS idx_orders_razorpay_order_id ON orders(razorpay_order_id);
-CREATE INDEX IF NOT EXISTS idx_orders_idempotency_key ON orders(idempotency_key);
 
 -- 2. User Authentication
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);

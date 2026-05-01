@@ -121,7 +121,7 @@ export async function PUT(request, { params }) {
       }
     }
 
-    await Promise.all([cache.delPattern('products:*'), cache.del(`product:${rows[0].slug}`)]);
+    await Promise.all([cache.delPattern('products:*'), cache.del(`product:${rows[0].slug}`), cache.del('products:featured:home')]);
     return NextResponse.json(rows[0]);
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });

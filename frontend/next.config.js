@@ -25,7 +25,6 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['pg', 'bcryptjs', 'jsonwebtoken'],
     optimizePackageImports: ['lucide-react', '@headlessui/react', 'react-hot-toast'],
-    cacheMaxMemorySize: 52 * 1024 * 1024,  // Increase ISR cache to 52MB (new name)
   },
 
   webpack: (config, { isServer }) => {

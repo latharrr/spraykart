@@ -47,18 +47,13 @@ All application code lives in \`/home/ubuntu/spraykart\`.
 Whenever new code is pushed to the \`main\` branch on GitHub, run the following sequence on the server:
 
 ```bash
-# 1. Enter the correct directory
-cd ~/spraykart/frontend
-
-# 2. Pull the latest code
-git pull origin main
-
-# 3. Rebuild the Next.js application (REQUIRED for server components/actions)
-npm run build
-
-# 4. Restart the live process without downtime
-pm2 restart spraykart
+# 1. Complete scripts/preflight.md and mark Status: PASS
+# 2. Run the guarded deploy script
+cd ~/spraykart
+bash deployment/deploy.sh
 ```
+
+The deploy script refuses to run unless `scripts/preflight.md` is marked `Status: PASS`, has no unchecked rows, and was modified within the last 24 hours.
 
 ### Viewing Logs & Debugging
 If the application throws a 500 error, PM2 captures all `console.error` outputs.

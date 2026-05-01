@@ -1,5 +1,6 @@
 import db from '@/lib/db';
 import logger from '@/lib/logger';
+import { hasUsableDatabaseUrl } from '@/lib/env';
 
 export const revalidate = 3600;
 
@@ -14,9 +15,14 @@ export default async function sitemap() {
   }));
 
   let productPages = [];
+  if (!hasUsableDatabaseUrl()) {
+    return staticPages;
+  }
+
   try {
     const { rows } = await db.query(
-      'SELECT slug, created_at FROM products WHERE is_active=true ORDER BY created_at DESC'
+      // TODO: shard into sitemap-products-N.xml files when active products approach 5000.
+      'SELECT slug, created_at FROM products WHERE is_active=true ORDER BY created_at DESC LIMIT 5000'
     );
     productPages = rows.map((p) => ({
       url: `${base}/products/${p.slug}`,

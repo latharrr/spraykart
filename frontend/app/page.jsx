@@ -6,12 +6,15 @@ import db from '@/lib/db';
 import cache from '@/lib/cache';
 import HeroBanner from '@/components/HeroBanner';
 import logger from '@/lib/logger';
+import { hasUsableDatabaseUrl } from '@/lib/env';
 
 // Keep homepage statically rendered and refresh periodically.
 export const dynamic = 'force-static';
 export const revalidate = 3600; // 1 hour — reduces ISR regenerations by 50%
 
 async function getFeaturedProducts() {
+  if (!hasUsableDatabaseUrl()) return [];
+
   try {
     const cached = await cache.get('products:featured:home');
     if (cached) return cached;

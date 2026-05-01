@@ -250,7 +250,7 @@ function NavbarInner() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <button
               className="lg:hidden"
-              style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0c0c0c', background: 'none', border: 'none', cursor: 'pointer', marginLeft: '-8px' }}
+              style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0c0c0c', background: 'none', border: 'none', cursor: 'pointer', marginLeft: '-8px' }}
               onClick={() => setDrawerOpen(true)}
               aria-label="Open menu"
             >
@@ -283,23 +283,23 @@ function NavbarInner() {
 
           {/* Right icons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-            <Link href="/products" style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#909090', textDecoration: 'none', borderRadius: 2, transition: 'color .15s' }} aria-label="Search">
+            <Link href="/products" style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#909090', textDecoration: 'none', borderRadius: 2, transition: 'color .15s' }} aria-label="Search">
               <Search size={16} />
             </Link>
 
-            <Link href="/wishlist" style={{ position: 'relative', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#909090', textDecoration: 'none', borderRadius: 2, transition: 'color .15s' }} aria-label="Wishlist">
+            <Link href="/wishlist" style={{ position: 'relative', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#909090', textDecoration: 'none', borderRadius: 2, transition: 'color .15s' }} aria-label="Wishlist">
               <Heart size={16} />
               {mounted && wishlistCount > 0 && (
-                <span style={{ position: 'absolute', top: 4, right: 4, width: 14, height: 14, background: '#e11d48', color: '#ffffff', fontSize: 8, fontWeight: 700, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ position: 'absolute', top: 6, right: 6, width: 14, height: 14, background: '#e11d48', color: '#ffffff', fontSize: 8, fontWeight: 700, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {wishlistCount > 9 ? '9+' : wishlistCount}
                 </span>
               )}
             </Link>
 
-            <Link href="/cart" style={{ position: 'relative', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#909090', textDecoration: 'none', borderRadius: 2, transition: 'color .15s' }} aria-label="Cart">
+            <Link href="/cart" style={{ position: 'relative', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#909090', textDecoration: 'none', borderRadius: 2, transition: 'color .15s' }} aria-label="Cart">
               <ShoppingCart size={16} />
               {mounted && itemCount > 0 && (
-                <span style={{ position: 'absolute', top: 4, right: 4, width: 14, height: 14, background: '#0c0c0c', color: '#ffffff', fontSize: 8, fontWeight: 700, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ position: 'absolute', top: 6, right: 6, width: 14, height: 14, background: '#0c0c0c', color: '#ffffff', fontSize: 8, fontWeight: 700, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {itemCount > 9 ? '9+' : itemCount}
                 </span>
               )}
@@ -308,7 +308,7 @@ function NavbarInner() {
             {/* Desktop user */}
             {mounted && user ? (
               <div className="relative group hidden lg:block">
-                <button style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#737373', padding: '6px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
+                <button style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#737373', padding: '6px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
                   <User size={14} />
                   {user.name.split(' ')[0]}
                 </button>
@@ -322,7 +322,7 @@ function NavbarInner() {
                 </div>
               </div>
             ) : (
-              <Link href="/login" className="hidden lg:inline-flex items-center" style={{ marginLeft: 8, padding: '8px 20px', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', background: '#0c0c0c', color: '#ffffff', textDecoration: 'none', borderRadius: 2 }}>
+              <Link href="/login" className="hidden lg:inline-flex items-center" style={{ marginLeft: 8, minHeight: 44, padding: '8px 20px', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', background: '#0c0c0c', color: '#ffffff', textDecoration: 'none', borderRadius: 2 }}>
                 Sign in
               </Link>
             )}
@@ -369,7 +369,7 @@ function NavbarInner() {
           </Link>
           <button
             onClick={() => { setDrawerOpen(false); setActivePanel(null); }}
-            style={{ width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#737373', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 2 }}
+            style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#737373', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 2 }}
             aria-label="Close menu"
           >
             <X size={18} />

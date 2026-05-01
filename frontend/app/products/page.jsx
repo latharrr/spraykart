@@ -148,7 +148,7 @@ function ProductsContent() {
           {/* Filter toggle */}
           <button
             onClick={() => setShowFilters(v => !v)}
-            className="btn-secondary text-sm py-2 gap-2 relative"
+            className="btn-secondary text-sm min-h-[44px] py-2 gap-2 relative"
           >
             <SlidersHorizontal size={14} />
             Filters
@@ -168,7 +168,7 @@ function ProductsContent() {
           {activeFilterCount > 0 && (
             <button
               onClick={clearAllFilters}
-              className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1"
+              className="min-h-[44px] px-2 text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1"
             >
               <X size={12} /> Clear all
             </button>
@@ -222,7 +222,7 @@ function ProductsContent() {
                 }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 10,
-                  width: '100%', padding: '9px 16px',
+                  width: '100%', minHeight: 44, padding: '9px 16px',
                   fontSize: 13, color: '#3d3d3d',
                   background: 'none', border: 'none', cursor: 'pointer',
                   textAlign: 'left',
@@ -247,7 +247,8 @@ function ProductsContent() {
                     key={cat}
                     onClick={() => { updateParam({ category: cat }); setSearchFocused(false); }}
                     style={{
-                      padding: '5px 12px',
+                      minHeight: 44,
+                      padding: '5px 14px',
                       fontSize: 12, fontWeight: 500,
                       border: '1px solid #e8e8e8',
                       borderRadius: 100,
@@ -277,12 +278,12 @@ function ProductsContent() {
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#737373', marginBottom: 10 }}>Gender</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+                <label style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
                   <input type="radio" name="gender" checked={!category} onChange={() => updateParam({ category: '' })} />
                   All
                 </label>
                 {CATEGORIES.map(cat => (
-                  <label key={cat} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+                  <label key={cat} style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
                     <input type="radio" name="gender" checked={category === cat} onChange={() => updateParam({ category: cat })} />
                     {cat}
                   </label>
@@ -294,12 +295,12 @@ function ProductsContent() {
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#737373', marginBottom: 10 }}>Price Range</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+                <label style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
                   <input type="radio" name="price" checked={!priceMin && !priceMax} onChange={() => updateParam({ price_min: '', price_max: '' })} />
                   All Prices
                 </label>
                 {PRICE_RANGES.map(({ label, min, max }) => (
-                  <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+                  <label key={label} style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
                     <input
                       type="radio" name="price"
                       checked={priceMin === String(min) && priceMax === String(max)}
@@ -315,11 +316,11 @@ function ProductsContent() {
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#737373', marginBottom: 10 }}>Availability</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+                <label style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
                   <input type="radio" name="avail" checked={!availability} onChange={() => updateParam({ availability: '' })} />
                   All
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+                <label style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
                   <input type="radio" name="avail" checked={availability === 'in_stock'} onChange={() => updateParam({ availability: 'in_stock' })} />
                   In Stock Only
                 </label>
@@ -327,11 +328,11 @@ function ProductsContent() {
 
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#737373', marginBottom: 10, marginTop: 20 }}>Special</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+                <label style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
                   <input type="radio" name="special" checked={sortParam === 'created_at:DESC'} onChange={() => updateParam({ sort: 'created_at:DESC' })} />
                   New Arrivals
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+                <label style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
                   <input type="radio" name="special" checked={sortParam === 'sold:DESC'} onChange={() => updateParam({ sort: 'sold:DESC' })} />
                   Best Sellers
                 </label>
@@ -347,7 +348,7 @@ function ProductsContent() {
                     key={n}
                     onClick={() => updateParam({ note: note === n ? '' : n })}
                     style={{
-                      padding: '4px 10px', fontSize: 12,
+                      minHeight: 44, padding: '4px 12px', fontSize: 12,
                       border: `1px solid ${note === n ? '#0c0c0c' : '#e8e8e8'}`,
                       borderRadius: 100,
                       background: note === n ? '#0c0c0c' : '#fff',
@@ -370,7 +371,7 @@ function ProductsContent() {
                     key={o}
                     onClick={() => updateParam({ occasion: occasion === o ? '' : o })}
                     style={{
-                      padding: '4px 10px', fontSize: 12,
+                      minHeight: 44, padding: '4px 12px', fontSize: 12,
                       border: `1px solid ${occasion === o ? '#0c0c0c' : '#e8e8e8'}`,
                       borderRadius: 100,
                       background: occasion === o ? '#0c0c0c' : '#fff',
@@ -389,7 +390,7 @@ function ProductsContent() {
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#737373', marginBottom: 10 }}>Brand</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {BRANDS.map(b => (
-                  <label key={b} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+                  <label key={b} style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
                     <input type="checkbox" checked={brand === b} onChange={() => updateParam({ brand: brand === b ? '' : b })} />
                     {b}
                   </label>
@@ -400,8 +401,8 @@ function ProductsContent() {
 
           {/* Apply / Clear */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 24, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
-            <button onClick={clearAllFilters} className="btn-secondary text-sm py-2">Clear All</button>
-            <button onClick={() => setShowFilters(false)} className="btn-primary text-sm py-2">Apply Filters</button>
+            <button onClick={clearAllFilters} className="btn-secondary text-sm min-h-[44px] py-2">Clear All</button>
+            <button onClick={() => setShowFilters(false)} className="btn-primary text-sm min-h-[44px] py-2">Apply Filters</button>
           </div>
         </div>
       )}
@@ -446,7 +447,7 @@ function ProductsContent() {
                 <button
                   key={i}
                   onClick={() => updateParam({ page: String(i + 1) })}
-                  className={`w-9 h-9 rounded-lg text-sm font-medium transition ${
+                  className={`w-11 h-11 rounded-lg text-sm font-medium transition ${
                     page === i + 1 ? 'bg-black text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
                   }`}
                 >
@@ -465,12 +466,12 @@ function FilterChip({ label, onRemove }) {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
-      padding: '4px 10px', fontSize: 12,
+      minHeight: 44, padding: '4px 6px 4px 12px', fontSize: 12,
       border: '1px solid #0c0c0c', borderRadius: 100,
       background: '#0c0c0c', color: '#fff',
     }}>
       {label}
-      <button onClick={onRemove} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', padding: 0 }}>
+      <button aria-label={`Remove ${label}`} onClick={onRemove} style={{ width: 44, height: 44, background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
         <X size={10} />
       </button>
     </span>

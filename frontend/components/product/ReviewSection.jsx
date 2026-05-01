@@ -17,7 +17,8 @@ function StarPicker({ value, onChange }) {
           onMouseEnter={() => setHover(star)}
           onMouseLeave={() => setHover(0)}
           onClick={() => onChange(star)}
-          className="transition"
+          className="w-11 h-11 inline-flex items-center justify-center transition"
+          aria-label={`${star} star rating`}
         >
           <Star
             size={24}
@@ -96,7 +97,7 @@ export default function ReviewSection({ product, reviews: initialReviews = [] })
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                 />
-                <button type="submit" disabled={loading} className="btn-primary text-sm py-2.5">
+                <button type="submit" disabled={loading} className="btn-primary text-sm min-h-[44px] py-2.5">
                   {loading ? <Spinner size="sm" /> : 'Submit Review'}
                 </button>
               </form>

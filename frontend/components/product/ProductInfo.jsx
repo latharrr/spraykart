@@ -135,7 +135,7 @@ export default function ProductInfo({ product }) {
               <button
                 key={v.id}
                 onClick={() => setSelectedVariant(selectedVariant?.id === v.id ? null : v)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition ${
+                className={`min-h-[44px] px-4 py-2 rounded-lg text-sm font-medium border transition ${
                   selectedVariant?.id === v.id
                     ? 'border-black bg-black text-white'
                     : 'border-gray-200 text-gray-700 hover:border-gray-400'
@@ -154,12 +154,12 @@ export default function ProductInfo({ product }) {
         <p className="text-sm font-medium text-gray-700">Qty:</p>
         <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
           <button
-            className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition"
+            className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition"
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
           >−</button>
-          <span className="w-10 text-center text-sm font-medium">{quantity}</span>
+          <span className="w-11 text-center text-sm font-medium">{quantity}</span>
           <button
-            className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition"
+            className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition"
             onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
           >+</button>
         </div>
@@ -170,7 +170,7 @@ export default function ProductInfo({ product }) {
         <button
           onClick={handleAddToCart}
           disabled={!inStock || added}
-          className="btn-primary flex-1 py-3.5 gap-2"
+          className="btn-primary flex-1 min-h-[48px] py-3.5 gap-2"
         >
           <ShoppingCart size={18} />
           {added ? 'Added!' : 'Add to cart'}
@@ -178,7 +178,7 @@ export default function ProductInfo({ product }) {
         <button
           onClick={() => { handleAddToCart(); router.push('/checkout'); }}
           disabled={!inStock}
-          className="btn-secondary flex-1 py-3.5 gap-2"
+          className="btn-secondary flex-1 min-h-[48px] py-3.5 gap-2"
         >
           <Zap size={18} />
           Buy now
@@ -211,7 +211,7 @@ export default function ProductInfo({ product }) {
           onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
           onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
         />
-        <button onClick={handleApplyCoupon} disabled={couponLoading} className="btn-secondary shrink-0 text-sm py-2 px-4">
+        <button onClick={handleApplyCoupon} disabled={couponLoading} className="btn-secondary shrink-0 text-sm min-h-[44px] py-2 px-4">
           {couponLoading ? <Spinner size="sm" /> : 'Apply'}
         </button>
       </div>

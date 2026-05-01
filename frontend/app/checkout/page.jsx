@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Script from 'next/script';
 import { useCartStore, useAuthStore } from '@/lib/store';
 import { createPayment, verifyPayment, createOrder, applyCoupon, createPaytmPayment } from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -332,7 +333,10 @@ export default function CheckoutPage() {
 
   return (
     <>
-      <script src="https://checkout.razorpay.com/v1/checkout.js" async />
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="lazyOnload"
+      />
       <div className="max-w-5xl mx-auto px-4 py-8 md:py-12 grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10">
 
         {/* ── Left: Shipping Address ───────────────────────────────────────── */}

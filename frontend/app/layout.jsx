@@ -41,6 +41,7 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
+  themeColor: '#0c0c0c',
 };
 
 export default function RootLayout({ children }) {
@@ -49,9 +50,7 @@ export default function RootLayout({ children }) {
       <head>
         {/* DNS prefetch for external domains used at runtime */}
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
-        <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
         <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://checkout.razorpay.com" crossOrigin="anonymous" />
         {/*
           Preload hero images before React hydrates.
           Desktop image preloaded on md+ screens, mobile on smaller screens.

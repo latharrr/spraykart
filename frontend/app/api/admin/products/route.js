@@ -7,7 +7,7 @@ import { validateProductImageFiles } from '@/lib/uploadLimits';
 import logger from '@/lib/logger';
 import slugify from 'slugify';
 
-export const config = { api: { bodyParser: false } };
+export const runtime = 'nodejs';
 
 const stripTags = (str) => str ? str.replace(/<[^>]*>/g, '').replace(/[<>]/g, '').trim().slice(0, 5000) : null;
 

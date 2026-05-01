@@ -1,6 +1,9 @@
 export const MAX_PRODUCT_IMAGE_FILES = 10;
 export const MAX_PRODUCT_IMAGE_BYTES = 5 * 1024 * 1024;
 
+// Next App Router does not support the Pages Router bodyParser=false export.
+// Validate immediately after formData() so oversized files are rejected before
+// any arrayBuffer() read or Cloudinary upload work begins.
 function isUploadFile(value) {
   return (
     value &&

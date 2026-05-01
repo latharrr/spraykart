@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import { z } from 'zod';
+import { logAdminAction } from '@/lib/audit';
 
 const updateSchema = z.object({
   type: z.enum(['percentage', 'flat']).optional(),
@@ -90,19 +91,38 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  const { error } = await requireAdmin(request);
-  if (error) return error;
+  const auth = await requireAdmin(request);
+  if (auth.error) return auth.error;
+  const { user } = auth;
 
   try {
-    const { rows: couponRows } = await db.query('SELECT id, used_count FROM coupons WHERE id=$1', [params.id]);
+    const { rows: couponRows } = await db.query('SELECT * FROM coupons WHERE id=$1', [params.id]);
     if (!couponRows.length) return NextResponse.json({ error: 'Coupon not found' }, { status: 404 });
 
     if (couponRows[0].used_count > 0) {
       const { rows } = await db.query('UPDATE coupons SET is_active=false WHERE id=$1 RETURNING id, is_active', [params.id]);
+      await logAdminAction({
+        adminId: user.id,
+        action: 'coupon.soft_delete',
+        targetType: 'coupon',
+        targetId: params.id,
+        before: couponRows[0],
+        after: rows[0],
+        request,
+      });
       return NextResponse.json({ success: true, soft_deleted: true, coupon: rows[0] });
     }
 
     const { rows } = await db.query('DELETE FROM coupons WHERE id=$1 RETURNING id', [params.id]);
+    await logAdminAction({
+      adminId: user.id,
+      action: 'coupon.delete',
+      targetType: 'coupon',
+      targetId: params.id,
+      before: couponRows[0],
+      after: null,
+      request,
+    });
     return NextResponse.json({ success: true, soft_deleted: false, coupon: rows[0] });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });

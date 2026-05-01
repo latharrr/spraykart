@@ -4,6 +4,7 @@ import cache from '@/lib/cache';
 import { uploadImage, deleteImage } from '@/lib/cloudinary';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import slugify from 'slugify';
+import { logAdminAction } from '@/lib/audit';
 
 const stripTags = (str) => str ? str.replace(/<[^>]*>/g, '').replace(/[<>]/g, '').trim().slice(0, 5000) : null;
 
@@ -35,10 +36,12 @@ export async function GET(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
-  const { error } = await requireAdmin(request);
-  if (error) return error;
+  const auth = await requireAdmin(request);
+  if (auth.error) return auth.error;
+  const { user } = auth;
 
   try {
+    const { rows: beforeRows } = await db.query('SELECT * FROM products WHERE id=$1', [params.id]);
     const formData = await request.formData();
     const name = formData.get('name');
     const description = formData.get('description');
@@ -75,6 +78,17 @@ export async function PUT(request, { params }) {
        params.id]
     );
     if (!rows.length) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    if (beforeRows.length && price && Number(beforeRows[0].price) !== Number(rows[0].price)) {
+      await logAdminAction({
+        adminId: user.id,
+        action: 'product.price_change',
+        targetType: 'product',
+        targetId: params.id,
+        before: { price: beforeRows[0].price, compare_price: beforeRows[0].compare_price },
+        after: { price: rows[0].price, compare_price: rows[0].compare_price },
+        request,
+      });
+    }
 
     const imageFiles = formData.getAll('images');
     if (imageFiles.length > 0) {
@@ -135,11 +149,12 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  const { error } = await requireAdmin(request);
-  if (error) return error;
+  const auth = await requireAdmin(request);
+  if (auth.error) return auth.error;
+  const { user } = auth;
 
   try {
-    const { rows: product } = await db.query('SELECT slug FROM products WHERE id=$1', [params.id]);
+    const { rows: product } = await db.query('SELECT * FROM products WHERE id=$1', [params.id]);
     if (!product.length) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
     const { rows: orderCheck } = await db.query('SELECT 1 FROM order_items WHERE product_id=$1 LIMIT 1', [params.id]);
@@ -150,6 +165,15 @@ export async function DELETE(request, { params }) {
     const { rows: images } = await db.query('SELECT public_id FROM product_images WHERE product_id=$1', [params.id]);
     await Promise.allSettled(images.filter(img => img.public_id).map(img => deleteImage(img.public_id)));
     await db.query('DELETE FROM products WHERE id=$1', [params.id]);
+    await logAdminAction({
+      adminId: user.id,
+      action: 'product.delete',
+      targetType: 'product',
+      targetId: params.id,
+      before: product[0],
+      after: null,
+      request,
+    });
     await Promise.all([cache.delPattern('products:*'), cache.del(`product:${product[0].slug}`)]);
     return NextResponse.json({ success: true });
   } catch (err) {

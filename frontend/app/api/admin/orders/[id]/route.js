@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { email } from '@/lib/email';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
+import { logAdminAction } from '@/lib/audit';
 
 const VALID_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 const ALLOWED_TRANSITIONS = {
@@ -38,8 +39,9 @@ export async function GET(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
-  const { error } = await requireAdmin(request);
-  if (error) return error;
+  const auth = await requireAdmin(request);
+  if (auth.error) return auth.error;
+  const { user } = auth;
 
   try {
     const { status } = await request.json();
@@ -110,6 +112,16 @@ export async function PUT(request, { params }) {
           await client.query('UPDATE coupons SET used_count = GREATEST(0, used_count - 1) WHERE code=$1', [order.coupon_code]);
         }
       }
+      await logAdminAction({
+        adminId: user.id,
+        action: 'order.status_change',
+        targetType: 'order',
+        targetId: params.id,
+        before: currentOrder.rows[0],
+        after: order,
+        request,
+        client,
+      });
       await client.query('COMMIT');
     } catch (err) {
       await client.query('ROLLBACK');

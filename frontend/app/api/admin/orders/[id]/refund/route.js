@@ -3,6 +3,7 @@ import db from '@/lib/db';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import Razorpay from 'razorpay';
 import PaytmChecksum from 'paytmchecksum';
+import { logAdminAction } from '@/lib/audit';
 
 function getRazorpay() {
   const key_id = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
@@ -97,6 +98,15 @@ export async function POST(request, { params }) {
       'INSERT INTO refunds(order_id,gateway_refund_id,amount,status) VALUES($1,$2,$3,$4) RETURNING *',
       [order.id, gatewayRefund.gateway_refund_id, requestedAmount, gatewayRefund.status]
     );
+    await logAdminAction({
+      adminId: user.id,
+      action: 'refund.create',
+      targetType: 'refund',
+      targetId: inserted[0].id,
+      before: { order_id: order.id, already_refunded: alreadyRefunded, remaining_refundable: remaining },
+      after: inserted[0],
+      request,
+    });
 
     const statusCode = gatewayRefund.status === 'failed' ? 502 : 200;
     return NextResponse.json({ success: gatewayRefund.status !== 'failed', refund: inserted[0], gateway: gatewayRefund.gateway_response }, { status: statusCode });

@@ -111,5 +111,6 @@ export const adminDeleteTestimonial = (id) => api.delete(`/admin/testimonials/${
 
 export const adminGetAnalytics = (params) => api.get('/admin/analytics', { params });
 export const adminGetPerf = () => api.get('/perf');
+export const adminGetAudit = (params) => api.get('/admin/audit', { params });
 
 export default api;

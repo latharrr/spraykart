@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { fetchWithCsrf } from './csrf';
 
 // ─── Cart Store ───────────────────────────────────────────────────────────────
 export const useCartStore = create(
@@ -132,7 +133,7 @@ export const useAuthStore = create(
 
       logout: async () => {
         try {
-          await fetch('/api/auth/logout', {
+          await fetchWithCsrf('/api/auth/logout', {
             method: 'POST',
             credentials: 'include',
           });

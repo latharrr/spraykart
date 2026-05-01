@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { CSRF_HEADER_NAME, CSRF_COOKIE_NAME, getCookieFromDocument, isStateChangingMethod } from './csrf';
 
 const api = axios.create({
   // Use relative URL — Next.js rewrites proxy this to localhost:5000 server-side.
@@ -6,6 +7,18 @@ const api = axios.create({
   baseURL: '/api',
   timeout: 15000,
   withCredentials: true, // Send httpOnly cookies on every request
+});
+
+api.interceptors.request.use((config) => {
+  const method = (config.method || 'get').toUpperCase();
+  if (isStateChangingMethod(method)) {
+    const token = getCookieFromDocument(CSRF_COOKIE_NAME);
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers[CSRF_HEADER_NAME] = token;
+    }
+  }
+  return config;
 });
 
 api.interceptors.response.use(

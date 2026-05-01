@@ -4,6 +4,7 @@ import { adminGetTestimonials, adminCreateTestimonial, adminUpdateTestimonial, a
 import { useFetch } from '@/lib/hooks/useFetch';
 import toast from 'react-hot-toast';
 import { Plus, Pencil, Trash2, X, Eye, EyeOff, Star } from 'lucide-react';
+import { fetchWithCsrf } from '@/lib/csrf';
 
 async function apiTestimonials() {
   const res = await fetch('/api/admin/testimonials', { credentials: 'include', cache: 'no-store' });
@@ -13,21 +14,21 @@ async function apiTestimonials() {
 }
 
 async function apiCreate(data) {
-  const res = await fetch('/api/admin/testimonials', { method: 'POST', body: JSON.stringify(data), credentials: 'include', cache: 'no-store', headers: { 'Content-Type': 'application/json' } });
+  const res = await fetchWithCsrf('/api/admin/testimonials', { method: 'POST', body: JSON.stringify(data), credentials: 'include', cache: 'no-store', headers: { 'Content-Type': 'application/json' } });
   const result = await res.json();
   if (!res.ok) throw result.error || 'Failed to create';
   return result;
 }
 
 async function apiUpdate(id, data) {
-  const res = await fetch(`/api/admin/testimonials/${id}`, { method: 'PATCH', body: JSON.stringify(data), credentials: 'include', cache: 'no-store', headers: { 'Content-Type': 'application/json' } });
+  const res = await fetchWithCsrf(`/api/admin/testimonials/${id}`, { method: 'PATCH', body: JSON.stringify(data), credentials: 'include', cache: 'no-store', headers: { 'Content-Type': 'application/json' } });
   const result = await res.json();
   if (!res.ok) throw result.error || 'Failed to update';
   return result;
 }
 
 async function apiDelete(id) {
-  const res = await fetch(`/api/admin/testimonials/${id}`, { method: 'DELETE', credentials: 'include', cache: 'no-store' });
+  const res = await fetchWithCsrf(`/api/admin/testimonials/${id}`, { method: 'DELETE', credentials: 'include', cache: 'no-store' });
   if (!res.ok) { const d = await res.json(); throw d.error || 'Failed to delete'; }
 }
 

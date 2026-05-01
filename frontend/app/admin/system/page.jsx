@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { fetchWithCsrf } from '@/lib/csrf';
 
 export default function SystemSettingsPage() {
   const [lockedIps, setLockedIps] = useState([]);
@@ -24,7 +25,7 @@ export default function SystemSettingsPage() {
     if (!confirm('Are you sure you want to flush the entire Redis cache? This will clear all rate limits and cached data.')) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/redis', { method: 'DELETE' });
+      const res = await fetchWithCsrf('/api/admin/redis', { method: 'DELETE', credentials: 'include' });
       if (res.ok) {
         toast.success('Redis cache flushed successfully');
         setLockedIps([]);

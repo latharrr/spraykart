@@ -4,6 +4,7 @@ import { useFetch } from '@/lib/hooks/useFetch';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import { Plus, Pencil, Trash2, X, GripVertical, Eye, EyeOff, ImagePlus, Check } from 'lucide-react';
+import { fetchWithCsrf } from '@/lib/csrf';
 
 // ── API helpers ───────────────────────────────────────────────────────────────
 async function apiFaqs() {
@@ -14,21 +15,21 @@ async function apiFaqs() {
 }
 
 async function apiCreate(formData) {
-  const res = await fetch('/api/admin/faqs', { method: 'POST', body: formData, credentials: 'include', cache: 'no-store' });
+  const res = await fetchWithCsrf('/api/admin/faqs', { method: 'POST', body: formData, credentials: 'include', cache: 'no-store' });
   const data = await res.json();
   if (!res.ok) throw data.error || 'Failed to create FAQ';
   return data;
 }
 
 async function apiUpdate(id, formData) {
-  const res = await fetch(`/api/admin/faqs/${id}`, { method: 'PATCH', body: formData, credentials: 'include', cache: 'no-store' });
+  const res = await fetchWithCsrf(`/api/admin/faqs/${id}`, { method: 'PATCH', body: formData, credentials: 'include', cache: 'no-store' });
   const data = await res.json();
   if (!res.ok) throw data.error || 'Failed to update FAQ';
   return data;
 }
 
 async function apiDelete(id) {
-  const res = await fetch(`/api/admin/faqs/${id}`, { method: 'DELETE', credentials: 'include', cache: 'no-store' });
+  const res = await fetchWithCsrf(`/api/admin/faqs/${id}`, { method: 'DELETE', credentials: 'include', cache: 'no-store' });
   if (!res.ok) { const d = await res.json(); throw d.error || 'Failed to delete'; }
 }
 

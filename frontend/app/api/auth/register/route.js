@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import db from '@/lib/db';
 import { signToken, COOKIE_OPTIONS } from '@/lib/auth';
+import { CSRF_COOKIE_NAME, generateCsrfToken, getCsrfCookieOptions } from '@/lib/csrf';
 import { email as emailService } from '@/lib/email';
 import { z } from 'zod';
 
@@ -52,6 +53,7 @@ export async function POST(request) {
 
     const response = NextResponse.json({ user }, { status: 201 });
     response.cookies.set('token', signToken(user.id), COOKIE_OPTIONS);
+    response.cookies.set(CSRF_COOKIE_NAME, generateCsrfToken(), getCsrfCookieOptions());
     return response;
   } catch (err) {
     console.error('Register error:', err);

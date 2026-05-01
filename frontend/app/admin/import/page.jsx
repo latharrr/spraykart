@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef } from 'react';
 import { Upload, FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { fetchWithCsrf } from '@/lib/csrf';
 
 export default function AdminImportPage() {
   const [file,     setFile]     = useState(null);
@@ -19,7 +20,7 @@ export default function AdminImportPage() {
       const fd = new FormData();
       fd.append('csv', file);
 
-      const res  = await fetch('/api/admin/import', { method: 'POST', body: fd });
+      const res  = await fetchWithCsrf('/api/admin/import', { method: 'POST', body: fd, credentials: 'include' });
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.error || 'Import failed');

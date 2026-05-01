@@ -4,6 +4,13 @@ import { email } from '@/lib/email';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 
 const VALID_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+const ALLOWED_TRANSITIONS = {
+  pending: ['confirmed', 'cancelled'],
+  confirmed: ['shipped', 'cancelled'],
+  shipped: ['delivered', 'cancelled'],
+  delivered: [],
+  cancelled: [],
+};
 
 async function requireAdmin(request) {
   const user = await getAuthUser(request);
@@ -54,6 +61,16 @@ export async function PUT(request, { params }) {
       const prevStatus = currentOrder.rows[0].status;
       const paymentMethod = currentOrder.rows[0].payment_method;
       const hasOnlinePayment = currentOrder.rows[0].razorpay_payment_id || currentOrder.rows[0].paytm_txn_id;
+      const allowedNext = ALLOWED_TRANSITIONS[prevStatus] || [];
+
+      if (status !== prevStatus && !allowedNext.includes(status)) {
+        await client.query('ROLLBACK');
+        const allowedText = allowedNext.length ? allowedNext.join(', ') : 'no further status changes';
+        return NextResponse.json(
+          { error: `Cannot change order from ${prevStatus} to ${status}. Allowed next status: ${allowedText}.` },
+          { status: 400 }
+        );
+      }
 
       // Prevent cancellation of online orders without explicit refund
       if (status === 'cancelled' && prevStatus !== 'cancelled' && paymentMethod === 'online' && hasOnlinePayment) {

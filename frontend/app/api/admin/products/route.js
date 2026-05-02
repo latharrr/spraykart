@@ -31,7 +31,8 @@ export async function GET(request) {
       FROM products p ORDER BY p.created_at DESC`);
     return NextResponse.json(rows);
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('Admin products GET failed:', err);
+    return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
   }
 }
 
@@ -99,7 +100,7 @@ export async function POST(request) {
   } catch (err) {
     await client.query('ROLLBACK');
     logger.error('Product creation failed:', err);
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    return NextResponse.json({ error: 'Failed to create product' }, { status: 400 });
   } finally {
     client.release();
   }

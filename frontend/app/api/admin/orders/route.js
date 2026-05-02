@@ -55,6 +55,6 @@ export async function GET(request) {
       pages: Math.ceil(parseInt(countRows[0].count) / limit),
     });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
   }
 }

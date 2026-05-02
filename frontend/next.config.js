@@ -14,22 +14,23 @@ const nextConfig = {
   },
 
   // ─── Core ────────────────────────────────────────────────────────────────────
-  reactStrictMode: false,  // Strict mode runs effects twice in dev, disable for faster builds
+  reactStrictMode: true,
   compress: true,
   poweredByHeader: false,
-  swcMinify: true,
-  productionBrowserSourceMaps: false,  // Don't ship source maps to production
-  optimizeFonts: true,  // Inline critical font metrics
-  
+  productionBrowserSourceMaps: false,
+  optimizeFonts: true,
+
   // ─── Performance ────────────────────────────────────────────────────────────
+  // serverExternalPackages replaces experimental.serverComponentsExternalPackages (Next.js 14+)
+  serverExternalPackages: ['pg', 'bcryptjs', 'jsonwebtoken'],
+
   experimental: {
-    serverComponentsExternalPackages: ['pg', 'bcryptjs', 'jsonwebtoken'],
     optimizePackageImports: ['lucide-react', '@headlessui/react', 'react-hot-toast'],
   },
 
   webpack: (config, { isServer }) => {
     config.externals.push({ 'pg-cloudflare': 'pg-cloudflare' });
-    
+
     // Tree-shake unused code
     if (!isServer) {
       config.optimization = {
@@ -38,7 +39,7 @@ const nextConfig = {
         sideEffects: false,
       };
     }
-    
+
     return config;
   },
 
@@ -59,11 +60,14 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
-      // API responses — shorter cache
+      // API routes must NOT have a shared public cache — individual handlers set
+      // their own Cache-Control when they want caching (e.g. /api/products).
+      // A blanket `public, max-age=60` here would cause CDNs to cache
+      // user-specific responses (orders, auth state) and serve them cross-user.
       {
         source: '/api/:path*',
         headers: [
-          { key: 'Cache-Control', value: 'public, max-age=60, stale-while-revalidate=300' },
+          { key: 'Cache-Control', value: 'no-store' },
         ],
       },
       // HTML pages — ISR with stale-while-revalidate

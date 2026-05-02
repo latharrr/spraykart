@@ -20,7 +20,18 @@ export async function POST(request) {
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest('hex');
 
-    if (expectedSig !== razorpay_signature) {
+    // Use timingSafeEqual to prevent timing-based signature oracle attacks
+    const expectedBuf = Buffer.from(expectedSig, 'hex');
+    const receivedBuf = Buffer.from(
+      /^[0-9a-f]{64}$/i.test(razorpay_signature) ? razorpay_signature : '',
+      'hex'
+    );
+    const sigValid =
+      expectedBuf.length === receivedBuf.length &&
+      expectedBuf.length > 0 &&
+      crypto.timingSafeEqual(expectedBuf, receivedBuf);
+
+    if (!sigValid) {
       return NextResponse.json({ error: 'Payment verification failed' }, { status: 400 });
     }
 

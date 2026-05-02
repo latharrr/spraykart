@@ -8,7 +8,10 @@ export async function GET() {
     db: await checkDatabase(),
     redis: await checkRedis(),
   };
-  const healthy = checks.db.ok && checks.redis.ok;
+  // Redis is optional — treat 'not_configured' as healthy so uptime monitors
+  // don't alert when Redis is intentionally omitted.
+  const redisOk = checks.redis.ok || checks.redis.status === 'not_configured';
+  const healthy = checks.db.ok && redisOk;
 
   return NextResponse.json(
     {

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import logger from '@/lib/logger';
+import { revalidatePath } from 'next/cache';
+import cache from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +57,8 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Testimonial not found' }, { status: 404 });
     }
 
+    await cache.del('testimonials:home');
+    revalidatePath('/');
     return NextResponse.json({ testimonial: rows[0] }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
     logger.error('Testimonial update error:', err);
@@ -79,6 +83,8 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Testimonial not found' }, { status: 404 });
     }
 
+    await cache.del('testimonials:home');
+    revalidatePath('/');
     return NextResponse.json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
     logger.error('Testimonial delete error:', err);

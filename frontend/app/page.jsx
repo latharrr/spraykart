@@ -75,11 +75,35 @@ const categories = [
   { label: 'Gift Sets', href: '/products?category=Gift+Sets' },
 ];
 
-const testimonials = [
+const fallbackTestimonials = [
   { name: 'Ananya Sharma', city: 'Mumbai',    rating: 5, text: 'Finally found 100% authentic luxury fragrances online! The scent lasts all day and packaging was flawless. Spraykart is my go-to now.' },
   { name: 'Rahul Mehta',   city: 'Bangalore', rating: 5, text: 'Ordered a Creed fragrance — arrived in 2 days with GST invoice and authenticity certificate. Everything was perfect.' },
   { name: 'Priya Nair',    city: 'Chennai',   rating: 5, text: 'Their expert helped me pick the right attar for my wedding. Exceptional service and outstanding product quality.' },
 ];
+
+async function getTestimonials() {
+  if (!hasUsableDatabaseUrl()) return fallbackTestimonials;
+
+  try {
+    const cached = await cache.get('testimonials:home');
+    if (cached) return cached;
+
+    const { rows } = await db.query(`
+      SELECT name, location as city, rating, review as text
+      FROM testimonials
+      WHERE is_active = true
+      ORDER BY sort_order ASC, created_at DESC
+      LIMIT 3
+    `);
+
+    const result = rows.length > 0 ? rows : fallbackTestimonials;
+    await cache.set('testimonials:home', result, 3600);
+    return result;
+  } catch (err) {
+    logger.error('Failed to fetch testimonials:', err);
+    return fallbackTestimonials;
+  }
+}
 
 const faqs = [
   { q: 'Are the fragrances 100% authentic?',   a: 'Yes. Every product undergoes source verification, product inspection (packaging, batch codes), and a final pre-listing authenticity check by our experts.' },
@@ -90,7 +114,10 @@ const faqs = [
 ];
 
 export default async function HomePage() {
-  const featuredProducts = await getFeaturedProducts();
+  const [featuredProducts, testimonials] = await Promise.all([
+    getFeaturedProducts(),
+    getTestimonials()
+  ]);
 
   return (
     <div>

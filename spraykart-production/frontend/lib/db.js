@@ -6,14 +6,19 @@ function getPool() {
   if (!pool) {
     const connectionString = process.env.DATABASE_URL;
 
-    // Supabase transaction pooler (port 6543) manages connection persistence
-    // itself — setting min > 0 wastes slots. Direct connection (port 5432) benefits
-    // from warm connections, so we keep min: 2 there.
+    // Supabase transaction pooler (port 6543) — min: 0, no keepAlive
+    // AWS RDS direct (port 5432) — min: 2, keepAlive on, SSL required
     const isPooler = connectionString?.includes(':6543');
+    const isRDS = connectionString?.includes('rds.amazonaws.com');
+
+    // RDS requires SSL with a valid cert; Supabase uses self-signed so we skip verification
+    const sslConfig = isRDS
+      ? { rejectUnauthorized: true }   // RDS: enforce SSL properly
+      : { rejectUnauthorized: false }; // Supabase / local: allow self-signed
 
     pool = new Pool({
       connectionString,
-      ssl: { rejectUnauthorized: false },
+      ssl: sslConfig,
       max: 10,
       min: isPooler ? 0 : 2,           // pooler handles persistence; direct needs warmth
       idleTimeoutMillis: 30_000,

@@ -71,9 +71,14 @@ export const cache = {
   delPattern: async (pattern) => {
     LOCAL.delPattern(pattern);
     if (!redis) return;
+    // Use SCAN instead of KEYS to avoid blocking the Redis event loop on large keyspaces
     try {
-      const keys = await redis.keys(pattern);
-      if (keys.length > 0) await Promise.all(keys.map((k) => redis.del(k)));
+      let cursor = '0';
+      do {
+        const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+        cursor = nextCursor;
+        if (keys.length > 0) await Promise.all(keys.map((k) => redis.del(k)));
+      } while (cursor !== '0');
     } catch { /* silent */ }
   },
 
@@ -107,8 +112,16 @@ export const cache = {
       for (const k of lru.keys()) if (k.startsWith(prefix)) keys.push(k);
       return keys;
     }
+    // Use SCAN instead of KEYS to avoid blocking the Redis event loop
     try {
-      return await redis.keys(pattern);
+      const allKeys = [];
+      let cursor = '0';
+      do {
+        const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+        cursor = nextCursor;
+        allKeys.push(...keys);
+      } while (cursor !== '0');
+      return allKeys;
     } catch { return []; }
   },
 

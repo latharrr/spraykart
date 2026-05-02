@@ -8,6 +8,19 @@ import {
   isStateChangingMethod,
 } from './lib/csrf';
 
+// Constant-time string comparison for Edge runtime (no crypto.timingSafeEqual available)
+function timingSafeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const lenA = a.length;
+  const lenB = b.length;
+  let result = lenA ^ lenB;
+  const maxLen = Math.max(lenA, lenB) || 1;
+  for (let i = 0; i < maxLen; i++) {
+    result |= (a.charCodeAt(i % lenA) || 0) ^ (b.charCodeAt(i % lenB) || 0);
+  }
+  return result === 0;
+}
+
 function ensureCsrfCookie(request, response) {
   if (!request.cookies.get(CSRF_COOKIE_NAME)?.value) {
     response.cookies.set(CSRF_COOKIE_NAME, generateCsrfToken(), getCsrfCookieOptions());
@@ -41,7 +54,7 @@ export function middleware(request) {
     const cookieToken = request.cookies.get(CSRF_COOKIE_NAME)?.value;
     const headerToken = request.headers.get(CSRF_HEADER_NAME);
 
-    if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    if (!cookieToken || !headerToken || !timingSafeEqual(cookieToken, headerToken)) {
       return ensureCsrfCookie(
         request,
         NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 })

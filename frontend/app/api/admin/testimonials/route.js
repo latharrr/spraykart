@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import logger from '@/lib/logger';
+import { revalidatePath } from 'next/cache';
+import cache from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -78,6 +80,8 @@ export async function POST(request) {
       [name.trim(), location?.trim() || null, rating, review.trim()]
     );
 
+    await cache.del('testimonials:home');
+    revalidatePath('/');
     return NextResponse.json({ testimonial: rows[0] }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
     logger.error('Testimonial create error:', err);

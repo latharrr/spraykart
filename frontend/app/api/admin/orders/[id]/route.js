@@ -35,7 +35,8 @@ export async function GET(request, { params }) {
     if (!rows.length) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     return NextResponse.json(rows[0]);
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('Admin order GET failed:', err);
+    return NextResponse.json({ error: 'Failed to fetch order' }, { status: 500 });
   }
 }
 
@@ -137,6 +138,7 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json(order);
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('Admin order PUT failed:', err);
+    return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
   }
 }

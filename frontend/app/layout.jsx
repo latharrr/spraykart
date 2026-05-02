@@ -19,7 +19,7 @@ const cormorant = Cormorant({
   weight: ['300', '400', '500', '600'],
   style: ['normal', 'italic'],
   display: 'swap',
-  preload: true,
+  preload: false,
   fallback: ['Georgia', 'serif'],
 });
 
@@ -49,6 +49,8 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="preload" as="image" href="/hero-desktop.webp" media="(min-width: 768px)" fetchPriority="high" />
+        <link rel="preload" as="image" href="/hero-mobile.webp" media="(max-width: 767px)" fetchPriority="high" />
       </head>
       <body>
         <Navbar />

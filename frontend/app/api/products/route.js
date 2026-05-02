@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import cache from '@/lib/cache';
 import logger from '@/lib/logger';
+import { hasUsableDatabaseUrl } from '@/lib/env';
 
 const ALLOWED_SORTS = ['price', 'created_at', 'name'];
 
@@ -24,6 +25,10 @@ export async function GET(request) {
 
   const queryParams = { category, search, sort, order, page, limit, min_price, max_price, is_featured };
   const cacheKey = buildCacheKey(queryParams);
+
+  if (!hasUsableDatabaseUrl()) {
+    return NextResponse.json({ products: [], total: 0, page, pages: 0 });
+  }
 
   const cached = await cache.get(cacheKey);
   if (cached) return NextResponse.json(cached);

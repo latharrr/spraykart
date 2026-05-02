@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(100) NOT NULL,
   email VARCHAR(150) UNIQUE NOT NULL,
+  phone VARCHAR(15),
   password TEXT NOT NULL,
   role VARCHAR(20) DEFAULT 'customer',   -- 'customer' | 'admin'
   is_blocked BOOLEAN DEFAULT false,
@@ -233,6 +234,7 @@ CREATE TABLE IF NOT EXISTS cart_items (
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
+CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone) WHERE phone IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_razorpay_order_id ON orders(razorpay_order_id);

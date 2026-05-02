@@ -22,6 +22,10 @@ const schema = z.object({
 import cache from '@/lib/cache';
 import rateLimit from '@/lib/rateLimit';
 
+function isMissingPhoneColumn(err) {
+  return err?.code === '42703' && /phone/i.test(err.message || '');
+}
+
 export async function POST(request) {
   try {
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
@@ -44,11 +48,27 @@ export async function POST(request) {
     }
 
     const hash = await bcrypt.hash(password, 12);
-    const { rows } = await db.query(
-      'INSERT INTO users(name,email,phone,password) VALUES($1,$2,$3,$4) RETURNING id,name,email,phone,role',
-      [name, email, phone || null, hash]
-    );
-    const user = rows[0];
+    let user;
+
+    if (phone) {
+      try {
+        const { rows } = await db.query(
+          'INSERT INTO users(name,email,phone,password) VALUES($1,$2,$3,$4) RETURNING id,name,email,phone,role',
+          [name, email, phone, hash]
+        );
+        user = rows[0];
+      } catch (err) {
+        if (!isMissingPhoneColumn(err)) throw err;
+      }
+    }
+
+    if (!user) {
+      const { rows } = await db.query(
+        'INSERT INTO users(name,email,password) VALUES($1,$2,$3) RETURNING id,name,email,role',
+        [name, email, hash]
+      );
+      user = { ...rows[0], phone: null };
+    }
 
     emailService.sendWelcome({ to: user.email, name: user.name }).catch(() => {});
 

@@ -5,7 +5,6 @@ import Footer from '@/components/layout/Footer';
 import CookieBanner from '@/components/layout/CookieBanner';
 import './globals.css';
 
-// ─── Fonts loaded server-side — ZERO render-blocking, ZERO layout shift ───────
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
@@ -26,7 +25,7 @@ const cormorant = Cormorant({
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-  title: { default: 'Spraykart — Luxury Fragrances at Accessible Prices', template: '%s | Spraykart' },
+  title: { default: 'Spraykart - Luxury Fragrances at Accessible Prices', template: '%s | Spraykart' },
   description: "India's most trusted luxury fragrance store. 100% authentic perfumes, attars & gift sets. Pan-India delivery.",
   keywords: ['luxury perfumes India', 'buy authentic perfumes online', 'attar', 'niche fragrances', 'Spraykart'],
   openGraph: {
@@ -48,29 +47,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
       <head>
-        {/* DNS prefetch for external domains used at runtime */}
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
-        {/*
-          Preload hero images before React hydrates.
-          Desktop image preloaded on md+ screens, mobile on smaller screens.
-          fetchpriority=high tells browser: load this before anything else.
-        */}
-        <link
-          rel="preload"
-          as="image"
-          href="/hero-desktop.jpeg"
-          media="(min-width: 768px)"
-          // @ts-ignore — fetchpriority is valid HTML but not in TS types yet
-          fetchpriority="high"
-        />
-        <link
-          rel="preload"
-          as="image"
-          href="/hero-mobile.png"
-          media="(max-width: 767px)"
-          fetchpriority="high"
-        />
       </head>
       <body>
         <Navbar />

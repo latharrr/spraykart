@@ -11,15 +11,15 @@ export default function HeroBanner() {
         .hero-bg {
           width: 100%;
           min-height: clamp(280px, 56.25vw, 600px);
-          background-image: url('/hero-desktop.webp');
+          background-image: url('/hero-desktop.webp'), url('/hero-desktop.jpeg');
           background-size: cover;
           background-position: center top;
           background-repeat: no-repeat;
         }
         @media (max-width: 767px) {
           .hero-bg {
-            min-height: clamp(420px, 133vw, 900px);
-            background-image: url('/hero-mobile.webp');
+            min-height: clamp(420px, 100vw, 600px);
+            background-image: url('/hero-mobile.webp'), url('/hero-desktop.jpeg');
           }
         }
       `}</style>

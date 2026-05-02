@@ -2,19 +2,28 @@ import Link from 'next/link';
 
 export default function HeroBanner() {
   return (
-    <section style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-      <picture>
-        <source media="(min-width: 768px)" srcSet="/hero-desktop.webp" width="1400" height="600" />
-        <img
-          src="/hero-mobile.webp"
-          alt="Discover your signature fragrance"
-          width="900"
-          height="1200"
-          fetchPriority="high"
-          decoding="async"
-          style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }}
-        />
-      </picture>
+    <section
+      aria-label="Discover your signature fragrance"
+      style={{ position: 'relative', width: '100%', overflow: 'hidden', background: '#0c0c0c' }}
+    >
+      {/* Responsive background image — falls back to brand black if images are missing */}
+      <style>{`
+        .hero-bg {
+          width: 100%;
+          min-height: clamp(280px, 56.25vw, 600px);
+          background-image: url('/hero-desktop.webp');
+          background-size: cover;
+          background-position: center top;
+          background-repeat: no-repeat;
+        }
+        @media (max-width: 767px) {
+          .hero-bg {
+            min-height: clamp(420px, 133vw, 900px);
+            background-image: url('/hero-mobile.webp');
+          }
+        }
+      `}</style>
+      <div className="hero-bg" />
 
       <Link
         href="/products"

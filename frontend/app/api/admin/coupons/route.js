@@ -33,7 +33,7 @@ export async function GET(request) {
     );
     return NextResponse.json(rows);
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -55,6 +55,6 @@ export async function POST(request) {
     return NextResponse.json(rows[0], { status: 201 });
   } catch (err) {
     if (err.code === '23505') return NextResponse.json({ error: 'Coupon code already exists' }, { status: 409 });
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

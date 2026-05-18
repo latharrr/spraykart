@@ -4,6 +4,7 @@ import { getAuthUser, unauthorized } from '@/lib/auth';
 
 import cache from '@/lib/cache';
 import rateLimit from '@/lib/rateLimit';
+import logger from '@/lib/logger';
 
 export async function POST(request) {
   const user = await getAuthUser(request);
@@ -23,16 +24,24 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Cart items are required' }, { status: 400 });
     }
 
-    // Recompute cart total server-side using DB prices (fix(25): prevent client price manipulation)
-    const productIds = cart_items.map(item => item.product_id).filter(Boolean);
+    // Recompute cart total server-side using DB prices (prevent client price manipulation)
+    // The cart payload uses `id` for the product id (see lib/store.js spread); accept either.
+    const productIds = [...new Set(
+      cart_items.map(item => item.product_id || item.id).filter(Boolean)
+    )];
     let cart_total = 0;
+    const priceMap = new Map();
     if (productIds.length > 0) {
       const placeholders = productIds.map((_, i) => `$${i + 1}`).join(',');
-      const { rows: dbProducts } = await db.query(`SELECT id, price FROM products WHERE id IN (${placeholders})`, productIds);
-      const priceMap = new Map(dbProducts.map(p => [p.id, parseFloat(p.price)]));
-      
+      const { rows: dbProducts } = await db.query(
+        `SELECT id, price FROM products WHERE id IN (${placeholders}) AND is_active = true`,
+        productIds
+      );
+      for (const p of dbProducts) priceMap.set(p.id, parseFloat(p.price));
+
       for (const item of cart_items) {
-        const dbPrice = priceMap.get(item.product_id);
+        const pid = item.product_id || item.id;
+        const dbPrice = priceMap.get(pid);
         if (dbPrice) {
           cart_total += dbPrice * (item.quantity || 1);
         }
@@ -53,9 +62,13 @@ export async function POST(request) {
 
     let applicableTotal = cart_total;
     if (isProductSpecific && cart_items.length > 0) {
+      // Use DB-priced subtotal for the coupon-applicable subset (no client-supplied prices)
       applicableTotal = cart_items.reduce((sum, item) => {
-        if (applicableProducts.includes(item.id)) return sum + parseFloat(item.price) * (item.quantity || 1);
-        return sum;
+        const pid = item.product_id || item.id;
+        if (!applicableProducts.includes(pid)) return sum;
+        const dbPrice = priceMap.get(pid);
+        if (!dbPrice) return sum;
+        return sum + dbPrice * (item.quantity || 1);
       }, 0);
       if (applicableTotal === 0) {
         return NextResponse.json({ error: 'This coupon is not valid for any product in your cart' }, { status: 400 });
@@ -81,6 +94,8 @@ export async function POST(request) {
       coupon: { code: coupon.code, type: coupon.type, value: coupon.value, free_shipping: coupon.free_shipping },
     });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    // Don't leak DB internals to clients
+    logger.error('Apply coupon error:', err);
+    return NextResponse.json({ error: 'Failed to apply coupon' }, { status: 500 });
   }
 }

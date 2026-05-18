@@ -54,7 +54,13 @@ export async function POST(request) {
       .update(rawBody)
       .digest('hex');
 
-    if (expectedSig !== signature) {
+    const expectedBuf = Buffer.from(expectedSig, 'hex');
+    const receivedBuf = Buffer.from(/^[0-9a-f]{64}$/i.test(signature) ? signature : '', 'hex');
+    const sigValid =
+      expectedBuf.length === receivedBuf.length &&
+      expectedBuf.length > 0 &&
+      crypto.timingSafeEqual(expectedBuf, receivedBuf);
+    if (!sigValid) {
       const error = new Error('Invalid Razorpay webhook signature');
       await recordFailedWebhook({
         provider: 'razorpay',

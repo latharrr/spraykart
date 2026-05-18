@@ -26,6 +26,7 @@ const INDIAN_STATES = [
 ];
 
 const ADDRESS_AUTOCOMPLETE = {
+  name: 'name',
   line1: 'street-address',
   line2: 'address-line2',
   city: 'address-level2',
@@ -79,7 +80,7 @@ export default function CheckoutPage() {
 
   const [loading, setLoading] = useState(false);
   const [address, setAddress] = useState({
-    line1: '', line2: '', city: '', state: '', pincode: '', phone: '',
+    name: '', line1: '', line2: '', city: '', state: '', pincode: '', phone: '',
   });
   const [paymentMethod, setPaymentMethod] = useState('online');
 
@@ -129,6 +130,10 @@ export default function CheckoutPage() {
 
   const handlePayment = async () => {
     if (!user) return router.push('/login');
+    const recipientName = (address.name || user.name || '').trim();
+    if (!recipientName || recipientName.length < 2) {
+      return toast.error('Please enter the recipient name');
+    }
     if (!address.line1 || !address.city || !address.state || !address.pincode || !address.phone) {
       return toast.error('Please fill in all required address fields');
     }
@@ -197,7 +202,7 @@ export default function CheckoutPage() {
           items: items.map((i) => ({ product_id: i.id, variant_id: i.variant?.id || null, quantity: i.quantity })),
           shipping_address: {
             ...address,
-            name: user.name,          // snapshot customer name with order
+            name: recipientName,      // user-entered recipient name (falls back to account name)
             email: user.email,        // snapshot customer email with order
           },
           coupon_code: effectiveCoupon?.code,
@@ -220,7 +225,7 @@ export default function CheckoutPage() {
             items: items.map((i) => ({ product_id: i.id, variant_id: i.variant?.id || null, quantity: i.quantity })),
             shipping_address: {
               ...address,
-              name: user.name,
+              name: recipientName,
               email: user.email,
             },
             coupon_code: effectiveCoupon?.code,
@@ -327,7 +332,7 @@ export default function CheckoutPage() {
       className="input"
       autoComplete={ADDRESS_AUTOCOMPLETE[name]}
       inputMode={['pincode', 'phone'].includes(name) ? 'numeric' : undefined}
-      maxLength={name === 'pincode' ? 6 : name === 'phone' ? 10 : undefined}
+      maxLength={name === 'pincode' ? 6 : name === 'phone' ? 10 : name === 'name' ? 100 : undefined}
     />
   );
 
@@ -343,6 +348,7 @@ export default function CheckoutPage() {
         <div>
           <h1 className="text-2xl font-bold mb-6">Shipping Address</h1>
           <div className="space-y-3">
+            {inp('name', `Recipient name * ${user?.name ? `(default: ${user.name})` : ''}`.trim())}
             {inp('line1', 'Address line 1 *')}
             {inp('line2', 'Address line 2 (optional)')}
             {inp('city', 'City *')}
@@ -464,7 +470,7 @@ export default function CheckoutPage() {
                   {shipping === 0 ? 'Free' : '₹49'}
                 </span>
               </div>
-              {shipping > 0 && (
+              {shipping > 0 && total < 999 && (
                 <p style={{ fontSize: 11, color: '#a0a0a0', background: '#f7f7f5', padding: '6px 10px' }}>
                   Add ₹{(999 - total).toLocaleString('en-IN')} more for free shipping
                 </p>

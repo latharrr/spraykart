@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser, unauthorized } from '@/lib/auth';
+import logger from '@/lib/logger';
 
 const sanitize = (str) => {
   if (!str || typeof str !== 'string') return null;
@@ -38,6 +39,7 @@ export async function POST(request) {
 
     return NextResponse.json({ ...rows[0], message: 'Review submitted and pending approval' }, { status: 201 });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('Review POST error:', err);
+    return NextResponse.json({ error: 'Failed to submit review' }, { status: 500 });
   }
 }

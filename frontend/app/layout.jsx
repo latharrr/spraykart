@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import CookieBanner from '@/components/layout/CookieBanner';
+import { SITE_URL } from '@/lib/env';
 import './globals.css';
 
 const inter = Inter({
@@ -24,7 +25,7 @@ const cormorant = Cormorant({
 });
 
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(SITE_URL),
   title: { default: 'Spraykart - Luxury Fragrances at Accessible Prices', template: '%s | Spraykart' },
   description: "India's most trusted luxury fragrance store. 100% authentic perfumes, attars & gift sets. Pan-India delivery.",
   keywords: ['luxury perfumes India', 'buy authentic perfumes online', 'attar', 'niche fragrances', 'Spraykart'],

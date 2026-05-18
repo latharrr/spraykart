@@ -86,7 +86,7 @@ export async function PUT(request, { params }) {
     if (!rows.length) return NextResponse.json({ error: 'Coupon not found' }, { status: 404 });
     return NextResponse.json(rows[0]);
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -125,6 +125,6 @@ export async function DELETE(request, { params }) {
     });
     return NextResponse.json({ success: true, soft_deleted: false, coupon: rows[0] });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

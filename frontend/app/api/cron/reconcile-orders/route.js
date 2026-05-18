@@ -1,22 +1,30 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import db from '@/lib/db';
 import logger from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
+function secretsEqual(a, b) {
+  if (!a || !b) return false;
+  const aBuf = Buffer.from(a);
+  const bBuf = Buffer.from(b);
+  if (aBuf.length !== bBuf.length) return false;
+  return crypto.timingSafeEqual(aBuf, bBuf);
+}
+
 // This should be called by a cron job every 10 minutes.
 export async function GET(request) {
-  // Check CRON_SECRET env var and compare with Authorization header
   const secret = process.env.CRON_SECRET;
   if (!secret) {
     logger.warn('[cron] CRON_SECRET not configured; cron endpoint is disabled');
     return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
   }
-  
+
   const authHeader = request.headers.get('authorization') || '';
   const token = authHeader.replace(/^Bearer\s+/i, '');
-  const headerSecret = request.headers.get('x-cron-secret');
-  if (token !== secret && headerSecret !== secret) {
+  const headerSecret = request.headers.get('x-cron-secret') || '';
+  if (!secretsEqual(token, secret) && !secretsEqual(headerSecret, secret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

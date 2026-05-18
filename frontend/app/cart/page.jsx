@@ -8,8 +8,11 @@ export default function CartPage() {
   const { items, removeItem, updateQuantity, discount, coupon, removeCoupon } = useCartStore();
   const subtotal = useCartSubtotal();
   const total = useCartTotalAfterDiscount();
-  const shipping = subtotal >= 999 ? 0 : 49;
+  const hasFreeShippingCoupon = coupon?.free_shipping === true;
+  // Use post-discount total for shipping threshold so cart and checkout agree
+  const shipping = (total >= 999 || hasFreeShippingCoupon) ? 0 : 49;
   const grandTotal = total + shipping;
+  const totalUnits = items.reduce((sum, i) => sum + (i.quantity || 0), 0);
 
   if (items.length === 0) {
     return (
@@ -33,7 +36,7 @@ export default function CartPage() {
         <div style={{ borderBottom: '1px solid #e8e8e8', paddingBottom: 24, marginBottom: 40 }}>
           <p style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a0a0a0', marginBottom: 8 }}>Your</p>
           <h1 style={{ fontFamily: "'Cormorant', Georgia, serif", fontSize: 40, fontWeight: 400, color: '#0c0c0c', letterSpacing: '-0.01em' }}>
-            Shopping Cart <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, color: '#a0a0a0', letterSpacing: 0 }}>({items.length} item{items.length > 1 ? 's' : ''})</span>
+            Shopping Cart <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, color: '#a0a0a0', letterSpacing: 0 }}>({totalUnits} item{totalUnits === 1 ? '' : 's'})</span>
           </h1>
         </div>
 
@@ -41,7 +44,9 @@ export default function CartPage() {
           {/* Items */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0, border: '1px solid #e8e8e8', background: '#ffffff' }}>
             {items.map((item, i) => {
-              const itemPrice = item.variant ? parseFloat(item.price) + parseFloat(item.variant.price_modifier || 0) : parseFloat(item.price);
+              const base = Number(item.price) || 0;
+              const mod = item.variant ? Number(item.variant.price_modifier) || 0 : 0;
+              const itemPrice = base + mod;
               return (
               <div key={item.cartKey} style={{ display: 'flex', gap: 20, padding: '24px', borderBottom: i < items.length - 1 ? '1px solid #f0f0f0' : 'none', alignItems: 'flex-start' }} className="cart-item">
                 {/* Image */}
@@ -109,7 +114,7 @@ export default function CartPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#0c0c0c', fontWeight: 500 }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     Coupon {coupon?.code && `(${coupon.code})`}
-                    <button onClick={removeCoupon} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#c8c8c8', fontSize: 10, lineHeight: 1 }}>✕</button>
+                    <button onClick={removeCoupon} aria-label="Remove coupon" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#c8c8c8', fontSize: 10, lineHeight: 1 }}>✕</button>
                   </span>
                   <span style={{ color: '#3a7d44' }}>−₹{discount.toLocaleString('en-IN')}</span>
                 </div>
@@ -122,9 +127,9 @@ export default function CartPage() {
                 </span>
               </div>
 
-              {subtotal < 999 && (
+              {shipping > 0 && total < 999 && (
                 <p style={{ fontSize: 11, color: '#a0a0a0', background: '#f7f7f5', padding: '8px 12px', letterSpacing: '0.01em' }}>
-                  Add ₹{(999 - subtotal).toLocaleString('en-IN')} more for free shipping
+                  Add ₹{(999 - total).toLocaleString('en-IN')} more for free shipping
                 </p>
               )}
 
@@ -145,7 +150,7 @@ export default function CartPage() {
 
             {/* Trust */}
             <div style={{ borderTop: '1px solid #f0f0f0', padding: '16px 24px', display: 'flex', gap: 12, flexDirection: 'column' }}>
-              {['🔒 Secure checkout via Razorpay', '📄 GST invoice included', '✅ 100% authentic products'].map(item => (
+              {['🔒 Secure checkout · Razorpay & COD', '📄 GST invoice included', '✅ 100% authentic products'].map(item => (
                 <p key={item} style={{ fontSize: 11, color: '#a0a0a0', letterSpacing: '0.02em' }}>{item}</p>
               ))}
             </div>

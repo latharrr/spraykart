@@ -6,19 +6,22 @@ import Badge from '@/components/ui/Badge';
 import Spinner from '@/components/ui/Spinner';
 import ErrorState from '@/components/ui/ErrorState';
 import EmptyState from '@/components/ui/EmptyState';
-import { Star, CheckCircle, Trash2 } from 'lucide-react';
+import { Star, CheckCircle, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AdminReviewsPage() {
   const [filter, setFilter] = useState('');
+  const [page, setPage] = useState(1);
   const [approvingId, setApprovingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
   const fetchReviews = useCallback(
-    () => adminGetReviews(filter !== '' ? { approved: filter } : {}),
-    [filter]
+    () => adminGetReviews({ ...(filter !== '' ? { approved: filter } : {}), page, limit: 20 }),
+    [filter, page]
   );
-  const { data: reviews, loading, error, refetch } = useFetch(fetchReviews, [filter]);
+  const { data, loading, error, refetch } = useFetch(fetchReviews, [filter, page]);
+  const reviews = data?.reviews || [];
+  const pages = data?.pages || 1;
 
   const handleApprove = async (id) => {
     setApprovingId(id);
@@ -55,7 +58,7 @@ export default function AdminReviewsPage() {
           {[{ label: 'All', value: '' }, { label: 'Pending', value: 'false' }, { label: 'Approved', value: 'true' }].map(({ label, value }) => (
             <button
               key={value}
-              onClick={() => setFilter(value)}
+              onClick={() => { setFilter(value); setPage(1); }}
               className={`text-sm px-3 py-1.5 rounded-full border transition ${filter === value ? 'bg-black text-white border-black' : 'border-gray-200 text-gray-600 hover:border-gray-400'}`}
             >
               {label}
@@ -122,6 +125,26 @@ export default function AdminReviewsPage() {
               </div>
             </div>
           ))}
+
+          {pages > 1 && (
+            <div className="flex items-center justify-between pt-3">
+              <button
+                className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 disabled:opacity-40"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+              >
+                <ChevronLeft size={14} /> Prev
+              </button>
+              <span className="text-[12px] text-gray-400">Page {page} of {pages}</span>
+              <button
+                className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 disabled:opacity-40"
+                onClick={() => setPage((p) => Math.min(pages, p + 1))}
+                disabled={page >= pages}
+              >
+                Next <ChevronRight size={14} />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

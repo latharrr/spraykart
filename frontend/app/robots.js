@@ -1,14 +1,15 @@
-export default function robots() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spraykart.vercel.app';
+import { SITE_URL } from '@/lib/env';
 
+export default function robots() {
   return {
     rules: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/api', '/checkout', '/cart', '/account'],
+        disallow: ['/admin', '/api', '/checkout', '/cart', '/account', '/orders', '/wishlist'],
       },
     ],
-    sitemap: `${siteUrl}/sitemap.xml`,
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   };
 }

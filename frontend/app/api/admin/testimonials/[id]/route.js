@@ -62,7 +62,7 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ testimonial: rows[0] }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
     logger.error('Testimonial update error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -88,6 +88,6 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
     logger.error('Testimonial delete error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

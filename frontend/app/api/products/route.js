@@ -19,11 +19,16 @@ export async function GET(request) {
   const order = searchParams.get('order') || 'DESC';
   const page = parseInt(searchParams.get('page') || '1');
   const limit = Math.min(parseInt(searchParams.get('limit') || '12'), 100);
-  const min_price = searchParams.get('min_price');
-  const max_price = searchParams.get('max_price');
+  // Accept both price_min/price_max (frontend) and min_price/max_price (legacy)
+  const min_price = searchParams.get('price_min') || searchParams.get('min_price');
+  const max_price = searchParams.get('price_max') || searchParams.get('max_price');
   const is_featured = searchParams.get('is_featured');
+  const in_stock = searchParams.get('in_stock');
+  const occasion = searchParams.get('occasion') || '';
+  const note = searchParams.get('note') || '';
+  const brand = searchParams.get('brand') || '';
 
-  const queryParams = { category, search, sort, order, page, limit, min_price, max_price, is_featured };
+  const queryParams = { category, search, sort, order, page, limit, min_price, max_price, is_featured, in_stock, occasion, note, brand };
   const cacheKey = buildCacheKey(queryParams);
 
   if (!hasUsableDatabaseUrl()) {
@@ -43,6 +48,11 @@ export async function GET(request) {
   if (min_price)   { conditions.push(`p.price >= $${i++}`);      params.push(min_price); }
   if (max_price)   { conditions.push(`p.price <= $${i++}`);      params.push(max_price); }
   if (is_featured) { conditions.push(`p.is_featured = $${i++}`); params.push(is_featured === 'true'); }
+  if (in_stock === 'true') { conditions.push(`p.stock > 0`); }
+  // brand/occasion/note: free-text match on name + description (no dedicated columns yet)
+  if (brand)       { conditions.push(`(p.name ILIKE $${i++} OR p.description ILIKE $${i-1})`); params.push(`%${brand}%`); }
+  if (occasion)    { conditions.push(`p.description ILIKE $${i++}`); params.push(`%${occasion}%`); }
+  if (note)        { conditions.push(`p.description ILIKE $${i++}`); params.push(`%${note}%`); }
 
   const sortField = ALLOWED_SORTS.includes(sort) ? sort : 'created_at';
   const sortOrder = order === 'ASC' ? 'ASC' : 'DESC';

@@ -1,9 +1,10 @@
 import { Resend } from 'resend';
 import logger from './logger';
+import { SITE_URL } from './env';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM = process.env.EMAIL_FROM || 'Spraykart <onboarding@resend.dev>';
-const FRONTEND_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://spraykart.vercel.app';
+const FRONTEND_URL = SITE_URL;
 
 // Warn if critical env vars are missing
 if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {

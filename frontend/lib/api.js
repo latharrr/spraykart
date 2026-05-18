@@ -3,8 +3,7 @@ import { CSRF_HEADER_NAME, CSRF_COOKIE_NAME, getCookieFromDocument, isStateChang
 import logger from './logger';
 
 const api = axios.create({
-  // Use relative URL — Next.js rewrites proxy this to localhost:5000 server-side.
-  // Works both locally and via Cloudflare tunnel without exposing backend port.
+  // Same-origin: API routes live in this Next.js app under /app/api/*.
   baseURL: '/api',
   timeout: 15000,
   withCredentials: true, // Send httpOnly cookies on every request

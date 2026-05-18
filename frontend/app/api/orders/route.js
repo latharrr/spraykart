@@ -163,7 +163,11 @@ export async function POST(request) {
           'UPDATE coupons SET used_count = used_count + 1 WHERE id=$1 AND used_count < max_uses RETURNING *',
           [c[0].id]
         );
-        if (!updated.length) throw new Error('Coupon usage limit reached');
+        if (!updated.length) {
+          const e = new Error('Coupon usage limit reached');
+          e.userFacing = true; e.statusCode = 409;
+          throw e;
+        }
       }
     }
 
@@ -172,7 +176,9 @@ export async function POST(request) {
     const final_price = subtotalAfterDiscount + shipping;
 
     if (payment_method === 'cod' && final_price > 2999) {
-      throw new Error('COD is only available for orders up to Rs. 2,999');
+      const e = new Error('COD is only available for orders up to Rs. 2,999');
+      e.userFacing = true; e.statusCode = 400;
+      throw e;
     }
 
     const initialStatus = payment_method === 'cod' ? 'confirmed' : 'pending';
@@ -230,7 +236,10 @@ export async function POST(request) {
   } catch (err) {
     await client.query('ROLLBACK');
     logger.error('Order creation failed:', err);
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    return NextResponse.json(
+      { error: err.userFacing ? err.message : 'Failed to process order' },
+      { status: err.statusCode || 500 }
+    );
   } finally {
     client.release();
   }

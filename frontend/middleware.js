@@ -28,6 +28,30 @@ function ensureCsrfCookie(request, response) {
   return response;
 }
 
+// Build a redirect URL that honors X-Forwarded-Host / X-Forwarded-Proto.
+// Without this, request.url inside middleware can resolve to http://127.0.0.1:3000
+// (the upstream the proxy talks to), causing admin → login redirects to land on localhost.
+function buildRedirect(request, pathname) {
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  const forwardedProto = request.headers.get('x-forwarded-proto');
+  const publicSite = process.env.NEXT_PUBLIC_SITE_URL;
+
+  let base;
+  if (forwardedHost) {
+    const proto = forwardedProto || 'https';
+    base = `${proto}://${forwardedHost}`;
+  } else if (publicSite) {
+    base = publicSite;
+  } else {
+    // Fallback: clone nextUrl which is request-derived
+    const url = request.nextUrl.clone();
+    url.pathname = pathname;
+    url.search = '';
+    return NextResponse.redirect(url);
+  }
+  return NextResponse.redirect(new URL(pathname, base));
+}
+
 export function middleware(request) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('token')?.value;
@@ -35,7 +59,7 @@ export function middleware(request) {
 
   // Protect admin pages - redirect to login if no token
   if (pathname.startsWith('/admin') && !token) {
-    return ensureCsrfCookie(request, NextResponse.redirect(new URL('/login', request.url)));
+    return ensureCsrfCookie(request, buildRedirect(request, '/login'));
   }
 
   // Protect admin API - return 401 immediately if no token (fast path)

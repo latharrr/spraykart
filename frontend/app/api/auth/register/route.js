@@ -6,6 +6,7 @@ import { CSRF_COOKIE_NAME, generateCsrfToken, getCsrfCookieOptions } from '@/lib
 import { email as emailService } from '@/lib/email';
 import logger from '@/lib/logger';
 import { z } from 'zod';
+import rateLimit from '@/lib/rateLimit';
 
 const schema = z.object({
   name: z.string().min(2).max(100).trim(),
@@ -19,55 +20,47 @@ const schema = z.object({
     .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
 });
 
-import cache from '@/lib/cache';
-import rateLimit from '@/lib/rateLimit';
-
-function isMissingPhoneColumn(err) {
-  return err?.code === '42703' && /phone/i.test(err.message || '');
-}
-
 export async function POST(request) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')
+      || 'unknown';
     try {
       await rateLimit({ prefix: 'register', id: ip, limit: 3, windowSec: 3600 });
     } catch (rlErr) {
-      if (rlErr && rlErr.code === 'RATE_LIMIT_EXCEEDED') return NextResponse.json({ error: 'Too many registration attempts. Please try again later.' }, { status: 429 });
+      if (rlErr && rlErr.code === 'RATE_LIMIT_EXCEEDED') {
+        return NextResponse.json(
+          { error: 'Too many registration attempts. Please try again later.' },
+          { status: 429 }
+        );
+      }
     }
 
     const body = await request.json();
     const result = schema.safeParse(body);
     if (!result.success) {
-      return NextResponse.json({ error: 'Validation failed', details: result.error.flatten().fieldErrors }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Validation failed', details: result.error.flatten().fieldErrors },
+        { status: 400 }
+      );
     }
     const { name, email, phone, password } = result.data;
 
-    const existing = await db.query('SELECT id FROM users WHERE email=$1', [email]);
-    if (existing.rows.length) {
-      return NextResponse.json({ error: 'Email already registered' }, { status: 409 });
-    }
-
     const hash = await bcrypt.hash(password, 12);
+
     let user;
-
-    if (phone) {
-      try {
-        const { rows } = await db.query(
-          'INSERT INTO users(name,email,phone,password) VALUES($1,$2,$3,$4) RETURNING id,name,email,phone,role',
-          [name, email, phone, hash]
-        );
-        user = rows[0];
-      } catch (err) {
-        if (!isMissingPhoneColumn(err)) throw err;
-      }
-    }
-
-    if (!user) {
+    try {
       const { rows } = await db.query(
-        'INSERT INTO users(name,email,password) VALUES($1,$2,$3) RETURNING id,name,email,role',
-        [name, email, hash]
+        'INSERT INTO users(name,email,phone,password) VALUES($1,$2,$3,$4) RETURNING id,name,email,phone,role',
+        [name, email, phone || null, hash]
       );
-      user = { ...rows[0], phone: null };
+      user = rows[0];
+    } catch (err) {
+      // 23505 = unique_violation (email already registered)
+      if (err?.code === '23505') {
+        return NextResponse.json({ error: 'Email already registered' }, { status: 409 });
+      }
+      throw err;
     }
 
     emailService.sendWelcome({ to: user.email, name: user.name }).catch(() => {});

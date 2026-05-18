@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import PaytmChecksum from 'paytmchecksum';
 import { getAuthUser, unauthorized } from '@/lib/auth';
 import logger from '@/lib/logger';
+import { SITE_URL } from '@/lib/env';
 
 // POST /api/payments/paytm/create
 export async function POST(request) {
@@ -16,18 +18,19 @@ export async function POST(request) {
     const merchantKey = process.env.PAYTM_MERCHANT_KEY;
     const website = process.env.PAYTM_WEBSITE || 'WEBSTAGING';
     const host = process.env.PAYTM_HOST || 'https://securegw-stage.paytm.in';
-    const callbackUrl = process.env.PAYTM_CALLBACK_URL;
+    const callbackUrl = process.env.PAYTM_CALLBACK_URL || `${SITE_URL}/api/payments/paytm/callback`;
 
     if (!mid || !merchantKey) return NextResponse.json({ error: 'Paytm not configured' }, { status: 500 });
 
-    const txnOrderId = orderId || `ORDER_${Date.now()}`;
+    // Unique even when two sessions fire in the same millisecond.
+    const txnOrderId = orderId || `ORDER_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
 
     const body = {
       requestType: 'Payment',
       mid,
       websiteName: website,
       orderId: txnOrderId,
-      callbackUrl: callbackUrl || `${process.env.NEXT_PUBLIC_APP_URL || ''}/api/payments/paytm/callback`,
+      callbackUrl,
       txnAmount: { value: amount.toFixed(2), currency: 'INR' },
       userInfo: { custId: String(user.id), email: user.email },
     };

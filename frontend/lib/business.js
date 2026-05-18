@@ -1,4 +1,4 @@
-const DEFAULT_SITE_URL = 'https://spraykart.in';
+import { SITE_URL } from './env';
 
 export const FREE_SHIPPING_THRESHOLD = Number(process.env.NEXT_PUBLIC_FREE_SHIPPING_THRESHOLD || 999);
 export const STANDARD_SHIPPING_FEE = Number(process.env.NEXT_PUBLIC_STANDARD_SHIPPING_FEE || 49);
@@ -13,7 +13,7 @@ export function getBusinessProfile() {
     phone: process.env.BUSINESS_PHONE || process.env.NEXT_PUBLIC_BUSINESS_PHONE || '[Business phone number]',
     gstin: process.env.BUSINESS_GSTIN || 'GSTIN to be updated',
     state: process.env.BUSINESS_STATE || 'Delhi',
-    siteUrl: process.env.NEXT_PUBLIC_SITE_URL || DEFAULT_SITE_URL,
+    siteUrl: SITE_URL,
     supportHours: process.env.NEXT_PUBLIC_SUPPORT_HOURS || 'Monday to Saturday, 10:00 AM to 6:00 PM IST',
   };
 }

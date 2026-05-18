@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import logger from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60; // Cache for 60 seconds
@@ -34,6 +35,7 @@ export async function GET() {
     );
     return NextResponse.json({ faqs: rows }, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('FAQs GET error:', err);
+    return NextResponse.json({ error: 'Failed to fetch FAQs' }, { status: 500 });
   }
 }

@@ -179,10 +179,15 @@ export default function AdminOrdersPage() {
                   const payment = getPaymentStatus(order);
                   const fulfillment = getFulfillmentStatus(order.status);
                   const itemCount = order.items?.length || 0;
-                  // Customer contact — prefer shipping_address snapshot, fallback to user record
-                  const addr = typeof order.shipping_address === 'string'
-                    ? JSON.parse(order.shipping_address)
-                    : (order.shipping_address || {});
+                  // Customer contact — prefer shipping_address snapshot, fallback to user record.
+                  // JSON.parse may return null for the string 'null'; guard for that.
+                  let addr = {};
+                  try {
+                    const parsed = typeof order.shipping_address === 'string'
+                      ? JSON.parse(order.shipping_address)
+                      : order.shipping_address;
+                    if (parsed && typeof parsed === 'object') addr = parsed;
+                  } catch { /* malformed JSON — fall through with empty object */ }
                   const phone = addr.phone || '';
                   const email = addr.email || order.customer_email || '';
                   const customerName = addr.name || order.customer_name || '—';

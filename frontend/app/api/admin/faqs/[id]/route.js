@@ -80,7 +80,7 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ faq: rows[0] });
   } catch (err) {
     logger.error('FAQ update error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -93,6 +93,6 @@ export async function DELETE(request, { params }) {
     await db.query('DELETE FROM faqs WHERE id = $1', [params.id]);
     return NextResponse.json({ success: true });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

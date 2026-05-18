@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import { logAdminAction } from '@/lib/audit';
+import logger from '@/lib/logger';
 
 export async function PUT(request, { params }) {
   const user = await getAuthUser(request);
@@ -35,6 +36,7 @@ export async function PUT(request, { params }) {
     });
     return NextResponse.json(rows[0]);
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('User toggle-block failed:', err);
+    return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
   }
 }

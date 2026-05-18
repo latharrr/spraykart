@@ -63,7 +63,7 @@ export async function GET(request, { params }) {
     await client.query('COMMIT');
   } catch (err) {
     await client.query('ROLLBACK');
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   } finally {
     client.release();
   }

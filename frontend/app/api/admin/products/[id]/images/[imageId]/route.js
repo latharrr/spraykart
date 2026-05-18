@@ -19,6 +19,6 @@ export async function DELETE(request, { params }) {
     await db.query('DELETE FROM product_images WHERE id=$1', [params.imageId]);
     return NextResponse.json({ success: true });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

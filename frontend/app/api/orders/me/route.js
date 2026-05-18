@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser, unauthorized } from '@/lib/auth';
+import logger from '@/lib/logger';
 
 export async function GET(request) {
   const user = await getAuthUser(request);
@@ -15,6 +16,7 @@ export async function GET(request) {
     );
     return NextResponse.json(rows);
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('Orders list error:', err);
+    return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
   }
 }

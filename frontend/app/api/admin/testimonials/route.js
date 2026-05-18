@@ -47,7 +47,7 @@ export async function GET(request) {
     );
     return NextResponse.json({ testimonials: rows }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -85,6 +85,6 @@ export async function POST(request) {
     return NextResponse.json({ testimonial: rows[0] }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
   } catch (err) {
     logger.error('Testimonial create error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

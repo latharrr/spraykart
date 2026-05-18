@@ -6,6 +6,7 @@ import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import slugify from 'slugify';
 import { logAdminAction } from '@/lib/audit';
 import { validateProductImageFiles } from '@/lib/uploadLimits';
+import logger from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
@@ -34,7 +35,8 @@ export async function GET(request, { params }) {
 
     return NextResponse.json({ ...product, images: images.rows, variants: variants.rows });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('Admin product GET failed:', err);
+    return NextResponse.json({ error: 'Failed to fetch product' }, { status: 500 });
   }
 }
 
@@ -149,7 +151,8 @@ export async function PUT(request, { params }) {
     await Promise.all([cache.delPattern('products:*'), cache.del(`product:${rows[0].slug}`), cache.del('products:featured:home')]);
     return NextResponse.json(rows[0]);
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('Admin product PUT failed:', err);
+    return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
   }
 }
 
@@ -182,6 +185,7 @@ export async function DELETE(request, { params }) {
     await Promise.all([cache.delPattern('products:*'), cache.del(`product:${product[0].slug}`)]);
     return NextResponse.json({ success: true });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('Admin product DELETE failed:', err);
+    return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 });
   }
 }

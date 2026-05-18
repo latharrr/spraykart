@@ -1,17 +1,30 @@
 import db from '@/lib/db';
 import logger from '@/lib/logger';
-import { hasUsableDatabaseUrl } from '@/lib/env';
+import { hasUsableDatabaseUrl, SITE_URL } from '@/lib/env';
 
 export const revalidate = 3600;
 
 export default async function sitemap() {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://spraykart.vercel.app';
+  const base = SITE_URL;
 
-  const staticPages = ['', '/products', '/cart', '/checkout', '/orders', '/account'].map((path) => ({
+  // Only include publicly-indexable pages. Authenticated/account pages are
+  // excluded so they don't show up as crawlable in search results.
+  const publicPages = [
+    { path: '',                  priority: 1.0,  freq: 'daily'   },
+    { path: '/products',         priority: 0.9,  freq: 'daily'   },
+    { path: '/fragrance-finder', priority: 0.7,  freq: 'monthly' },
+    { path: '/contact',          priority: 0.5,  freq: 'monthly' },
+    { path: '/faq',              priority: 0.5,  freq: 'monthly' },
+    { path: '/privacy-policy',   priority: 0.3,  freq: 'yearly'  },
+    { path: '/terms',            priority: 0.3,  freq: 'yearly'  },
+    { path: '/refund-policy',    priority: 0.3,  freq: 'yearly'  },
+    { path: '/shipping-policy',  priority: 0.3,  freq: 'yearly'  },
+  ];
+  const staticPages = publicPages.map(({ path, priority, freq }) => ({
     url: `${base}${path}`,
     lastModified: new Date(),
-    changeFrequency: 'weekly',
-    priority: path === '' ? 1.0 : 0.8,
+    changeFrequency: freq,
+    priority,
   }));
 
   let productPages = [];

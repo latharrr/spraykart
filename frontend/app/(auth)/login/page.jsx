@@ -19,8 +19,9 @@ export default function LoginPage() {
     try {
       const { data } = await login(form);
       setUser(data.user);
-      toast.success(`Welcome back, ${data.user.name.split(' ')[0]}!`);
-      router.push(data.user.role === 'admin' ? '/admin' : '/');
+      const firstName = data.user?.name?.split(' ')[0] || 'there';
+      toast.success(`Welcome back, ${firstName}!`);
+      router.push(data.user?.role === 'admin' ? '/admin' : '/');
     } catch (err) {
       toast.error(err?.error || 'Invalid email or password');
     } finally {

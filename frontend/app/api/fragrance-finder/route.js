@@ -52,6 +52,6 @@ export async function POST(request) {
     return NextResponse.json({ submission: rows[0] }, { status: 201 });
   } catch (err) {
     logger.error('Fragrance finder submission error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save submission' }, { status: 500 });
   }
 }

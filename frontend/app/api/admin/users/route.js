@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
+import logger from '@/lib/logger';
 
 export async function GET(request) {
   const user = await getAuthUser(request);
@@ -8,12 +9,12 @@ export async function GET(request) {
   if (user.role !== 'admin') return forbidden();
 
   const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '20');
-  const search = searchParams.get('search') || '';
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10) || 20));
+  const search = (searchParams.get('search') || '').trim();
   const offset = (page - 1) * limit;
 
-  const params = [];
+  const filterParams = [];
   let where = "WHERE u.role = 'customer'";
   let i = 1;
 
@@ -27,10 +28,12 @@ export async function GET(request) {
           AND phone_orders.shipping_address->>'phone' ILIKE $${i++}
       )
     )`;
-    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    filterParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
   }
 
-  params.push(limit, offset);
+  // Copy filter params before pushing limit/offset so the count query
+  // gets exactly the filter args and nothing more.
+  const dataParams = [...filterParams, limit, offset];
 
   try {
     const [{ rows }, { rows: countRows }] = await Promise.all([
@@ -46,17 +49,19 @@ export async function GET(request) {
           ) as phone,
           (SELECT COUNT(*) FROM orders WHERE user_id=u.id) as order_count,
           (SELECT COALESCE(SUM(final_price),0) FROM orders WHERE user_id=u.id AND status!='cancelled') as total_spent
-        FROM users u ${where} ORDER BY u.created_at DESC LIMIT $${i++} OFFSET $${i}`, params),
-      db.query(`SELECT COUNT(*) FROM users u ${where}`, params.slice(0, -2)),
+        FROM users u ${where} ORDER BY u.created_at DESC LIMIT $${i++} OFFSET $${i}`, dataParams),
+      db.query(`SELECT COUNT(*) FROM users u ${where}`, filterParams),
     ]);
 
+    const total = parseInt(countRows[0].count, 10);
     return NextResponse.json({
       users: rows,
-      total: parseInt(countRows[0].count),
+      total,
       page,
-      pages: Math.ceil(parseInt(countRows[0].count) / limit),
+      pages: Math.max(1, Math.ceil(total / limit)),
     });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('Admin users GET failed:', err);
+    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
   }
 }

@@ -4,6 +4,7 @@ import ProductInfo from '@/components/product/ProductInfo';
 import ReviewSection from '@/components/product/ReviewSection';
 import db from '@/lib/db';
 import cache from '@/lib/cache';
+import { SITE_URL } from '@/lib/env';
 
 async function getProduct(slug) {
   const cacheKey = `product:${slug}`;
@@ -49,8 +50,7 @@ async function getProduct(slug) {
 export async function generateMetadata({ params }) {
   const product = await getProduct(params.slug);
   if (!product) return {};
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spraykart.vercel.app';
-  const canonical = `${siteUrl}/products/${product.slug || params.slug}`;
+  const canonical = `${SITE_URL}/products/${product.slug || params.slug}`;
 
   return {
     title: product.meta_title || product.name,

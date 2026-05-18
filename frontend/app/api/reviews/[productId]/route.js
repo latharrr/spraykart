@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import logger from '@/lib/logger';
 
 export async function GET(request, { params }) {
   try {
@@ -12,6 +13,7 @@ export async function GET(request, { params }) {
     );
     return NextResponse.json(rows);
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('Reviews GET error:', err);
+    return NextResponse.json({ error: 'Failed to fetch reviews' }, { status: 500 });
   }
 }

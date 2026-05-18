@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import cache from '@/lib/cache';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
+import logger from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,8 @@ export async function GET(request) {
 
     return NextResponse.json({ lockedIps });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('Redis GET failed:', err);
+    return NextResponse.json({ error: 'Failed to fetch rate limit data' }, { status: 500 });
   }
 }
 
@@ -46,6 +48,7 @@ export async function DELETE(request) {
     await cache.flushAll();
     return NextResponse.json({ success: true, message: 'Redis Cache Flushed Successfully' });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('Redis flush failed:', err);
+    return NextResponse.json({ error: 'Failed to flush cache' }, { status: 500 });
   }
 }

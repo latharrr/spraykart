@@ -2,27 +2,8 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import logger from '@/lib/logger';
 
-async function ensureContactTable() {
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS contact_submissions (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      name VARCHAR(150) NOT NULL,
-      email VARCHAR(150) NOT NULL,
-      message TEXT NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `);
-
-  await db.query(`
-    CREATE INDEX IF NOT EXISTS idx_contact_submissions_created_at
-      ON contact_submissions(created_at DESC)
-  `);
-}
-
 export async function POST(request) {
   try {
-    await ensureContactTable();
-
     const body = await request.json();
     const name = body?.name?.toString().trim();
     const email = body?.email?.toString().trim();
@@ -42,6 +23,6 @@ export async function POST(request) {
     return NextResponse.json({ submission: rows[0] }, { status: 201 });
   } catch (err) {
     logger.error('Contact submission error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to submit contact form' }, { status: 500 });
   }
 }

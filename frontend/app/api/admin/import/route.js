@@ -3,6 +3,7 @@ import db from '@/lib/db';
 import { getAuthUser, unauthorized, forbidden } from '@/lib/auth';
 import { parse } from 'csv-parse/sync';
 import { v2 as cloudinary } from 'cloudinary';
+import logger from '@/lib/logger';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -37,15 +38,35 @@ function normalizeCategory(raw, gender) {
   return 'Unisex';
 }
 
+const PRIVATE_IP_RE = /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|169\.254\.|::1|fc00:|fd)/i;
+
+function isSafeImageUrl(raw) {
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+    const host = u.hostname.toLowerCase();
+    if (host === 'localhost' || PRIVATE_IP_RE.test(host)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function downloadImage(url) {
+  if (!isSafeImageUrl(url)) throw new Error('Blocked: private or non-HTTP URL');
   const https = require('https');
   const http  = require('http');
   return new Promise((resolve, reject) => {
     const client = url.startsWith('https') ? https : http;
     const chunks = [];
+    let size = 0;
     const req = client.get(url, (res) => {
       if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`));
-      res.on('data', c => chunks.push(c));
+      res.on('data', (c) => {
+        size += c.length;
+        if (size > 10 * 1024 * 1024) { req.destroy(); reject(new Error('Image too large')); return; }
+        chunks.push(c);
+      });
       res.on('end',  () => resolve(Buffer.concat(chunks)));
       res.on('error', reject);
     });
@@ -231,6 +252,7 @@ export async function POST(request) {
     });
 
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('Product import failed:', err);
+    return NextResponse.json({ error: 'Import failed' }, { status: 500 });
   }
 }

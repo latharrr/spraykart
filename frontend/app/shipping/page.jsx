@@ -2,8 +2,9 @@ import { getBusinessProfile, FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE, for
 
 export const metadata = {
   title: 'Shipping Policy | Spraykart',
-  description: 'Shipping timelines, charges, and delivery policy for Spraykart.',
+  description: 'Shipping timelines, charges, and delivery policy for Spraykart. Free shipping above ₹999. Pan-India delivery in 3–7 business days.',
   alternates: { canonical: '/shipping' },
+  openGraph: { title: 'Shipping Policy | Spraykart', url: '/shipping', type: 'website' },
 };
 
 export default function ShippingPage() {

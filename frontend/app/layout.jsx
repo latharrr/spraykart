@@ -27,12 +27,22 @@ const cormorant = Cormorant({
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: 'Spraykart - Luxury Fragrances at Accessible Prices', template: '%s | Spraykart' },
-  description: "India's most trusted luxury fragrance store. 100% authentic perfumes, attars & gift sets. Pan-India delivery.",
-  keywords: ['luxury perfumes India', 'buy authentic perfumes online', 'attar', 'niche fragrances', 'Spraykart'],
+  description: "India's most trusted luxury fragrance store. 100% authentic perfumes, attars & gift sets. Free shipping above ₹999. Pan-India delivery.",
+  keywords: ['luxury perfumes India', 'buy authentic perfumes online', 'attar', 'niche fragrances', 'Spraykart', 'buy perfumes online India', 'perfume shop India'],
+  authors: [{ name: 'Spraykart' }],
+  creator: 'Spraykart',
+  publisher: 'Spraykart',
   openGraph: {
     type: 'website',
     siteName: 'Spraykart',
-    images: [{ url: '/og-image.jpg' }],
+    locale: 'en_IN',
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Spraykart - Luxury Fragrances at Accessible Prices' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@spraykart',
+    creator: '@spraykart',
+    images: ['/og-image.jpg'],
   },
   robots: { index: true, follow: true },
 };

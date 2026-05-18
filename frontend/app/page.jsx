@@ -55,7 +55,15 @@ async function getFeaturedProducts() {
 
 export const metadata = {
   title: 'Spraykart — Luxury Fragrances at Accessible Prices',
-  description: "India's most trusted luxury fragrance platform. 100% authentic perfumes, attars & niche fragrances. Pan-India delivery.",
+  description: "India's most trusted luxury fragrance platform. 100% authentic perfumes, attars & niche fragrances. Free shipping above ₹999. Pan-India delivery.",
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: 'Spraykart — Luxury Fragrances at Accessible Prices',
+    description: "India's most trusted luxury fragrance platform. 100% authentic perfumes, attars & niche fragrances.",
+    url: '/',
+    type: 'website',
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Spraykart - Luxury Fragrances' }],
+  },
 };
 
 const trustPillars = [
@@ -113,6 +121,43 @@ const faqs = [
   { q: 'What is your return policy?',          a: 'We accept returns for damaged, defective, or wrong products within 48 hours of delivery. Contact support@spraykart.in with your order ID and photos.' },
 ];
 
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Spraykart',
+  url: 'https://spraykart.in',
+  logo: 'https://spraykart.in/logo.png',
+  sameAs: [],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer support',
+    email: 'support@spraykart.in',
+    availableLanguage: ['English', 'Hindi'],
+  },
+};
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Spraykart',
+  url: 'https://spraykart.in',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: { '@type': 'EntryPoint', urlTemplate: 'https://spraykart.in/products?search={search_term_string}' },
+    'query-input': 'required name=search_term_string',
+  },
+};
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: { '@type': 'Answer', text: a },
+  })),
+};
+
 export default async function HomePage() {
   const [featuredProducts, testimonials] = await Promise.all([
     getFeaturedProducts(),
@@ -121,6 +166,10 @@ export default async function HomePage() {
 
   return (
     <div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+
       {/* ── HERO ── */}
       <HeroBanner />
 

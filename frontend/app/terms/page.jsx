@@ -2,8 +2,9 @@ import { getBusinessProfile, FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE, for
 
 export const metadata = {
   title: 'Terms & Conditions | Spraykart',
-  description: 'Terms and conditions for shopping on Spraykart.',
+  description: 'Terms and conditions for shopping on Spraykart — purchase policy, user obligations, and legal terms.',
   alternates: { canonical: '/terms' },
+  openGraph: { title: 'Terms & Conditions | Spraykart', url: '/terms', type: 'website' },
 };
 
 export default function TermsPage() {

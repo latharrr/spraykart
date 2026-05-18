@@ -71,17 +71,20 @@ export default async function ProductPage({ params }) {
   const product = await getProduct(params.slug);
   if (!product) notFound();
 
-  const schema = {
+  const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
     description: product.description,
     image: product.images?.map((i) => i.url),
+    brand: { '@type': 'Brand', name: product.brand || 'Spraykart' },
     offers: {
       '@type': 'Offer',
+      url: `${SITE_URL}/products/${product.slug}`,
       price: product.price,
       priceCurrency: 'INR',
       availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      seller: { '@type': 'Organization', name: 'Spraykart' },
     },
     ...(product.review_count > 0 && {
       aggregateRating: {
@@ -92,9 +95,20 @@ export default async function ProductPage({ params }) {
     }),
   };
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Products', item: `${SITE_URL}/products` },
+      { '@type': 'ListItem', position: 3, name: product.name, item: `${SITE_URL}/products/${product.slug}` },
+    ],
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <ProductGallery images={product.images} />
         <ProductInfo product={product} />

@@ -2,8 +2,9 @@ import { getBusinessProfile } from '@/lib/business';
 
 export const metadata = {
   title: 'Refund & Cancellation Policy | Spraykart',
-  description: 'Refund, return, and cancellation policy for Spraykart orders.',
+  description: 'Refund, return, and cancellation policy for Spraykart orders. Learn how to request a return within 48 hours of delivery.',
   alternates: { canonical: '/refund' },
+  openGraph: { title: 'Refund & Cancellation Policy | Spraykart', url: '/refund', type: 'website' },
 };
 
 export default function RefundPage() {

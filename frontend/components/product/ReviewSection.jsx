@@ -60,27 +60,31 @@ export default function ReviewSection({ product, reviews: initialReviews = [] })
     }
   };
 
+  const hasReviews = reviews.length > 0 || parseInt(product.review_count || 0) > 0;
+
   return (
     <section className="mt-16 border-t border-gray-100 pt-12">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* Summary */}
-        <div className="flex flex-col items-center justify-center text-center p-8 bg-gray-50 rounded-2xl">
-          <p className="text-6xl font-bold text-gray-900">{parseFloat(avgRating).toFixed(1)}</p>
-          <div className="flex gap-0.5 mt-2">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <Star
-                key={s}
-                size={16}
-                fill={s <= Math.round(avgRating) ? '#fbbf24' : 'none'}
-                stroke={s <= Math.round(avgRating) ? '#fbbf24' : '#d1d5db'}
-              />
-            ))}
+      <div className={`grid grid-cols-1 ${hasReviews ? 'lg:grid-cols-3' : ''} gap-12`}>
+        {/* Summary — only shown when reviews exist */}
+        {hasReviews && (
+          <div className="flex flex-col items-center justify-center text-center p-8 bg-gray-50 rounded-2xl">
+            <p className="text-6xl font-bold text-gray-900">{parseFloat(avgRating).toFixed(1)}</p>
+            <div className="flex gap-0.5 mt-2">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star
+                  key={s}
+                  size={16}
+                  fill={s <= Math.round(avgRating) ? '#fbbf24' : 'none'}
+                  stroke={s <= Math.round(avgRating) ? '#fbbf24' : '#d1d5db'}
+                />
+              ))}
+            </div>
+            <p className="text-sm text-gray-500 mt-1">{product.review_count || reviews.length} review{(product.review_count || reviews.length) !== 1 && 's'}</p>
           </div>
-          <p className="text-sm text-gray-500 mt-1">{product.review_count || reviews.length} review{(product.review_count || reviews.length) !== 1 && 's'}</p>
-        </div>
+        )}
 
         {/* Review list + form */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className={hasReviews ? 'lg:col-span-2 space-y-8' : 'space-y-8'}>
           {/* Write a review */}
           {user && !submitted && (
             <div className="card p-6">

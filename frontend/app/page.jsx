@@ -112,13 +112,13 @@ export default async function HomePage() {
         <div className="hero-overlay" aria-hidden="true" />
         <div className="hero-content">
           <div className="hero-text">
-            <p className="hero-eyebrow">India&apos;s Premier Fragrance Destination</p>
+            <p className="hero-eyebrow">Authorized Fragrances · New Delhi</p>
             <h1 className="hero-h1">
-              Luxury Fragrances<br />
-              <em>for Every Occasion</em>
+              Designer &amp; Niche<br />
+              <em>Fragrances, Delivered</em>
             </h1>
             <p className="hero-desc">
-              100% authentic perfumes, attars &amp; niche fragrances — curated for the discerning Indian. Free shipping above ₹999.
+              Sourced from authorized distributors. 100% authentic — designer, attar &amp; niche. Delivered pan-India in 3–7 days with a free 2ml sample on every order.
             </p>
             <div className="hero-ctas">
               <Link href="/products" className="hero-btn-primary">

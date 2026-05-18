@@ -223,6 +223,51 @@ export default function ProductInfo({ product }) {
           <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{product.description}</p>
         </div>
       )}
+
+      {/* Scent Profile */}
+      {(product.top_notes || product.heart_notes || product.base_notes || product.scent_family || product.longevity || product.sillage || product.season || product.occasion) && (
+        <div className="border-t border-gray-100 pt-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Scent Profile</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px' }}>
+            {product.scent_family && <ScentRow label="Family" value={product.scent_family} />}
+            {product.longevity && <ScentRow label="Longevity" value={product.longevity} />}
+            {product.sillage && <ScentRow label="Sillage" value={product.sillage} />}
+            {product.season && <ScentRow label="Season" value={product.season} />}
+            {product.occasion && <ScentRow label="Occasion" value={product.occasion} />}
+          </div>
+          {(product.top_notes || product.heart_notes || product.base_notes) && (
+            <div style={{ marginTop: 12, padding: '14px 0', borderTop: '1px solid #f0f0f0' }}>
+              {product.top_notes && <NoteRow label="Top" notes={product.top_notes} color="#f59e0b" />}
+              {product.heart_notes && <NoteRow label="Heart" notes={product.heart_notes} color="#e11d48" />}
+              {product.base_notes && <NoteRow label="Base" notes={product.base_notes} color="#6b21a8" />}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ScentRow({ label, value }) {
+  return (
+    <div>
+      <span style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a0a0a0', display: 'block', marginBottom: 2 }}>{label}</span>
+      <span style={{ fontSize: 13, color: '#1a1a1a', fontWeight: 500 }}>{value}</span>
+    </div>
+  );
+}
+
+function NoteRow({ label, notes, color }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
+      <span style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a0a0a0', width: 36, flexShrink: 0 }}>{label}</span>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {notes.split(',').map((n) => (
+          <span key={n} style={{ fontSize: 11, padding: '3px 9px', background: `${color}12`, color, border: `1px solid ${color}30`, borderRadius: 2, fontWeight: 500 }}>
+            {n.trim()}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

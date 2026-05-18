@@ -3,6 +3,8 @@ import { Toaster } from 'react-hot-toast';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import CookieBanner from '@/components/layout/CookieBanner';
+import WhatsAppFloat from '@/components/WhatsAppFloat';
+import ExitIntentPopup from '@/components/ExitIntentPopup';
 import { SITE_URL } from '@/lib/env';
 import './globals.css';
 
@@ -68,6 +70,8 @@ export default function RootLayout({ children }) {
         <main className="min-h-screen">{children}</main>
         <Footer />
         <CookieBanner />
+        <WhatsAppFloat />
+        <ExitIntentPopup />
         <Toaster
           position="top-right"
           toastOptions={{

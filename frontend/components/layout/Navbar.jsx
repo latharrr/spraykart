@@ -310,7 +310,7 @@ function NavbarInner() {
               <div className="relative group hidden lg:block">
                 <button style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#737373', padding: '6px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
                   <User size={14} />
-                  {user.name.split(' ')[0]}
+                  Account
                 </button>
                 <div className="opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150" style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, width: 200, background: '#ffffff', border: '1px solid #e8e8e8', boxShadow: '0 8px 32px rgba(0,0,0,.08)', padding: '4px 0', zIndex: 50 }}>
                   <Link href="/orders" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', fontSize: 12, color: '#3d3d3d', textDecoration: 'none' }}><Package size={12} /> My Orders</Link>

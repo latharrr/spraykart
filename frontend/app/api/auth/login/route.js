@@ -33,7 +33,7 @@ export async function POST(request) {
       || request.headers.get('x-real-ip')
       || 'unknown';
     try {
-      await rateLimit({ prefix: 'login', id: ip, limit: 5, windowSec: 900 });
+      await rateLimit({ prefix: 'login', id: ip, limit: 15, windowSec: 900 });
     } catch (rlErr) {
       if (rlErr && rlErr.code === 'RATE_LIMIT_EXCEEDED') {
         return NextResponse.json(

@@ -13,7 +13,7 @@ const footerLinks = {
   Explore: [
     { label: 'Fragrance Finder',   href: '/fragrance-finder' },
     { label: 'Spraykart Machine',  href: '/machine' },
-    { label: 'About Us',           href: '/#about' },
+    { label: 'About Us',           href: '/contact' },
     { label: 'Contact Us',         href: '/contact' },
   ],
   Account: [
@@ -58,12 +58,12 @@ export default function Footer() {
             </p>
             <div className="flex gap-2">
               {[
-                { Icon: Instagram, href: '#', label: 'Instagram' },
-                { Icon: Twitter,   href: '#', label: 'Twitter' },
-                { Icon: Facebook,  href: '#', label: 'Facebook' },
+                { Icon: Instagram, href: 'https://www.instagram.com/spraykart', label: 'Instagram' },
+                { Icon: Twitter,   href: 'https://twitter.com/spraykart', label: 'Twitter' },
+                { Icon: Facebook,  href: 'https://www.facebook.com/spraykart', label: 'Facebook' },
                 { Icon: Mail,      href: 'mailto:support@spraykart.in', label: 'Email' },
               ].map(({ Icon, href, label }) => (
-                <a key={label} href={href} aria-label={label} className="ftr-social">
+                <a key={label} href={href} aria-label={label} className="ftr-social" target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}>
                   <Icon size={14} />
                 </a>
               ))}

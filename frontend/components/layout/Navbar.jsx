@@ -57,7 +57,7 @@ const drawerMainLinks = [
   {
     id: 'about',
     label: 'About Us',
-    href: '/#about',
+    href: '/contact',
     icon: Info,
   },
   {

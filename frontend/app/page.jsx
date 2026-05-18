@@ -134,10 +134,10 @@ export default async function HomePage() {
           }
           .hero-overlay {
             position: absolute; inset: 0;
-            background: linear-gradient(105deg, rgba(12,12,12,0.78) 0%, rgba(12,12,12,0.45) 55%, rgba(12,12,12,0.15) 100%);
+            background: linear-gradient(105deg, rgba(12,12,12,0.92) 0%, rgba(12,12,12,0.72) 50%, rgba(12,12,12,0.40) 100%);
           }
           @media (max-width: 767px) {
-            .hero-overlay { background: linear-gradient(180deg, rgba(12,12,12,0.30) 0%, rgba(12,12,12,0.72) 60%, rgba(12,12,12,0.88) 100%); }
+            .hero-overlay { background: linear-gradient(180deg, rgba(12,12,12,0.55) 0%, rgba(12,12,12,0.82) 55%, rgba(12,12,12,0.94) 100%); }
           }
           .hero-content {
             position: relative; z-index: 2;

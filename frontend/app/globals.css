@@ -746,6 +746,11 @@ details[open] summary .faq-plus { transform: rotate(45deg) !important; }
   overflow: hidden;
 }
 
+.home-hero-image {
+  object-fit: cover;
+  object-position: center;
+}
+
 .home-hero-art-glow {
   position: absolute;
   inset: 56px;
@@ -756,6 +761,7 @@ details[open] summary .faq-plus { transform: rotate(45deg) !important; }
 
 .home-hero-badge {
   position: absolute;
+  z-index: 2;
   left: 24px;
   bottom: 24px;
   background: white;

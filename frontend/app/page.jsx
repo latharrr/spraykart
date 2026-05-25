@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import ProductCard from '@/components/product/ProductCard';
 import FadeUp from '@/components/FadeUp';
 import WhyAccordion, { BrandScroll } from '@/components/WhyAccordion';
@@ -111,6 +112,30 @@ async function getTestimonials() {
   }
 }
 
+async function getHomeHeroImage() {
+  if (!hasUsableDatabaseUrl()) return null;
+
+  try {
+    const cached = await getHomeCache('homepage:hero-image');
+    if (cached) return cached;
+
+    const { rows } = await withHomeTimeout(db.query(
+      `SELECT url, alt
+       FROM homepage_assets
+       WHERE key = $1
+       LIMIT 1`,
+      ['hero_desktop']
+    ), 'Homepage hero image query');
+    const heroImage = rows[0] || null;
+
+    await setHomeCache('homepage:hero-image', heroImage, 3600);
+    return heroImage;
+  } catch (err) {
+    logger.warn('Homepage hero image skipped:', err);
+    return null;
+  }
+}
+
 const faqs = [
   { q: 'Are the fragrances 100% authentic?', a: 'Yes. Every product undergoes source verification, product inspection including packaging and batch codes, and a final pre-listing authenticity check by our experts.' },
   { q: 'What are the shipping timelines?', a: 'Standard delivery takes 3-7 business days. Spraykart ships pan-India, including tier-2 and tier-3 cities, with free shipping on orders above ₹999.' },
@@ -172,7 +197,11 @@ function Stars({ count = 5, className = '' }) {
 }
 
 export default async function HomePage() {
-  const [featuredProducts, testimonials] = await Promise.all([getFeaturedProducts(), getTestimonials()]);
+  const [featuredProducts, testimonials, homeHeroImage] = await Promise.all([
+    getFeaturedProducts(),
+    getTestimonials(),
+    getHomeHeroImage(),
+  ]);
 
   return (
     <div className="home-new">
@@ -205,10 +234,23 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="hero-new-right" aria-hidden="true">
+          <div className="hero-new-right">
             <div className="home-hero-art">
-              {/* TODO: replace with actual product/lifestyle image */}
-              <div className="home-hero-art-glow" />
+              {homeHeroImage?.url ? (
+                <Image
+                  src={homeHeroImage.url}
+                  alt={homeHeroImage.alt || 'Luxury imported perfumes at Spraykart'}
+                  fill
+                  priority
+                  sizes="(min-width: 768px) 45vw, 0vw"
+                  className="home-hero-image"
+                />
+              ) : (
+                <>
+                  {/* TODO: replace with actual product/lifestyle image */}
+                  <div className="home-hero-art-glow" />
+                </>
+              )}
               <div className="home-hero-badge">
                 <span className="home-hero-badge-kicker">UP TO</span>
                 <span className="home-hero-badge-number">40% off MRP</span>

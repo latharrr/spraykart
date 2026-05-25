@@ -1,10 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { adminGetAnalytics } from '@/lib/api';
-import { ShoppingBag, Users, TrendingUp, Package, ArrowUpRight, Clock } from 'lucide-react';
+import api, { adminGetAnalytics } from '@/lib/api';
+import { ShoppingBag, Users, TrendingUp, Package, ArrowUpRight, Clock, Upload, Image as ImageIcon, CheckCircle } from 'lucide-react';
 import { OrderStatusBadge } from '@/components/ui/Badge';
 import ErrorState from '@/components/ui/ErrorState';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 
 function StatCard({ label, value, sub, icon: Icon, color, href }) {
   return (
@@ -24,6 +25,154 @@ function StatCard({ label, value, sub, icon: Icon, color, href }) {
           View all <ArrowUpRight size={12} />
         </Link>
       )}
+    </div>
+  );
+}
+
+function HeroImageManager() {
+  const [heroImage, setHeroImage] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [inputKey, setInputKey] = useState(0);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+
+    api.get('/admin/homepage/hero-image')
+      .then((res) => {
+        if (active) setHeroImage(res.data.heroImage);
+      })
+      .catch((err) => {
+        if (active) setError(err?.error || 'Failed to load homepage image');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
+  const handleFileChange = (event) => {
+    const nextFile = event.target.files?.[0];
+    if (!nextFile) return;
+
+    if (!nextFile.type.startsWith('image/')) {
+      toast.error('Upload a valid image file');
+      setInputKey((key) => key + 1);
+      return;
+    }
+
+    if (nextFile.size > 5 * 1024 * 1024) {
+      toast.error('Image must be 5 MB or smaller');
+      setInputKey((key) => key + 1);
+      return;
+    }
+
+    if (preview) URL.revokeObjectURL(preview);
+    setFile(nextFile);
+    setPreview(URL.createObjectURL(nextFile));
+    setError(null);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!file) {
+      toast.error('Choose an image first');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('alt', 'Luxury imported perfumes at Spraykart');
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      const res = await api.post('/admin/homepage/hero-image', formData);
+      setHeroImage(res.data.heroImage);
+      setFile(null);
+      if (preview) URL.revokeObjectURL(preview);
+      setPreview(null);
+      setInputKey((key) => key + 1);
+      toast.success('Homepage image updated');
+    } catch (err) {
+      const message = err?.error || 'Failed to update homepage image';
+      setError(message);
+      toast.error(message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const visibleImage = preview || heroImage?.url;
+
+  return (
+    <div className="card p-5 md:p-6 mb-8">
+      <div className="flex flex-col lg:flex-row gap-6 lg:items-center lg:justify-between">
+        <div className="flex gap-4">
+          <div
+            className="w-24 h-32 shrink-0 bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden"
+            style={{
+              backgroundImage: visibleImage ? `url("${visibleImage}")` : undefined,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            {!visibleImage && <ImageIcon size={22} className="text-gray-300" />}
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="font-semibold text-gray-900">Homepage Main Image</h2>
+              {heroImage?.url && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-green-700 bg-green-50 px-2 py-1 rounded-full">
+                  <CheckCircle size={11} /> Live
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-gray-500 max-w-xl">
+              Upload the desktop hero image shown on the homepage right panel. Use a clean perfume or lifestyle image, ideally 3:4 crop and under 5 MB.
+            </p>
+            {heroImage?.updated_at && (
+              <p className="text-xs text-gray-400 mt-2">
+                Last updated {new Date(heroImage.updated_at).toLocaleString('en-IN')}
+              </p>
+            )}
+            {loading && <p className="text-xs text-gray-400 mt-2">Loading current image...</p>}
+            {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer transition">
+            <Upload size={15} />
+            {file ? 'Change Image' : 'Choose Image'}
+            <input
+              key={inputKey}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={!file || saving}
+            className="inline-flex items-center justify-center px-5 py-2.5 bg-gray-950 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-800 transition"
+          >
+            {saving ? 'Uploading...' : 'Publish to Homepage'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
@@ -110,6 +259,8 @@ export default function AdminDashboard() {
           {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
       </div>
+
+      <HeroImageManager />
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">

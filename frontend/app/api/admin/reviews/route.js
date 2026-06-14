@@ -8,6 +8,9 @@ export async function GET(request) {
   if (!user) return unauthorized();
   if (user.role !== 'admin') return forbidden();
 
+  // Ensure reviewer_name column exists before querying it
+  await db.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS reviewer_name VARCHAR(255)`).catch(() => {});
+
   const { searchParams } = new URL(request.url);
   const approved = searchParams.get('approved');
   const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
@@ -55,6 +58,7 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Failed to fetch reviews' }, { status: 500 });
   }
 }
+
 
 export async function POST(request) {
   const user = await getAuthUser(request);

@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Star } from 'lucide-react';
-import { memo } from 'react';
+import { memo, useState, useRef, useCallback, useEffect } from 'react';
 
 // Memoized at module level — no recomputation per render
 const CLOUDINARY_RE = /\/upload\//;
@@ -48,26 +48,81 @@ function ProductCard({ product, priority = false }) {
     ? Math.min(Math.round(((product.compare_price - product.price) / product.compare_price) * 100), 70)
     : 0;
 
+  // ── Hover image cycling ────────────────────────────────────────────────────
+  const images = [product.image, product.second_image].filter(Boolean);
+  const hasMultiple = images.length > 1;
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const intervalRef = useRef(null);
+
+  const startCycling = useCallback(() => {
+    if (!hasMultiple) return;
+    setIsHovered(true);
+    // Cycle every 800ms
+    intervalRef.current = setInterval(() => {
+      setActiveIdx((prev) => (prev + 1) % images.length);
+    }, 800);
+  }, [hasMultiple, images.length]);
+
+  const stopCycling = useCallback(() => {
+    setIsHovered(false);
+    clearInterval(intervalRef.current);
+    setActiveIdx(0);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => clearInterval(intervalRef.current);
+  }, []);
+
+  const currentImage = images[activeIdx] || product.image;
+
   return (
     <Link href={`/products/${product.slug}`} className="group block h-full outline-none">
       <div className="bg-white border border-gray-100 h-full flex flex-col transition-colors group-hover:border-gray-300">
 
         {/* Image — rock solid aspect ratio container */}
-        <div className="relative w-full aspect-[3/4] bg-[#f7f7f5] overflow-hidden shrink-0">
-          
-          {product.image ? (
+        <div
+          className="relative w-full aspect-[3/4] bg-[#f7f7f5] overflow-hidden shrink-0"
+          onMouseEnter={startCycling}
+          onMouseLeave={stopCycling}
+        >
+          {currentImage ? (
+            <>
               <Image
-                src={optimizeCloudinaryUrl(product.image)}
+                src={optimizeCloudinaryUrl(currentImage)}
                 alt={product.name}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className="object-cover transition-transform duration-500 ease-out group-hover:scale-105 z-10"
+                className="object-cover transition-all duration-500 ease-out z-10"
+                style={{
+                  transform: isHovered ? 'scale(1.04)' : 'scale(1)',
+                  transition: 'transform 0.5s ease-out, opacity 0.3s ease',
+                }}
                 priority={priority}
                 fetchPriority={priority ? 'high' : 'auto'}
                 quality={75}
                 placeholder="blur"
                 blurDataURL={getBlurDataUrl(product.image)}
               />
+
+              {/* Dot indicators — only if multiple images */}
+              {hasMultiple && (
+                <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  {images.map((_, i) => (
+                    <div
+                      key={i}
+                      className="rounded-full transition-all duration-300"
+                      style={{
+                        width: i === activeIdx ? 16 : 5,
+                        height: 5,
+                        background: i === activeIdx ? '#000' : 'rgba(0,0,0,0.3)',
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-[#f2f2f0]">
               <span className="text-[9px] tracking-[0.15em] uppercase text-[#c8c8c8]">No Image</span>

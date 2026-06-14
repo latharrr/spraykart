@@ -77,6 +77,11 @@ export async function GET(request) {
             LIMIT 1
           ) AS image,
           (
+            SELECT url FROM product_images 
+            WHERE product_id = paged_products.id AND is_primary = false
+            ORDER BY sort_order ASC LIMIT 1
+          ) AS second_image,
+          (
             SELECT COALESCE(AVG(rating), 0)::NUMERIC(3,1) FROM reviews 
             WHERE product_id = paged_products.id AND is_approved = true
           ) AS avg_rating,

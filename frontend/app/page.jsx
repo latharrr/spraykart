@@ -69,6 +69,7 @@ async function getFeaturedProducts() {
       )
       SELECT featured.*,
         (SELECT url FROM product_images WHERE product_id = featured.id AND is_primary = true LIMIT 1) AS image,
+        (SELECT url FROM product_images WHERE product_id = featured.id AND is_primary = false ORDER BY sort_order ASC LIMIT 1) AS second_image,
         (SELECT COALESCE(AVG(rating), 0)::NUMERIC(3,1) FROM reviews WHERE product_id = featured.id AND is_approved = true) AS avg_rating,
         (SELECT COUNT(id) FROM reviews WHERE product_id = featured.id AND is_approved = true) AS review_count
       FROM featured ORDER BY featured.created_at DESC

@@ -19,12 +19,17 @@ export default function ProductInfo({ product }) {
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [added, setAdded] = useState(false);
+  const [activeTab, setActiveTab] = useState('description');
 
+  // Price display — if variant has its own price use it, otherwise fall back to base
   const displayPrice = selectedVariant
     ? parseFloat(product.price) + parseFloat(selectedVariant.price_modifier || 0)
     : parseFloat(product.price);
 
-  const displayComparePrice = product.compare_price
+  // Compare price — prefer variant-level compare_price, then product-level, adjusted by modifier
+  const displayComparePrice = selectedVariant?.compare_price
+    ? parseFloat(selectedVariant.compare_price)
+    : product.compare_price
     ? parseFloat(product.compare_price) + (selectedVariant ? parseFloat(selectedVariant.price_modifier || 0) : 0)
     : null;
 
@@ -77,6 +82,15 @@ export default function ProductInfo({ product }) {
 
   const inStock = product.stock > 0;
 
+  const hasFragranceNotes = product.top_notes || product.heart_notes || product.base_notes;
+  const hasScentProfile = product.scent_family || product.longevity || product.sillage || product.season || product.occasion;
+
+  const tabs = [
+    { id: 'description', label: 'Description' },
+    ...(hasFragranceNotes || hasScentProfile ? [{ id: 'fragrance', label: 'Fragrance Notes' }] : []),
+    { id: 'reviews', label: `Reviews (${product.review_count || 0})` },
+  ];
+
   return (
     <div className="flex flex-col gap-5">
       {/* Category */}
@@ -109,7 +123,7 @@ export default function ProductInfo({ product }) {
         <span className="text-4xl font-bold text-gray-900">
           ₹{displayPrice.toLocaleString('en-IN')}
         </span>
-        {displayComparePrice && (
+        {displayComparePrice && displayComparePrice > displayPrice && (
           <>
             <span className="text-xl text-gray-400 line-through">
               ₹{displayComparePrice.toLocaleString('en-IN')}
@@ -131,20 +145,30 @@ export default function ProductInfo({ product }) {
         <div key={type}>
           <p className="text-sm font-medium text-gray-700 mb-2 capitalize">{type}:</p>
           <div className="flex flex-wrap gap-2">
-            {variants.map((v) => (
-              <button
-                key={v.id}
-                onClick={() => setSelectedVariant(selectedVariant?.id === v.id ? null : v)}
-                className={`min-h-[44px] px-4 py-2 rounded-lg text-sm font-medium border transition ${
-                  selectedVariant?.id === v.id
-                    ? 'border-black bg-black text-white'
-                    : 'border-gray-200 text-gray-700 hover:border-gray-400'
-                } ${v.stock === 0 ? 'opacity-40 cursor-not-allowed' : ''}`}
-                disabled={v.stock === 0}
-              >
-                {v.value}
-              </button>
-            ))}
+            {variants.map((v) => {
+              const vPrice = parseFloat(product.price) + parseFloat(v.price_modifier || 0);
+              const vCompare = v.compare_price ? parseFloat(v.compare_price) : null;
+              return (
+                <button
+                  key={v.id}
+                  onClick={() => setSelectedVariant(selectedVariant?.id === v.id ? null : v)}
+                  className={`min-h-[44px] px-4 py-2 rounded-lg text-sm font-medium border transition flex flex-col items-center ${
+                    selectedVariant?.id === v.id
+                      ? 'border-black bg-black text-white'
+                      : 'border-gray-200 text-gray-700 hover:border-gray-400'
+                  } ${v.stock === 0 ? 'opacity-40 cursor-not-allowed' : ''}`}
+                  disabled={v.stock === 0}
+                >
+                  <span>{v.value}</span>
+                  <span className={`text-xs mt-0.5 ${selectedVariant?.id === v.id ? 'text-gray-300' : 'text-gray-500'}`}>
+                    ₹{vPrice.toLocaleString('en-IN')}
+                    {vCompare && vCompare > vPrice && (
+                      <span className="line-through ml-1 opacity-60">₹{vCompare.toLocaleString('en-IN')}</span>
+                    )}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       ))}
@@ -216,57 +240,96 @@ export default function ProductInfo({ product }) {
         </button>
       </div>
 
-      {/* Description */}
-      {product.description && (
-        <div className="border-t border-gray-100 pt-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-2">Description</h3>
-          <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{product.description}</p>
+      {/* Tabs: Description | Fragrance Notes | Reviews */}
+      <div className="border-t border-gray-100 pt-5">
+        {/* Tab Nav */}
+        <div className="flex gap-0 border-b border-gray-100 mb-5 overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`text-sm font-medium px-4 py-2.5 border-b-2 shrink-0 transition-colors ${
+                activeTab === tab.id
+                  ? 'border-black text-black'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-      )}
 
-      {/* Scent Profile */}
-      {(product.top_notes || product.heart_notes || product.base_notes || product.scent_family || product.longevity || product.sillage || product.season || product.occasion) && (
-        <div className="border-t border-gray-100 pt-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Scent Profile</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px' }}>
-            {product.scent_family && <ScentRow label="Family" value={product.scent_family} />}
-            {product.longevity && <ScentRow label="Longevity" value={product.longevity} />}
-            {product.sillage && <ScentRow label="Sillage" value={product.sillage} />}
-            {product.season && <ScentRow label="Season" value={product.season} />}
-            {product.occasion && <ScentRow label="Occasion" value={product.occasion} />}
+        {/* Description Tab */}
+        {activeTab === 'description' && (
+          <div>
+            {product.description ? (
+              <div
+                className="text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: product.description }}
+              />
+            ) : (
+              <p className="text-sm text-gray-400 italic">No description available.</p>
+            )}
           </div>
-          {(product.top_notes || product.heart_notes || product.base_notes) && (
-            <div style={{ marginTop: 12, padding: '14px 0', borderTop: '1px solid #f0f0f0' }}>
-              {product.top_notes && <NoteRow label="Top" notes={product.top_notes} color="#f59e0b" />}
-              {product.heart_notes && <NoteRow label="Heart" notes={product.heart_notes} color="#e11d48" />}
-              {product.base_notes && <NoteRow label="Base" notes={product.base_notes} color="#6b21a8" />}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
+        )}
 
-function ScentRow({ label, value }) {
-  return (
-    <div>
-      <span style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a0a0a0', display: 'block', marginBottom: 2 }}>{label}</span>
-      <span style={{ fontSize: 13, color: '#1a1a1a', fontWeight: 500 }}>{value}</span>
-    </div>
-  );
-}
+        {/* Fragrance Notes Tab */}
+        {activeTab === 'fragrance' && (
+          <div className="space-y-6">
+            {/* Top / Heart / Base notes cards */}
+            {hasFragranceNotes && (
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: 'Top Notes', notes: product.top_notes, color: '#f59e0b', bg: '#fffbeb', emoji: '🌿' },
+                  { label: 'Heart Notes', notes: product.heart_notes, color: '#e11d48', bg: '#fff1f2', emoji: '🌸' },
+                  { label: 'Base Notes', notes: product.base_notes, color: '#7c3aed', bg: '#f5f3ff', emoji: '🪵' },
+                ].map(({ label, notes, color, bg, emoji }) => notes ? (
+                  <div key={label} className="flex flex-col items-center text-center p-4 rounded-xl border" style={{ background: bg, borderColor: `${color}20` }}>
+                    <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3 text-2xl" style={{ background: `${color}15` }}>
+                      {emoji}
+                    </div>
+                    <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color }}>{label}</p>
+                    <div className="flex flex-wrap gap-1 justify-center">
+                      {notes.split(',').map((n) => (
+                        <span key={n} className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: `${color}18`, color }}>
+                          {n.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null)}
+              </div>
+            )}
 
-function NoteRow({ label, notes, color }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
-      <span style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a0a0a0', width: 36, flexShrink: 0 }}>{label}</span>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-        {notes.split(',').map((n) => (
-          <span key={n} style={{ fontSize: 11, padding: '3px 9px', background: `${color}12`, color, border: `1px solid ${color}30`, borderRadius: 2, fontWeight: 500 }}>
-            {n.trim()}
-          </span>
-        ))}
+            {/* Scent Profile */}
+            {hasScentProfile && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Scent Profile</p>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+                  {[
+                    { label: 'Family', value: product.scent_family },
+                    { label: 'Longevity', value: product.longevity },
+                    { label: 'Sillage', value: product.sillage },
+                    { label: 'Season', value: product.season },
+                    { label: 'Occasion', value: product.occasion },
+                  ].filter(i => i.value).map(({ label, value }) => (
+                    <div key={label}>
+                      <span className="block text-[10px] uppercase tracking-widest text-gray-400 mb-0.5">{label}</span>
+                      <span className="text-sm font-medium text-gray-800">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Reviews tab placeholder — ReviewSection handles full display below the fold */}
+        {activeTab === 'reviews' && (
+          <div className="text-sm text-gray-500">
+            <p>Scroll down to see all reviews.</p>
+          </div>
+        )}
       </div>
     </div>
   );

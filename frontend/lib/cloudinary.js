@@ -17,7 +17,7 @@ export async function uploadImage(buffer, folder = 'shopcore/products') {
       },
       (error, result) => {
         if (error) reject(error);
-        else resolve({ url: result.secure_url, public_id: result.public_id });
+        else resolve({ url: result.secure_url, public_id: result.public_id, width: result.width, height: result.height });
       }
     );
     Readable.from(buffer).pipe(stream);

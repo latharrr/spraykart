@@ -10,7 +10,18 @@ import logger from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
-const stripTags = (str) => str ? str.replace(/<[^>]*>/g, '').replace(/[<>]/g, '').trim().slice(0, 5000) : null;
+// Allow safe HTML formatting tags; strip dangerous ones
+const sanitizeHtml = (str) => {
+  if (!str) return null;
+  return str
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/on\w+="[^"]*"/gi, '')
+    .replace(/on\w+='[^']*'/gi, '')
+    .replace(/javascript:/gi, '')
+    .trim()
+    .slice(0, 10000);
+};
 
 async function requireAdmin(request) {
   const user = await getAuthUser(request);
@@ -59,10 +70,45 @@ export async function PUT(request, { params }) {
     const hsn = formData.get('hsn');
     const gst = formData.get('gst');
     const slug = name ? slugify(name, { lower: true, strict: true }) : undefined;
+
+    // Fragrance notes
+    const top_notes = formData.get('top_notes');
+    const heart_notes = formData.get('heart_notes');
+    const base_notes = formData.get('base_notes');
+    const scent_family = formData.get('scent_family');
+    const longevity = formData.get('longevity');
+    const sillage = formData.get('sillage');
+    const season = formData.get('season');
+    const occasion = formData.get('occasion');
+
     const { files: imageFiles, error: uploadError } = validateProductImageFiles(formData);
     if (uploadError) {
       return NextResponse.json({ error: uploadError.message }, { status: uploadError.status });
     }
+
+    // Ensure fragrance/variant columns exist
+    await db.query(`
+      ALTER TABLE products
+        ADD COLUMN IF NOT EXISTS top_notes TEXT,
+        ADD COLUMN IF NOT EXISTS heart_notes TEXT,
+        ADD COLUMN IF NOT EXISTS base_notes TEXT,
+        ADD COLUMN IF NOT EXISTS scent_family VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS longevity VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS sillage VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS season VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS occasion VARCHAR(100)
+    `).catch(() => {});
+
+    await db.query(`
+      ALTER TABLE variants ADD COLUMN IF NOT EXISTS compare_price NUMERIC(10,2)
+    `).catch(() => {});
+
+    // Ensure image dimension columns exist
+    await db.query(`
+      ALTER TABLE product_images
+        ADD COLUMN IF NOT EXISTS width INTEGER,
+        ADD COLUMN IF NOT EXISTS height INTEGER
+    `).catch(() => {});
 
     const { rows } = await db.query(
       `UPDATE products SET
@@ -73,10 +119,18 @@ export async function PUT(request, { params }) {
         is_featured=COALESCE($8,is_featured),
         is_active=COALESCE($9,is_active),
         hsn_code=COALESCE($10,hsn_code),
-        gst_rate=COALESCE($11,gst_rate)
-       WHERE id=$12 RETURNING *`,
+        gst_rate=COALESCE($11,gst_rate),
+        top_notes=COALESCE($12,top_notes),
+        heart_notes=COALESCE($13,heart_notes),
+        base_notes=COALESCE($14,base_notes),
+        scent_family=COALESCE($15,scent_family),
+        longevity=COALESCE($16,longevity),
+        sillage=COALESCE($17,sillage),
+        season=COALESCE($18,season),
+        occasion=COALESCE($19,occasion)
+       WHERE id=$20 RETURNING *`,
       [name, slug,
-       description !== null ? stripTags(description) : undefined,
+       description !== null ? sanitizeHtml(description) : undefined,
        price ? parseFloat(price) : undefined,
        compare_price ? parseFloat(compare_price) : null,
        stock ? parseInt(stock) : undefined, category || undefined,
@@ -84,6 +138,14 @@ export async function PUT(request, { params }) {
        is_active !== null ? is_active === 'true' : undefined,
        hsn || undefined,
        gst ? parseFloat(gst) : undefined,
+       top_notes || undefined,
+       heart_notes || undefined,
+       base_notes || undefined,
+       scent_family || undefined,
+       longevity || undefined,
+       sillage || undefined,
+       season || undefined,
+       occasion || undefined,
        params.id]
     );
     if (!rows.length) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
@@ -100,36 +162,36 @@ export async function PUT(request, { params }) {
     }
 
     if (imageFiles.length > 0) {
-      // Check if product already has any images (to determine if first new one should be primary)
       const { rows: existingImages } = await db.query('SELECT id FROM product_images WHERE product_id = $1 AND is_primary = true', [params.id]);
       let hasPrimary = existingImages.length > 0;
 
       for (let i = 0; i < imageFiles.length; i++) {
         const file = imageFiles[i];
-
         const buffer = Buffer.from(await file.arrayBuffer());
-        const { url, public_id } = await uploadImage(buffer);
+        const { url, public_id, width, height } = await uploadImage(buffer);
         
         await db.query(
-          'INSERT INTO product_images(product_id,url,public_id,is_primary,sort_order) VALUES($1,$2,$3,$4,$5)',
-          [params.id, url, public_id, !hasPrimary, i]
+          'INSERT INTO product_images(product_id,url,public_id,is_primary,sort_order,width,height) VALUES($1,$2,$3,$4,$5,$6,$7)',
+          [params.id, url, public_id, !hasPrimary, i, width || null, height || null]
         );
-        hasPrimary = true; // Only the first one added becomes primary if none existed
+        hasPrimary = true;
       }
     }
 
     const variantsRaw = formData.get('variants');
     if (variantsRaw) {
       const variants = (() => { try { return JSON.parse(variantsRaw); } catch { return []; } })();
+      await db.query('DELETE FROM variants WHERE product_id=$1', [params.id]);
       if (variants.length > 0) {
-        await db.query('DELETE FROM variants WHERE product_id=$1', [params.id]);
         const basePrice = price ? parseFloat(price) : parseFloat(rows[0].price);
         for (const v of variants) {
-          const modifier = v.price !== null ? v.price - basePrice : 0;
-          await db.query('INSERT INTO variants(product_id,type,value,price_modifier,stock) VALUES($1,$2,$3,$4,$5)', [params.id, v.type, v.value, modifier, v.stock || 0]);
+          const variantPrice = parseFloat(v.price) || basePrice;
+          const modifier = variantPrice - basePrice;
+          await db.query(
+            'INSERT INTO variants(product_id,type,value,price_modifier,stock,compare_price) VALUES($1,$2,$3,$4,$5,$6)',
+            [params.id, v.type, v.value, modifier, v.stock || 0, v.compare_price ? parseFloat(v.compare_price) : null]
+          );
         }
-      } else {
-        await db.query('DELETE FROM variants WHERE product_id=$1', [params.id]);
       }
     }
 

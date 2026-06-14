@@ -9,7 +9,19 @@ import slugify from 'slugify';
 
 export const runtime = 'nodejs';
 
-const stripTags = (str) => str ? str.replace(/<[^>]*>/g, '').replace(/[<>]/g, '').trim().slice(0, 5000) : null;
+// Allow safe HTML formatting tags; strip dangerous ones
+const sanitizeHtml = (str) => {
+  if (!str) return null;
+  // Strip dangerous tags but keep safe formatting
+  return str
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/on\w+="[^"]*"/gi, '')
+    .replace(/on\w+='[^']*'/gi, '')
+    .replace(/javascript:/gi, '')
+    .trim()
+    .slice(0, 10000);
+};
 
 async function requireAdmin(request) {
   const user = await getAuthUser(request);
@@ -55,6 +67,17 @@ export async function POST(request) {
     const hsn = formData.get('hsn');
     const gst = formData.get('gst');
     const variantsRaw = formData.get('variants');
+
+    // Fragrance notes
+    const top_notes = formData.get('top_notes');
+    const heart_notes = formData.get('heart_notes');
+    const base_notes = formData.get('base_notes');
+    const scent_family = formData.get('scent_family');
+    const longevity = formData.get('longevity');
+    const sillage = formData.get('sillage');
+    const season = formData.get('season');
+    const occasion = formData.get('occasion');
+
     const { files: imageFiles, error: uploadError } = validateProductImageFiles(formData);
     if (uploadError) {
       return NextResponse.json({ error: uploadError.message }, { status: uploadError.status });
@@ -64,34 +87,58 @@ export async function POST(request) {
 
     const slug = slugify(name, { lower: true, strict: true });
 
+    // Gracefully add fragrance note columns if they don't exist
+    await db.query(`
+      ALTER TABLE products
+        ADD COLUMN IF NOT EXISTS top_notes TEXT,
+        ADD COLUMN IF NOT EXISTS heart_notes TEXT,
+        ADD COLUMN IF NOT EXISTS base_notes TEXT,
+        ADD COLUMN IF NOT EXISTS scent_family VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS longevity VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS sillage VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS season VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS occasion VARCHAR(100)
+    `).catch(() => {});
+
+    // Add compare_price to variants if not exists
+    await db.query(`
+      ALTER TABLE variants ADD COLUMN IF NOT EXISTS compare_price NUMERIC(10,2)
+    `).catch(() => {});
+
     await client.query('BEGIN');
     const { rows } = await client.query(
-      `INSERT INTO products(name,slug,description,price,compare_price,stock,category,is_featured,meta_title,meta_description,hsn_code,gst_rate)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
-      [name, slug, stripTags(description), parseFloat(price), compare_price ? parseFloat(compare_price) : null,
+      `INSERT INTO products(name,slug,description,price,compare_price,stock,category,is_featured,meta_title,meta_description,hsn_code,gst_rate,top_notes,heart_notes,base_notes,scent_family,longevity,sillage,season,occasion)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) RETURNING *`,
+      [name, slug, sanitizeHtml(description), parseFloat(price), compare_price ? parseFloat(compare_price) : null,
        parseInt(stock) || 0, category || null, is_featured, meta_title || null, meta_description || null,
-       hsn || null, gst ? parseFloat(gst) : 18]
+       hsn || null, gst ? parseFloat(gst) : 18,
+       top_notes || null, heart_notes || null, base_notes || null,
+       scent_family || null, longevity || null, sillage || null, season || null, occasion || null]
     );
     const product = rows[0];
 
     let uploadedCount = 0;
     for (let i = 0; i < imageFiles.length; i++) {
       const file = imageFiles[i];
-
       const buffer = Buffer.from(await file.arrayBuffer());
-      const { url, public_id } = await uploadImage(buffer);
+      const { url, public_id, width, height } = await uploadImage(buffer);
       
       await client.query(
-        'INSERT INTO product_images(product_id,url,public_id,is_primary,sort_order) VALUES($1,$2,$3,$4,$5)',
-        [product.id, url, public_id, uploadedCount === 0, uploadedCount]
+        'INSERT INTO product_images(product_id,url,public_id,is_primary,sort_order,width,height) VALUES($1,$2,$3,$4,$5,$6,$7)',
+        [product.id, url, public_id, uploadedCount === 0, uploadedCount, width || null, height || null]
       );
       uploadedCount++;
     }
 
     const variants = (() => { try { return JSON.parse(variantsRaw || '[]'); } catch { return []; } })();
     for (const v of variants) {
-      const modifier = v.price !== null ? v.price - parseFloat(price) : 0;
-      await client.query('INSERT INTO variants(product_id,type,value,price_modifier,stock) VALUES($1,$2,$3,$4,$5)', [product.id, v.type, v.value, modifier, v.stock || 0]);
+      const basePrice = parseFloat(price);
+      const variantPrice = parseFloat(v.price) || basePrice;
+      const modifier = variantPrice - basePrice;
+      await client.query(
+        'INSERT INTO variants(product_id,type,value,price_modifier,stock,compare_price) VALUES($1,$2,$3,$4,$5,$6)',
+        [product.id, v.type, v.value, modifier, v.stock || 0, v.compare_price ? parseFloat(v.compare_price) : null]
+      );
     }
 
     await client.query('COMMIT');

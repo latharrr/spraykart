@@ -108,6 +108,7 @@ export const adminToggleBlock = (id) => api.put(`/admin/users/${id}/toggle-block
 export const adminGetReviews = (params) => api.get('/admin/reviews', { params });
 export const adminApproveReview = (id) => api.put(`/admin/reviews/${id}/approve`);
 export const adminDeleteReview = (id) => api.delete(`/admin/reviews/${id}`);
+export const adminCreateReview = (data) => api.post('/admin/reviews', data);
 
 export const adminGetCoupons = () => api.get('/admin/coupons');
 export const adminCreateCoupon = (data) => api.post('/admin/coupons', data);

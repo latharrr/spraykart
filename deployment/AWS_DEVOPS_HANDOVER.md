@@ -9,7 +9,7 @@ The application was migrated from managed cloud services (Vercel/Supabase) to a 
 * **Instance Size:** Micro (1GB RAM, 2 vCPUs)
 * **Region:** Mumbai (`ap-south-1`)
 * **Static IP:** \`65.0.239.246\`
-* **Custom Domain:** \`spraykart.deepanshulathar.dev\`
+* **Custom Domain:** \`spraykart.deepanshulathar.com\`
 * **Firewall Ports (Open):** 
   * \`22\` (SSH)
   * \`80\` (HTTP)

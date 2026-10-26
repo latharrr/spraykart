@@ -13,6 +13,16 @@ const CATEGORY_COPY = {
     seo: 'Shop Original Perfumes & Attars Online in India',
     intro: 'Designer houses, niche perfumers and Indian attars under one roof. Every bottle is an original and ships with a GST invoice; most can be tried first as a 10 ml decant.',
   },
+  designer: {
+    title: 'Designer',
+    seo: 'Original Designer Perfumes Online in India',
+    intro: 'The fashion houses and their icons: Dior, Chanel, Yves Saint Laurent, Versace and more. Originals with a GST invoice, most available as a 10 ml decant.',
+  },
+  niche: {
+    title: 'Niche',
+    seo: 'Original Niche Perfumes Online in India',
+    intro: 'Perfumers who work outside the big fashion groups, from Creed and Tom Ford to Maison Margiela. Originals with a GST invoice, most available as a 10 ml decant.',
+  },
   Men: {
     title: 'Men',
     seo: "Original Men's Perfumes Online in India",
@@ -44,8 +54,9 @@ const FILTER_KEYS = ['search', 'price_min', 'price_max', 'note', 'occasion', 'br
 
 export async function generateMetadata({ searchParams }) {
   const category = searchParams?.category || '';
-  const copy = CATEGORY_COPY[category] || CATEGORY_COPY[''];
-  const canonical = category ? `/products?category=${encodeURIComponent(category)}` : '/products';
+  const tier = searchParams?.tier || '';
+  const copy = CATEGORY_COPY[tier] || CATEGORY_COPY[category] || CATEGORY_COPY[''];
+  const canonical = tier ? `/products?tier=${tier}` : category ? `/products?category=${encodeURIComponent(category)}` : '/products';
   const filtered = FILTER_KEYS.some((k) => searchParams?.[k]) || (searchParams?.page && searchParams.page !== '1');
   return {
     title: copy.seo,
@@ -66,7 +77,7 @@ function pageHref(searchParams, page) {
 
 export default async function ProductsPage({ searchParams = {} }) {
   const query = readListingParams(searchParams);
-  const copy = CATEGORY_COPY[query.category] || { title: query.category, intro: '' };
+  const copy = CATEGORY_COPY[query.tier] || CATEGORY_COPY[query.category] || { title: query.category, intro: '' };
 
   let result = { products: [], total: 0, pages: 0 };
   let brands = [];

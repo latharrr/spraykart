@@ -334,7 +334,7 @@ export default function CheckoutPage() {
 
           <section className="ck__step" style={!user ? undefined : { borderTop: 0 }}>
             <h2><span className="t-display t-m">Delivery address</span></h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 18 }}>
+            <div className="ck__grid">
               {field('name', 'Recipient name')}
               {field('line1', 'Address')}
               {field('line2', 'Apartment, landmark', { optional: true })}

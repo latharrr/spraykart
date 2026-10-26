@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
 import HomeHero from '@/components/home/HomeHero';
+import { TIERS, tierOf } from '@/lib/houses';
 import db from '@/lib/db';
 import cache from '@/lib/cache';
 import logger from '@/lib/logger';
@@ -59,23 +60,24 @@ async function getFeaturedProducts() {
   if (!hasUsableDatabaseUrl()) return [];
 
   try {
-    const cached = await getHomeCache('products:featured:home');
+    const cached = await getHomeCache('products:featured:home:v2');
     if (cached) return cached;
 
     const { rows } = await withHomeTimeout(db.query(`
       WITH featured AS (
         SELECT * FROM products WHERE is_active = true
-        ORDER BY is_featured DESC, created_at DESC LIMIT 8
+        ORDER BY is_featured DESC, created_at DESC LIMIT 9
       )
       SELECT featured.*,
         (SELECT url FROM product_images WHERE product_id = featured.id AND is_primary = true LIMIT 1) AS image,
         (SELECT url FROM product_images WHERE product_id = featured.id AND is_primary = false ORDER BY sort_order ASC LIMIT 1) AS second_image,
+        (SELECT value FROM variants WHERE product_id = featured.id AND type = 'size' AND price_modifier = 0 LIMIT 1) AS base_size,
         (SELECT COALESCE(AVG(rating), 0)::NUMERIC(3,1) FROM reviews WHERE product_id = featured.id AND is_approved = true) AS avg_rating,
         (SELECT COUNT(id) FROM reviews WHERE product_id = featured.id AND is_approved = true) AS review_count
       FROM featured ORDER BY featured.is_featured DESC, featured.created_at DESC
     `), 'Featured products query');
 
-    await setHomeCache('products:featured:home', rows, 3600);
+    await setHomeCache('products:featured:home:v2', rows, 3600);
     return rows;
   } catch (err) {
     logger.error('Failed to fetch featured products:', err);
@@ -135,19 +137,23 @@ async function getDepartmentImages() {
   if (!hasUsableDatabaseUrl()) return {};
 
   try {
-    const cached = await getHomeCache('homepage:departments');
+    const cached = await getHomeCache('homepage:departments:v2');
     if (cached) return cached;
 
     const { rows } = await withHomeTimeout(db.query(`
-      SELECT DISTINCT ON (p.category) p.category, i.url
+      SELECT p.category, p.brand, i.url
       FROM products p
       JOIN product_images i ON i.product_id = p.id AND i.is_primary = true
       WHERE p.is_active = true
-      ORDER BY p.category, p.is_featured DESC, p.created_at DESC
+      ORDER BY p.is_featured DESC, p.created_at DESC
     `), 'Department images query');
-    const result = Object.fromEntries(rows.map((r) => [r.category, r.url]));
+    const result = {};
+    for (const r of rows) {
+      const key = tierOf(r) || r.category;
+      if (!result[key]) result[key] = r.url;
+    }
 
-    await setHomeCache('homepage:departments', result, 3600);
+    await setHomeCache('homepage:departments:v2', result, 3600);
     return result;
   } catch (err) {
     logger.warn('Department images skipped:', err);
@@ -156,10 +162,10 @@ async function getDepartmentImages() {
 }
 
 const departments = [
-  { category: 'Men', title: 'Men', line: 'Fougères, woods and leather from the houses that defined them.', fallback: 'Unisex' },
-  { category: 'Women', title: 'Women', line: 'Florals, ambers and gourmands, from the icons to the new names.', fallback: 'Unisex' },
-  { category: 'Attar', title: 'Attar', line: 'Perfume oils without alcohol: oud, rose and musk, worn close to the skin.' },
-  { category: 'Gift Sets', title: 'Gifts', line: 'Discovery sets and boxed bottles, ready to give.' },
+  { key: 'designer', href: '/products?tier=designer', title: TIERS.designer.label, line: TIERS.designer.line },
+  { key: 'niche', href: '/products?tier=niche', title: TIERS.niche.label, line: TIERS.niche.line },
+  { key: 'Attar', href: '/products?category=Attar', title: 'Attar', line: 'Perfume oils without alcohol: oud, rose and musk, worn close to the skin.' },
+  { key: 'Gift Sets', href: '/products?category=Gift+Sets', title: 'Gifts', line: 'Discovery sets and boxed bottles, ready to give.' },
 ];
 
 const faqs = [
@@ -212,10 +218,13 @@ export default async function HomePage() {
     getDepartmentImages(),
   ]);
 
-  const looks = featuredProducts.filter((p) => p.image).slice(0, 3);
-  const arrivals = featuredProducts.slice(0, 8);
+  const look = featuredProducts.find((p) => p.image);
+  const arrivals = featuredProducts;
   const attar = featuredProducts.find((p) => p.category === 'Attar' && p.image);
   const houseImage = homeHeroImage?.url || featuredProducts.find((p) => p.category === 'Gift Sets' && p.image)?.image || featuredProducts[3]?.image;
+  const others = arrivals.filter((p) => p.id !== look?.id);
+  // Fill whole rows of four on desktop
+  const arrivalsList = others.slice(0, others.length >= 8 ? 8 : 4);
 
   return (
     <>
@@ -223,8 +232,8 @@ export default async function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
-      {looks.length > 0 ? (
-        <HomeHero looks={looks} />
+      {look ? (
+        <HomeHero look={look} />
       ) : (
         <section className="h-wrap h-section">
           <h1 className="t-display t-hero">Designer, niche and attar.</h1>
@@ -234,9 +243,9 @@ export default async function HomePage() {
 
       <nav className="hp-depts" aria-label="Departments">
         {departments.map((d) => {
-          const img = deptImages[d.category] || (d.fallback && deptImages[d.fallback]);
+          const img = deptImages[d.key];
           return (
-            <Link key={d.category} href={`/products?category=${encodeURIComponent(d.category)}`} className="hp-dept">
+            <Link key={d.key} href={d.href} className="hp-dept">
               <div className="hp-dept__img">
                 {img && <Image src={img} alt="" fill sizes="(max-width: 599px) 38vw, (max-width: 1023px) 50vw, 25vw" style={{ objectFit: 'cover' }} />}
               </div>
@@ -257,7 +266,7 @@ export default async function HomePage() {
             <Link href="/products" className="h-link">All fragrances <ArrowRight size={14} strokeWidth={1.25} /></Link>
           </div>
           <div className="h-grid">
-            {arrivals.map((product) => (
+            {arrivalsList.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

@@ -5,19 +5,20 @@ import { Menu, X, Search, ShoppingBag } from 'lucide-react';
 import { useState, useEffect, Suspense } from 'react';
 import { useAuthStore, useCartItemCount, useWishlistCount, useBagUI } from '@/lib/store';
 import BagDrawer from '@/components/layout/BagDrawer';
+import { WHATSAPP_URL } from '@/lib/shop';
 
 const departments = [
-  { href: '/products', label: 'Fragrances' },
-  { href: '/products?category=Men', label: 'Men' },
-  { href: '/products?category=Women', label: 'Women' },
+  { href: '/products?tier=designer', label: 'Designer' },
+  { href: '/products?tier=niche', label: 'Niche' },
   { href: '/products?category=Attar', label: 'Attar' },
   { href: '/products?category=Gift+Sets', label: 'Gifts' },
+  { href: '/products', label: 'All' },
 ];
 
 const drawerDepartments = [
-  ...departments.slice(0, 3),
-  { href: '/products?category=Unisex', label: 'Unisex' },
-  ...departments.slice(3),
+  ...departments,
+  { href: '/products?category=Men', label: 'Men' },
+  { href: '/products?category=Women', label: 'Women' },
   { href: '/fragrance-finder', label: 'Finder' },
 ];
 
@@ -46,10 +47,12 @@ function NavbarInner() {
 
   const isActive = (href) => {
     const cat = searchParams.get('category');
-    if (href.includes('category=')) {
-      return pathname === '/products' && cat === new URLSearchParams(href.split('?')[1]).get('category');
+    const tier = searchParams.get('tier');
+    if (href.includes('?')) {
+      const q = new URLSearchParams(href.split('?')[1]);
+      return pathname === '/products' && (q.get('category') ? cat === q.get('category') : tier === q.get('tier'));
     }
-    if (href === '/products') return pathname === '/products' && !cat;
+    if (href === '/products') return pathname === '/products' && !cat && !tier;
     return pathname.startsWith(href);
   };
 
@@ -124,6 +127,7 @@ function NavbarInner() {
             <Link href="/orders" className="h-drawer__small">Orders</Link>
             <Link href="/machine" className="h-drawer__small">Spraykart Machine</Link>
             <Link href="/contact" className="h-drawer__small">Contact</Link>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="h-drawer__small">WhatsApp an advisor</a>
           </div>
         </div>
         <div className="h-drawer__foot">

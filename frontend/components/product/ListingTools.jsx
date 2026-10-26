@@ -31,6 +31,7 @@ export default function ListingTools({ brands = [] }) {
   const timer = useRef(null);
 
   const category = sp.get('category') || '';
+  const tier = sp.get('tier') || '';
   const sort = sp.get('sort') || 'newest';
   const priceMin = sp.get('price_min') || '';
   const priceMax = sp.get('price_max') || '';
@@ -58,6 +59,7 @@ export default function ListingTools({ brands = [] }) {
   };
 
   const applied = [
+    ...(tier ? [{ label: tier === 'niche' ? 'Niche' : 'Designer', clear: { tier: '' } }] : []),
     ...(category ? [{ label: category, clear: { category: '' } }] : []),
     ...(priceMin || priceMax ? [{ label: PRICES.find((p) => p.min === priceMin && p.max === priceMax)?.label || 'Price', clear: { price_min: '', price_max: '' } }] : []),
     ...pickedBrands.map((b) => ({ label: b, clear: { brand: pickedBrands.filter((x) => x !== b).join(',') } })),
@@ -65,7 +67,7 @@ export default function ListingTools({ brands = [] }) {
     ...occasions.map((o) => ({ label: o, clear: { occasion: occasions.filter((x) => x !== o).join(',') } })),
     ...(inStock ? [{ label: 'In stock', clear: { availability: '' } }] : []),
   ];
-  const filterCount = applied.length - (category ? 1 : 0);
+  const filterCount = applied.length - (category ? 1 : 0) - (tier ? 1 : 0);
 
   return (
     <div className="pl-tools" aria-busy={pending}>
@@ -104,6 +106,9 @@ export default function ListingTools({ brands = [] }) {
             <fieldset>
               <h4>Department</h4>
               <div className="pl-chips">
+                {[['designer', 'Designer'], ['niche', 'Niche']].map(([t, l]) => (
+                  <button key={t} type="button" className="h-chip" aria-pressed={tier === t} onClick={() => push({ tier: tier === t ? '' : t })}>{l}</button>
+                ))}
                 {CATEGORIES.map((c) => (
                   <button key={c} type="button" className="h-chip" aria-pressed={category === c} onClick={() => push({ category: category === c ? '' : c })}>{c}</button>
                 ))}

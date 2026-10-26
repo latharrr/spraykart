@@ -20,6 +20,7 @@ const columns = [
       { label: 'Spraykart Machine', href: '/machine' },
       { label: 'FAQ', href: '/faq' },
       { label: 'Contact', href: '/contact' },
+      { label: 'WhatsApp an advisor', href: 'https://wa.me/917217816676?text=Hi%2C%20I%20need%20help%20choosing%20a%20fragrance%20at%20Spraykart' },
     ],
   },
   {
@@ -56,7 +57,11 @@ export default function Footer() {
               <h3>{col.title}</h3>
               <ul>
                 {col.links.map((l) => (
-                  <li key={l.label}><Link href={l.href} className="h-foot__a">{l.label}</Link></li>
+                  <li key={l.label}>
+                    {l.href.startsWith('http')
+                      ? <a href={l.href} target="_blank" rel="noopener noreferrer" className="h-foot__a">{l.label}</a>
+                      : <Link href={l.href} className="h-foot__a">{l.label}</Link>}
+                  </li>
                 ))}
               </ul>
             </div>

@@ -1,11 +1,22 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCartStore, useBagUI } from '@/lib/store';
 import { inr, sizedImage, nameWithoutHouse } from '@/lib/shop';
+
+const CONCENTRATIONS = [
+  [/\bextrait\b|\bparfum\b(?!s)/i, 'Parfum'],
+  [/\bedp\b|eau de parfum/i, 'Eau de parfum'],
+  [/\bedt\b|eau de toilette/i, 'Eau de toilette'],
+  [/\battar\b|\bittar\b/i, 'Attar'],
+];
+
+function concentrationOf(look) {
+  const text = `${look.name} ${look.category} ${String(look.description || '').slice(0, 200)}`;
+  return CONCENTRATIONS.find(([re]) => re.test(text))?.[1] || null;
+}
 
 // Split a name into at most two balanced display lines.
 function twoLines(name) {
@@ -20,20 +31,19 @@ function twoLines(name) {
   return [words.slice(0, best).join(' '), words.slice(best).join(' ')];
 }
 
-export default function HomeHero({ looks }) {
-  const [index, setIndex] = useState(0);
+export default function HomeHero({ look }) {
   const addItem = useCartStore((s) => s.addItem);
   const openBag = useBagUI((s) => s.openBag);
-  const look = looks[index];
-  if (!look) return null;
 
   const price = Number(look.price);
   const mrp = Number(look.compare_price) > price ? Number(look.compare_price) : null;
   const house = look.brand && look.brand !== 'Spraykart' ? look.brand : null;
-  const rest = nameWithoutHouse(look);
-  // House on the first line when it is printed on the bottle; otherwise balance the name over two lines.
+  // Drop a trailing concentration ("Sauvage EDP") from the display name; the spec line states it.
+  const rest = nameWithoutHouse(look).replace(/\s+(EDP|EDT)$/i, '');
   const lines = house && !rest.toLowerCase().includes(house.toLowerCase()) ? [house, rest] : twoLines(rest);
-  const blurb = String(look.description || '').replace(/<[^>]+>/g, '').split(/(?<=\.)\s/)[0];
+  const spec = [house, concentrationOf(look), look.base_size].filter(Boolean);
+  const soldOut = Number(look.stock) === 0;
+  const note = String(look.description || '').replace(/<[^>]+>/g, '').split(/(?<=\.)\s/)[0];
 
   const add = () => {
     if (!addItem(look, null, 1)) {
@@ -46,47 +56,33 @@ export default function HomeHero({ looks }) {
   return (
     <section className="hp-hero" aria-labelledby="hp-look-name">
       <div className="hp-hero__copy">
-        {looks.length > 1 && (
-          <div className="hp-hero__index" role="tablist" aria-label="Featured bottles">
-            {looks.map((l, i) => (
-              <button key={l.id} role="tab" aria-selected={i === index} aria-current={i === index} aria-label={l.name} onClick={() => setIndex(i)} />
-            ))}
-          </div>
-        )}
-        <h1 id="hp-look-name" className="t-display t-hero hp-hero__name" key={`n-${look.id}`}>
+        {note && <p className="hp-hero__note t-body t-mute hp-reveal-fade">{note}</p>}
+        <h1 id="hp-look-name" className="t-display t-hero hp-hero__name">
           {lines.map((line) => (
             <span className="hp-reveal-line" key={line}><span>{line}</span></span>
           ))}
         </h1>
-        {blurb && <p className="t-body t-mute hp-reveal-fade" key={`b-${look.id}`} style={{ maxWidth: '44ch' }}>{blurb}</p>}
-        <div className="hp-hero__facts hp-reveal-fade" key={`f-${look.id}`}>
-          {look.scent_family && <span className="t-mute">{look.scent_family}</span>}
+        <div className="hp-hero__facts hp-reveal-fade">
+          {spec.length > 0 && <span className="t-label-l">{spec.join(' · ')}</span>}
           <span className="h-price">{inr(price)}</span>
-          {mrp && <span className="t-mute h-price">MRP <s>{inr(mrp)}</s></span>}
+          {mrp && <span className="t-small t-mute h-price">MRP <s>{inr(mrp)}</s></span>}
         </div>
         <div className="hp-hero__actions">
-          <button type="button" className="h-btn" onClick={add} disabled={Number(look.stock) === 0}>
-            {Number(look.stock) === 0 ? 'Sold out' : 'Add to bag'}
-          </button>
+          <button type="button" className="h-btn" onClick={add} disabled={soldOut}>{soldOut ? 'Sold out' : 'Add to bag'}</button>
           <Link href={`/products/${look.slug}`} className="h-link">View the bottle <ArrowRight size={14} strokeWidth={1.25} /></Link>
         </div>
       </div>
       <div className="hp-hero__media">
         {look.image && (
-          <Image
-            key={look.id}
-            src={sizedImage(look.image, 1600)}
-            alt={look.name}
-            fill
-            priority
-            sizes="(max-width: 1023px) 100vw, 45vw"
-            className="hp-reveal-img"
-          />
+          <Image src={sizedImage(look.image, 1600)} alt={look.name} fill priority sizes="(max-width: 1023px) 100vw, 45vw" className="hp-reveal-img" />
         )}
-        <div className="hp-hero__caption">
-          <span>{look.category}</span>
-          <span>{index + 1} / {looks.length}</span>
-        </div>
+        <Link href={`/products/${look.slug}`} className="hp-hero__caption">
+          <span style={{ display: 'grid', gap: 4 }}>
+            <span>{rest}</span>
+            {look.scent_family && <span style={{ opacity: 0.8 }}>{look.scent_family}</span>}
+          </span>
+          <span className="hp-hero__caption-link">View details</span>
+        </Link>
       </div>
     </section>
   );

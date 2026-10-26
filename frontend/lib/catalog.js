@@ -1,6 +1,7 @@
 import db from './db';
 import cache from './cache';
 import { hasUsableDatabaseUrl } from './env';
+import { NICHE_HOUSES } from './houses';
 
 // Shared product listing query for the /products page (server-rendered) and /api/products.
 
@@ -29,6 +30,7 @@ export function readListingParams(sp) {
   const get = (k) => (typeof sp.get === 'function' ? sp.get(k) : sp[k]) || '';
   return {
     category: get('category'),
+    tier: ['designer', 'niche'].includes(get('tier')) ? get('tier') : '',
     search: get('search'),
     sort: normaliseSort(get('sort'), get('order')),
     page: Math.max(1, parseInt(get('page') || '1', 10) || 1),
@@ -57,6 +59,11 @@ export async function listProducts(q) {
   const anyOf = (values, build) => `(${values.map((v) => build(add(`%${v}%`))).join(' OR ')})`;
 
   if (q.category) where.push(`p.category = ${add(q.category)}`);
+  if (q.tier) {
+    const houses = add(NICHE_HOUSES.map((h) => h.toLowerCase()));
+    where.push(`p.category NOT IN ('Attar', 'Gift Sets')`);
+    where.push(q.tier === 'niche' ? `LOWER(COALESCE(p.brand, '')) = ANY(${houses})` : `NOT (LOWER(COALESCE(p.brand, '')) = ANY(${houses}))`);
+  }
   if (q.search) {
     const s = add(`%${q.search}%`);
     where.push(`(p.name ILIKE ${s} OR p.brand ILIKE ${s} OR p.description ILIKE ${s} OR p.top_notes ILIKE ${s} OR p.heart_notes ILIKE ${s} OR p.base_notes ILIKE ${s})`);

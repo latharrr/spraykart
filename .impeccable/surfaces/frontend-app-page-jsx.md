@@ -27,3 +27,8 @@ FIRST VIEWPORT: The hairline nav spans the top: wordmark left, departments centr
 FORM: Luxury fashion-house flagship (challenger luxury-fashion-flagship, chosen by the user over assigned candidate 7 "The Scent Organ"); seed key 80918655.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+
+## Adaptations (cited)
+- Ink announcement bar above the nav: carries the three proof facts PRODUCT.md principle 2 requires at the point of decision (originals with GST invoice, free delivery above ₹999, COD up to ₹2,999). Not part of FIRST VIEWPORT's composition; it sits above the frame.
+- Designer / Niche tiers come from an editorial house list (frontend/lib/houses.js) until products carry a tier column.
+- Gender (Men / Women / Unisex) lives in the listing filter and the mobile menu, not the department index.

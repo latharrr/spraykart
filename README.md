@@ -1,6 +1,6 @@
 # SprayKart
 
-Storefront and admin for an Indian online perfume retailer: designer and niche fragrances, attars, 10 ml decants and a discovery set, paid by Razorpay, Paytm or cash on delivery. Next.js 14 on PostgreSQL, built solo by [Deepanshu Lathar](https://deepanshulathar.com).
+Storefront and admin for an Indian online perfume retailer: designer and niche fragrances, attars, 10 ml decants and a discovery set, paid by Razorpay, Paytm or cash on delivery. Next.js 14 on PostgreSQL, by [Deepanshu Lathar](https://deepanshulathar.com).
 
 ![CI](https://github.com/latharrr/spraykart/actions/workflows/ci.yml/badge.svg)
 

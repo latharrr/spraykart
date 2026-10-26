@@ -4,7 +4,7 @@ Storefront and admin for an Indian online perfume retailer: designer and niche f
 
 ![CI](https://github.com/latharrr/spraykart/actions/workflows/ci.yml/badge.svg)
 
-| | |
+| At a glance | |
 |---|---|
 | **Status** | Pre-launch. Built and load-tested; the manual QA run and the disaster-recovery drill have not been done ([QA-CHECKLIST.md](QA-CHECKLIST.md), [DR-DRILL.md](DR-DRILL.md)). |
 | **Stack** | Next.js 14 (App Router), React 18, Tailwind, PostgreSQL (`pg`), optional Redis, Zustand |

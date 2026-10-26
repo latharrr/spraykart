@@ -60,7 +60,7 @@ function NavbarInner() {
       <div className="h-bar" role="note">
         <span>Originals only, with GST invoice</span>
         <span>Free delivery above ₹999</span>
-        <span>7-day returns</span>
+        <span>Cash on delivery up to ₹2,999</span>
       </div>
 
       <header className="h-nav">

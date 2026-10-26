@@ -165,16 +165,16 @@ const departments = [
 const faqs = [
   { q: 'Are the fragrances original?', a: 'Yes. Every bottle is sourced as an original, its batch code is checked before listing, and every order ships with a GST invoice.' },
   { q: 'How long does delivery take?', a: 'Standard delivery takes 3 to 7 business days across India, including tier-2 and tier-3 cities. Delivery is free above ₹999.' },
-  { q: 'Which payment methods can I use?', a: 'UPI, credit and debit cards, net banking and wallets through Razorpay, plus cash on delivery where available.' },
+  { q: 'Which payment methods can I use?', a: 'UPI, credit and debit cards, net banking and wallets through Razorpay or Paytm, or cash on delivery on orders up to ₹2,999.' },
   { q: 'What is a decant?', a: 'A decant is the same original perfume, poured from a sealed bottle into a 10 ml atomiser. It lets you wear a scent for a week or two before buying the full bottle.' },
-  { q: 'Can I return a fragrance?', a: 'Damaged, defective or incorrect items can be returned within 7 days. Write to support with your order ID and photos and we will make it right.' },
+  { q: 'What if a bottle arrives damaged?', a: 'Report it within 48 hours of delivery with your order ID and photos, and we will replace or refund it. Opened bottles cannot be returned for a change of mind.' },
 ];
 
 const proof = [
   { title: 'Originals only', body: 'Sourced as originals and batch-code checked before they are listed.' },
   { title: 'GST invoice', body: 'Every order ships with a tax invoice in your name.' },
   { title: 'Free delivery over ₹999', body: 'Across India, with tracking from dispatch to door.' },
-  { title: '7-day returns', body: 'For anything damaged, defective or not what you ordered.' },
+  { title: 'Cash on delivery', body: 'Pay at your door on orders up to ₹2,999, or online by UPI and cards.' },
 ];
 
 const organizationSchema = {
@@ -319,7 +319,7 @@ export default async function HomePage() {
           </div>
           <div className="hp-look__copy">
             <h2 id="gift-title" className="t-display t-xl">For someone else.</h2>
-            <p className="t-body t-mute">Weddings, birthdays, Diwali. Choose a boxed bottle or a discovery set, add a note at checkout, and it arrives ready to give. Not sure what they wear? Ask an advisor on WhatsApp.</p>
+            <p className="t-body t-mute">Weddings, birthdays, Diwali. Choose a boxed bottle or a discovery set and have it delivered anywhere in India. Not sure what they wear? Ask an advisor on WhatsApp.</p>
             <div style={{ display: 'flex', gap: 28, alignItems: 'center', flexWrap: 'wrap' }}>
               <Link href="/products?category=Gift+Sets" className="h-btn">Shop gifts</Link>
               <a href="https://wa.me/917217816676?text=Hi%2C%20I%20need%20help%20choosing%20a%20gift" target="_blank" rel="noopener noreferrer" className="h-link">Ask an advisor <ArrowRight size={14} strokeWidth={1.25} /></a>

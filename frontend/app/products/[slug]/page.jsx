@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import ProductGallery from '@/components/product/ProductGallery';
 import ProductInfo from '@/components/product/ProductInfo';
 import ReviewSection from '@/components/product/ReviewSection';
+import ProductCard from '@/components/product/ProductCard';
+import Link from 'next/link';
 import db from '@/lib/db';
 import cache from '@/lib/cache';
 import { SITE_URL } from '@/lib/env';
@@ -42,7 +44,17 @@ async function getProduct(slug) {
   const variants = detailsRows.rows[0]?.variants || [];
   const reviews = reviewsRows.rows || [];
 
-  const result = { ...product, images, variants, reviews };
+  const { rows: related } = await db.query(`
+    SELECT p.*,
+      (SELECT url FROM product_images WHERE product_id = p.id AND is_primary = true LIMIT 1) AS image,
+      (SELECT url FROM product_images WHERE product_id = p.id AND is_primary = false ORDER BY sort_order LIMIT 1) AS second_image
+    FROM products p
+    WHERE p.is_active = true AND p.id <> $1 AND (p.category = $2 OR p.scent_family = $3)
+    ORDER BY (p.category = $2) DESC, p.is_featured DESC, p.created_at DESC
+    LIMIT 4
+  `, [product.id, product.category, product.scent_family || '']);
+
+  const result = { ...product, images, variants, reviews, related };
   await cache.set(cacheKey, result, 300);
   return result;
 }
@@ -78,6 +90,7 @@ export default async function ProductPage({ params }) {
     description: product.description,
     image: product.images?.map((i) => i.url),
     brand: { '@type': 'Brand', name: product.brand || 'Spraykart' },
+    sku: product.slug,
     offers: {
       '@type': 'Offer',
       url: `${SITE_URL}/products/${product.slug}`,
@@ -105,15 +118,39 @@ export default async function ProductPage({ params }) {
     ],
   };
 
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      { q: `Is this ${product.name} original?`, a: 'Yes. It is sourced as an original, batch-code checked before listing, and ships with a GST invoice.' },
+      { q: 'What is a decant?', a: 'The same original perfume, poured from a sealed bottle into a 10 ml atomiser, so you can wear it before buying the full bottle.' },
+      { q: 'What if it arrives damaged?', a: 'Report it within 48 hours of delivery with your order ID and photos for a replacement or refund.' },
+    ].map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
+    <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <ProductGallery images={product.images} />
-        <ProductInfo product={product} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <div className="pd">
+        <ProductGallery images={product.images} name={product.name} />
+        <div className="pd__info">
+          <ProductInfo product={product} />
+        </div>
       </div>
       <ReviewSection product={product} reviews={product.reviews} />
-    </div>
+      {product.related?.length > 0 && (
+        <section className="h-wrap h-section h-rule" aria-labelledby="related-title">
+          <div className="hp-head">
+            <h2 id="related-title" className="t-display t-l">Also in the house</h2>
+            <Link href={`/products?category=${encodeURIComponent(product.category || '')}`} className="h-link">More {String(product.category || 'fragrances').toLowerCase()}</Link>
+          </div>
+          <div className="h-grid">
+            {product.related.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
+      )}
+    </>
   );
 }

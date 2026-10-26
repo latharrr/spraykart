@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { X, Minus, Plus } from 'lucide-react';
 import { useCartStore, useCartSubtotal, useBagUI } from '@/lib/store';
-import { inr, unitPrice, sizedImage, FREE_SHIPPING_AT, SHIPPING_FEE } from '@/lib/shop';
+import { inr, unitPrice, sizedImage, nameWithoutHouse, FREE_SHIPPING_AT, SHIPPING_FEE } from '@/lib/shop';
 
 export default function BagDrawer() {
   const { open, closeBag } = useBagUI();
@@ -64,7 +64,7 @@ export default function BagDrawer() {
                     </Link>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
                       {item.brand && <span className="t-label t-mute-3">{item.brand}</span>}
-                      <Link href={`/products/${item.slug}`} className="t-small" style={{ fontSize: 14 }}>{item.name}</Link>
+                      <Link href={`/products/${item.slug}`} className="t-small" style={{ fontSize: 14 }}>{nameWithoutHouse(item)}</Link>
                       {item.variant && <span className="t-small t-mute">{item.variant.value}</span>}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 'auto', paddingTop: 8 }}>
                         <div className="h-qty" style={{ height: 36 }}>

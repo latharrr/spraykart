@@ -13,11 +13,13 @@ export function unitPrice(product, variant) {
   return (Number(product.price) || 0) + (variant ? Number(variant.price_modifier) || 0 : 0);
 }
 
-// MRP follows the same modifier as the price unless the variant carries its own.
+// MRP is a printed figure: show the variant's own MRP, or the product MRP for the base size only.
+// Deriving one for other sizes (e.g. a decant) would state an MRP that no label carries.
 export function unitMrp(product, variant) {
   if (variant?.compare_price) return Number(variant.compare_price);
   if (!product.compare_price) return null;
-  return Number(product.compare_price) + (variant ? Number(variant.price_modifier) || 0 : 0);
+  if (variant && Number(variant.price_modifier) !== 0) return null;
+  return Number(product.compare_price);
 }
 
 // "10 ml decant", "100ml", "50 ML" → 10, 100, 50

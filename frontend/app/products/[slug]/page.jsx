@@ -65,7 +65,7 @@ export async function generateMetadata({ params }) {
   const canonical = `${SITE_URL}/products/${product.slug || params.slug}`;
 
   return {
-    title: product.meta_title || product.name,
+    title: (product.meta_title || product.name).replace(/\s*\|\s*Spraykart\s*$/i, ''),
     description: product.meta_description || product.description?.substring(0, 160),
     alternates: {
       canonical,

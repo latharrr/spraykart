@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Your Cart | Spraykart',
+  title: 'Your Cart',
   robots: { index: false, follow: false },
 };
 

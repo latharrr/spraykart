@@ -1,10 +1,10 @@
 import { getBusinessProfile } from '@/lib/business';
 
 export const metadata = {
-  title: 'Privacy Policy | Spraykart',
+  title: 'Privacy Policy',
   description: 'Privacy Policy for Spraykart, including DPDP Act 2023 compliance information and how we protect your personal data.',
   alternates: { canonical: '/privacy' },
-  openGraph: { title: 'Privacy Policy | Spraykart', url: '/privacy', type: 'website' },
+  openGraph: { title: 'Privacy Policy | Spraykart', url: '/privacy', type: 'website', images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Spraykart' }] },
 };
 
 export default function PrivacyPage() {

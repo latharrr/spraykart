@@ -24,8 +24,8 @@ const text = Schibsted_Grotesk({
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: 'Spraykart - Luxury Fragrances at Accessible Prices', template: '%s | Spraykart' },
-  description: "India's most trusted luxury fragrance store. 100% authentic perfumes, attars & gift sets. Free shipping above ₹999. Pan-India delivery.",
+  title: { default: 'Spraykart — Original Designer & Niche Perfumes and Attars in India', template: '%s | Spraykart' },
+  description: 'Designer and niche perfumes and Indian attars, every bottle an original with a GST invoice. Try most as a 10 ml decant. Free delivery above ₹999 across India.',
   keywords: ['luxury perfumes India', 'buy authentic perfumes online', 'attar', 'niche fragrances', 'Spraykart', 'buy perfumes online India', 'perfume shop India'],
   authors: [{ name: 'Spraykart' }],
   creator: 'Spraykart',
@@ -34,7 +34,7 @@ export const metadata = {
     type: 'website',
     siteName: 'Spraykart',
     locale: 'en_IN',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Spraykart - Luxury Fragrances at Accessible Prices' }],
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Spraykart' }],
   },
   twitter: {
     card: 'summary_large_image',

@@ -55,7 +55,7 @@ const FILTER_KEYS = ['search', 'price_min', 'price_max', 'note', 'occasion', 'br
 export async function generateMetadata({ searchParams }) {
   const category = searchParams?.category || '';
   const tier = searchParams?.tier || '';
-  const copy = CATEGORY_COPY[tier] || CATEGORY_COPY[category] || CATEGORY_COPY[''];
+  const copy = (tier && CATEGORY_COPY[tier]) || CATEGORY_COPY[category] || CATEGORY_COPY[''];
   const canonical = tier ? `/products?tier=${tier}` : category ? `/products?category=${encodeURIComponent(category)}` : '/products';
   const filtered = FILTER_KEYS.some((k) => searchParams?.[k]) || (searchParams?.page && searchParams.page !== '1');
   return {
@@ -63,7 +63,7 @@ export async function generateMetadata({ searchParams }) {
     description: copy.intro,
     alternates: { canonical },
     robots: filtered ? { index: false, follow: true } : undefined,
-    openGraph: { title: `${copy.seo} | Spraykart`, description: copy.intro, url: canonical, type: 'website' },
+    openGraph: { title: `${copy.seo} | Spraykart`, description: copy.intro, url: canonical, type: 'website', images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Spraykart' }] },
   };
 }
 
@@ -77,7 +77,7 @@ function pageHref(searchParams, page) {
 
 export default async function ProductsPage({ searchParams = {} }) {
   const query = readListingParams(searchParams);
-  const copy = CATEGORY_COPY[query.tier] || CATEGORY_COPY[query.category] || { title: query.category, intro: '' };
+  const copy = (query.tier && CATEGORY_COPY[query.tier]) || CATEGORY_COPY[query.category] || { title: query.category, intro: '' };
 
   let result = { products: [], total: 0, pages: 0 };
   let brands = [];

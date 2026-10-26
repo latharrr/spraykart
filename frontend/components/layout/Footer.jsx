@@ -54,7 +54,7 @@ export default function Footer() {
           </div>
           {columns.map((col) => (
             <div key={col.title}>
-              <h3>{col.title}</h3>
+              <h2>{col.title}</h2>
               <ul>
                 {col.links.map((l) => (
                   <li key={l.label}>

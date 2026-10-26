@@ -7,7 +7,7 @@ import { TIERS, tierOf } from '@/lib/houses';
 import db from '@/lib/db';
 import cache from '@/lib/cache';
 import logger from '@/lib/logger';
-import { hasUsableDatabaseUrl } from '@/lib/env';
+import { hasUsableDatabaseUrl, SITE_URL } from '@/lib/env';
 
 export const dynamic = 'force-static';
 export const revalidate = 3600;
@@ -15,15 +15,15 @@ export const revalidate = 3600;
 const HOME_FETCH_TIMEOUT_MS = 2500;
 
 export const metadata = {
-  title: 'Spraykart - Luxury Fragrances at Accessible Prices',
-  description: "India's most trusted luxury fragrance platform. 100% authentic perfumes, attars & niche fragrances. Free shipping above ₹999. Pan-India delivery.",
+  title: { absolute: 'Spraykart — Original Designer & Niche Perfumes and Attars in India' },
+  description: 'Designer and niche perfumes and Indian attars, every bottle an original with a GST invoice. Try most as a 10 ml decant. Free delivery above ₹999 across India.',
   alternates: { canonical: '/' },
   openGraph: {
-    title: 'Spraykart - Luxury Fragrances at Accessible Prices',
-    description: "India's most trusted luxury fragrance platform. 100% authentic perfumes, attars & niche fragrances.",
+    title: 'Spraykart — Original Designer & Niche Perfumes and Attars',
+    description: 'Designer and niche perfumes and Indian attars, every bottle an original with a GST invoice.',
     url: '/',
     type: 'website',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Spraykart - Luxury Fragrances' }],
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Spraykart' }],
   },
 };
 
@@ -188,8 +188,9 @@ const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Spraykart',
-  url: 'https://spraykart.in',
-  logo: 'https://spraykart.in/logo.png',
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo.png`,
+  sameAs: ['https://www.instagram.com/spraykart'],
   contactPoint: { '@type': 'ContactPoint', contactType: 'customer support', email: 'support@spraykart.in', availableLanguage: ['English', 'Hindi'] },
 };
 
@@ -197,8 +198,8 @@ const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Spraykart',
-  url: 'https://spraykart.in',
-  potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: 'https://spraykart.in/products?search={search_term_string}' }, 'query-input': 'required name=search_term_string' },
+  url: SITE_URL,
+  potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: `${SITE_URL}/products?search={search_term_string}` }, 'query-input': 'required name=search_term_string' },
 };
 
 const faqSchema = {

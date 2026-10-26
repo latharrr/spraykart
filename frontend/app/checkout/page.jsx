@@ -371,7 +371,7 @@ export default function CheckoutPage() {
           <section className="ck__step">
             <h2><span className="t-display t-m">Coupon</span></h2>
             {coupon ? (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '16px 18px', border: '1px solid var(--ink)', background: 'var(--white)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '16px 18px', border: '1px solid var(--merlot)', background: 'var(--paper)' }}>
                 <span className="t-small"><b style={{ fontWeight: 500, letterSpacing: '.08em' }}>{coupon.code}</b> applied. You save <span className="h-price">{inr(discount || 0)}</span>.</span>
                 <button type="button" className="h-link" onClick={handleRemoveCoupon}>Remove</button>
               </div>

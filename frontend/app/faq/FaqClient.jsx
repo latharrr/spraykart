@@ -88,7 +88,7 @@ function AccordionItem({ faq, index }) {
 
 export default function FaqClient({ faqs }) {
   return (
-    <main style={{ background: '#F6F4EF', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: '#F6F4EF', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Hero */}
       <div style={{
         width: '100%', padding: 'clamp(40px, 10vw, 80px) 24px clamp(30px, 8vw, 60px)',
@@ -164,6 +164,6 @@ export default function FaqClient({ faqs }) {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

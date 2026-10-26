@@ -66,7 +66,7 @@ export default function ProductInfo({ product }) {
   const maxMl = Math.max(...sizes.map((s) => mlOf(s.value) || 0), 100);
   const lineTotal = price * qty;
   const delivery = lineTotal >= FREE_SHIPPING_AT ? 0 : SHIPPING_FEE;
-  const house = product.brand && product.brand !== 'Spraykart' ? product.brand : null;
+  const house = product.brand && !/^spraykart/i.test(product.brand) ? product.brand : null;
   const rest = nameWithoutHouse(product);
   const reviewCount = Number(product.review_count) || 0;
 
@@ -145,7 +145,7 @@ export default function ProductInfo({ product }) {
 
       <div style={{ display: 'grid', gap: 18 }}>
         <h1 className="t-display pd__name">
-          {house && <span style={{ display: 'block' }}>{house}</span>}
+          {house && <span style={{ display: 'block' }}>{house}{' '}</span>}
           <span style={{ display: 'block' }}>{rest}</span>
         </h1>
         <div className="pd__priceline">

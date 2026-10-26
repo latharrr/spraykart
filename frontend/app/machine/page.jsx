@@ -3,11 +3,12 @@ import Link from 'next/link';
 export const metadata = {
   title: 'Spraykart Machine — The Future of Fragrance',
   description: 'Walk up. Explore. Spray. The Spraykart Machine lets you experience premium luxury fragrances on-demand, anytime, anywhere. Coming soon.',
+  alternates: { canonical: '/machine' },
 };
 
 export default function SpraykartMachinePage() {
   return (
-    <main style={{ background: '#0D0D0D', minHeight: '100vh', color: '#ffffff', fontFamily: "var(--font-sans, system-ui, sans-serif)" }}>
+    <div style={{ background: '#0D0D0D', minHeight: '100vh', color: '#ffffff', fontFamily: "var(--font-sans, system-ui, sans-serif)" }}>
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section style={{
@@ -396,6 +397,6 @@ export default function SpraykartMachinePage() {
           50% { opacity: 0.5; transform: scale(0.8); }
         }
       `}</style>
-    </main>
+    </div>
   );
 }

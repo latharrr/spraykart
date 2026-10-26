@@ -33,21 +33,21 @@ export default function ContactClient({ business }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         <div className="space-y-6">
           <div className="card p-6 border border-gray-100">
-            <h3 className="font-semibold text-lg mb-2">Customer Support</h3>
+            <h2 className="font-semibold text-lg mb-2">Customer Support</h2>
             <p className="text-sm text-gray-500 mb-4">For order inquiries, tracking, and product questions.</p>
             <p className="text-sm font-medium">Email: <a href={`mailto:${business.email}`} className="text-black hover:underline">{business.email}</a></p>
             <p className="text-sm font-medium mt-2">Phone: <a href={`tel:${business.phone}`} className="text-black hover:underline">{business.phone}</a></p>
           </div>
 
           <div className="card p-6 border border-gray-100">
-            <h3 className="font-semibold text-lg mb-2">Business Details</h3>
+            <h2 className="font-semibold text-lg mb-2">Business Details</h2>
             <p className="text-sm text-gray-500 whitespace-pre-line">{business.legalName}</p>
             <p className="text-sm text-gray-500 whitespace-pre-line mt-2">{business.address}</p>
             <p className="text-sm text-gray-500 mt-2">GSTIN: {business.gstin}</p>
           </div>
 
           <div className="card p-6 border border-gray-100">
-            <h3 className="font-semibold text-lg mb-2">Business Hours</h3>
+            <h2 className="font-semibold text-lg mb-2">Business Hours</h2>
             <p className="text-sm text-gray-500">{business.supportHours}</p>
             <p className="text-sm text-gray-400 mt-2 text-xs">Closed on Sundays and public holidays unless otherwise notified.</p>
           </div>

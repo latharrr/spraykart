@@ -37,7 +37,7 @@ export default function HomeHero({ look }) {
 
   const price = Number(look.price);
   const mrp = Number(look.compare_price) > price ? Number(look.compare_price) : null;
-  const house = look.brand && look.brand !== 'Spraykart' ? look.brand : null;
+  const house = look.brand && !/^spraykart/i.test(look.brand) ? look.brand : null;
   // Drop a trailing concentration ("Sauvage EDP") from the display name; the spec line states it.
   const rest = nameWithoutHouse(look).replace(/\s+(EDP|EDT)$/i, '');
   const lines = house && !rest.toLowerCase().includes(house.toLowerCase()) ? [house, rest] : twoLines(rest);
@@ -58,7 +58,7 @@ export default function HomeHero({ look }) {
       <div className="hp-hero__copy">
         <h1 id="hp-look-name" className="t-display t-hero hp-hero__name">
           {lines.map((line) => (
-            <span className="hp-reveal-line" key={line}><span>{line}</span></span>
+            <span className="hp-reveal-line" key={line}><span>{line}</span>{' '}</span>
           ))}
         </h1>
         {note && <p className="hp-hero__note t-body t-mute hp-reveal-fade">{note}</p>}

@@ -104,7 +104,7 @@ export default function ListingTools({ brands = [] }) {
         {open && (
           <div id="pl-filter" className="pl-filter h-rule">
             <fieldset>
-              <h4>Department</h4>
+              <legend>Department</legend>
               <div className="pl-chips">
                 {[['designer', 'Designer'], ['niche', 'Niche']].map(([t, l]) => (
                   <button key={t} type="button" className="h-chip" aria-pressed={tier === t} onClick={() => push({ tier: tier === t ? '' : t })}>{l}</button>
@@ -115,7 +115,7 @@ export default function ListingTools({ brands = [] }) {
               </div>
             </fieldset>
             <fieldset>
-              <h4>Price</h4>
+              <legend>Price</legend>
               <div style={{ display: 'grid' }}>
                 {PRICES.map((p) => {
                   const on = priceMin === p.min && priceMax === p.max;
@@ -134,7 +134,7 @@ export default function ListingTools({ brands = [] }) {
             </fieldset>
             {brands.length > 0 && (
               <fieldset>
-                <h4>House</h4>
+                <legend>House</legend>
                 <div style={{ display: 'grid', maxHeight: 260, overflowY: 'auto' }}>
                   {brands.map(({ brand, n }) => (
                     <label key={brand} className="h-check">
@@ -147,7 +147,7 @@ export default function ListingTools({ brands = [] }) {
               </fieldset>
             )}
             <fieldset>
-              <h4>Notes</h4>
+              <legend>Notes</legend>
               <div className="pl-chips">
                 {NOTES.map((n) => (
                   <button key={n} type="button" className="h-chip" aria-pressed={notes.includes(n)} onClick={() => toggleIn('note', notes, n)}>{n}</button>
@@ -155,7 +155,7 @@ export default function ListingTools({ brands = [] }) {
               </div>
             </fieldset>
             <fieldset>
-              <h4>Occasion</h4>
+              <legend>Occasion</legend>
               <div className="pl-chips">
                 {OCCASIONS.map((o) => (
                   <button key={o} type="button" className="h-chip" aria-pressed={occasions.includes(o)} onClick={() => toggleIn('occasion', occasions, o)}>{o}</button>

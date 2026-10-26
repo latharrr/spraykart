@@ -292,7 +292,7 @@ html { scrollbar-color: var(--stone) transparent; scrollbar-width: thin; }
 /* ─── Footer ─────────────────────────────────────────────────────────────── */
 .h-foot { background: var(--ink); color: var(--bone); padding-top: clamp(64px, 8vw, 120px); }
 .h-foot__top { display: grid; grid-template-columns: 1.4fr repeat(4, 1fr); gap: 40px; padding-bottom: 72px; }
-.h-foot h3 { font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--on-ink-2); margin-bottom: 18px; }
+.h-foot h2 { font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--on-ink-2); margin-bottom: 18px; }
 .h-foot li { list-style: none; }
 .h-foot li + li { margin-top: 10px; }
 .h-foot__a { font-size: 14px; color: var(--bone); opacity: .86; transition: opacity .2s; }
@@ -469,7 +469,7 @@ html { scrollbar-color: var(--stone) transparent; scrollbar-width: thin; }
 .pl-sort { border: 0; background-color: transparent; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; min-height: 44px; padding-right: 28px; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%230D0D0D' stroke-width='1.2'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; }
 .pl-applied { display: flex; flex-wrap: wrap; gap: 8px; padding-block: 16px 0; }
 .pl-filter { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 32px 40px; padding-block: 28px 32px; }
-.pl-filter h4 { font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 10px; }
+.pl-filter legend { font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 10px; }
 .pl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .pl-pager { display: flex; justify-content: center; gap: 6px; margin-top: 80px; }
 .pl-pager button { min-width: 44px; height: 44px; border: 1px solid transparent; background: none; cursor: pointer; font-size: 13px; }

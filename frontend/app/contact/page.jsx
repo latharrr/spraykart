@@ -1,9 +1,9 @@
 export const metadata = {
-  title: 'Contact Us | Spraykart',
+  title: 'Contact Us',
   description: 'Get in touch with Spraykart. We are here to help with questions about our luxury fragrances, orders, returns, and more.',
   alternates: { canonical: '/contact' },
   openGraph: {
-    title: 'Contact Us | Spraykart',
+    title: 'Contact Us',
     description: 'Get in touch with Spraykart. We are here to help with your fragrance queries.',
     url: '/contact',
     type: 'website',

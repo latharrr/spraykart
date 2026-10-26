@@ -2,11 +2,11 @@ import db from '@/lib/db';
 import FaqClient from './FaqClient';
 
 export const metadata = {
-  title: 'Frequently Asked Questions | Spraykart',
+  title: 'Frequently Asked Questions',
   description: 'Find answers to common questions about Spraykart — shipping, returns, authenticity, payment, and more.',
   alternates: { canonical: '/faq' },
   openGraph: {
-    title: 'Frequently Asked Questions | Spraykart',
+    title: 'Frequently Asked Questions',
     description: 'Find answers to common questions about Spraykart — shipping, returns, authenticity, payment, and more.',
     url: '/faq',
     type: 'website',

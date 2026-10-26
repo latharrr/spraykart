@@ -69,6 +69,13 @@ export const useCartStore = create(
   )
 );
 
+// Bag drawer visibility — UI only, not persisted
+export const useBagUI = create((set) => ({
+  open: false,
+  openBag: () => set({ open: true }),
+  closeBag: () => set({ open: false }),
+}));
+
 // Reactive selector hooks — use these everywhere instead of destructuring getters
 export const useCartItemCount = () =>
   useCartStore((state) => state.items.reduce((sum, i) => sum + i.quantity, 0));

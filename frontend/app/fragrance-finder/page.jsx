@@ -117,29 +117,26 @@ export default function FragranceFinderPage() {
     return (
       <div style={{
         minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '60px 24px', background: '#fafaf8',
+        padding: '60px 24px', background: '#F6F4EF',
       }}>
         <div style={{ maxWidth: 520, textAlign: 'center' }}>
           <div style={{
             width: 72, height: 72, borderRadius: '50%',
-            background: '#0c0c0c', color: '#fff',
+            background: '#0D0D0D', color: '#fff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 28px',
           }}>
             <Sparkles size={28} />
           </div>
-          <span style={{ fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a0a0a0', display: 'block', marginBottom: 16 }}>
-            Premium Feature
-          </span>
-          <h1 style={{ fontFamily: "var(--font-serif, Georgia, serif)", fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 300, letterSpacing: '-0.02em', color: '#0c0c0c', lineHeight: 1.1, marginBottom: 16 }}>
-            Find Your<br /><em style={{ fontStyle: 'italic' }}>Perfect Fragrance</em>
+          <h1 className="t-display t-xl" style={{ color: '#0D0D0D', marginBottom: 16 }}>
+            Find your<br />fragrance
           </h1>
-          <p style={{ fontSize: 15, color: '#737373', lineHeight: 1.7, marginBottom: 40 }}>
-            Answer 5 quick questions and we'll recommend the ideal fragrance for you — from our curated collection of 100% authentic luxury scents.
+          <p style={{ fontSize: 15, color: '#55534D', lineHeight: 1.7, marginBottom: 40 }}>
+            Answer five questions about when you wear it and what you like, and we&apos;ll shortlist bottles from the house to try.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginBottom: 40 }}>
             {['5 Questions', '~2 Minutes', 'Personalised Results'].map(tag => (
-              <span key={tag} style={{ padding: '6px 14px', border: '1px solid #e8e8e8', borderRadius: 100, fontSize: 12, color: '#737373' }}>
+              <span key={tag} style={{ padding: '6px 14px', border: '1px solid #E2DFD8', borderRadius: 0, fontSize: 12, color: '#55534D' }}>
                 {tag}
               </span>
             ))}
@@ -161,33 +158,33 @@ export default function FragranceFinderPage() {
     return (
       <div style={{
         minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '60px 24px', background: '#fafaf8',
+        padding: '60px 24px', background: '#F6F4EF',
       }}>
         <div style={{ maxWidth: 480, textAlign: 'center' }}>
           <div style={{
             width: 72, height: 72, borderRadius: '50%',
-            background: '#0c0c0c', color: '#fff',
+            background: '#0D0D0D', color: '#fff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 28px',
           }}>
             <Check size={32} />
           </div>
-          <h2 style={{ fontFamily: "var(--font-serif, Georgia, serif)", fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 300, letterSpacing: '-0.02em', color: '#0c0c0c', lineHeight: 1.1, marginBottom: 16 }}>
+          <h2 style={{ fontFamily: "var(--font-serif, Georgia, serif)", fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 300, letterSpacing: '-0.02em', color: '#0D0D0D', lineHeight: 1.1, marginBottom: 16 }}>
             Your Fragrances<br /><em style={{ fontStyle: 'italic' }}>Are Ready</em>
           </h2>
-          <p style={{ fontSize: 15, color: '#737373', lineHeight: 1.7, marginBottom: 40 }}>
-            Based on your preferences, we've curated a personalised selection just for you. Explore and find your signature scent.
+          <p style={{ fontSize: 15, color: '#55534D', lineHeight: 1.7, marginBottom: 40 }}>
+            Based on your preferences, we&apos;ve curated a personalised selection just for you. Explore and find your signature scent.
           </p>
           {savingSubmission ? (
-            <p style={{ fontSize: 12, color: '#a0a0a0', marginBottom: 20 }}>Saving your quiz response...</p>
+            <p style={{ fontSize: 12, color: '#6E6B64', marginBottom: 20 }}>Saving your quiz response...</p>
           ) : null}
 
           {/* Answer summary */}
-          <div style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 4, padding: '20px 24px', marginBottom: 40, textAlign: 'left' }}>
+          <div style={{ background: '#fff', border: '1px solid #E2DFD8', borderRadius: 0, padding: '20px 24px', marginBottom: 40, textAlign: 'left' }}>
             {QUESTIONS.map(q => (
-              <div key={q.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0', fontSize: 13 }}>
-                <span style={{ color: '#737373' }}>{q.question.split('?')[0]}</span>
-                <span style={{ fontWeight: 600, color: '#0c0c0c' }}>
+              <div key={q.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #E2DFD8', fontSize: 13 }}>
+                <span style={{ color: '#55534D' }}>{q.question.split('?')[0]}</span>
+                <span style={{ fontWeight: 600, color: '#0D0D0D' }}>
                   {q.options.find(o => o.value === answers[q.id])?.label || '—'}
                 </span>
               </div>
@@ -212,20 +209,20 @@ export default function FragranceFinderPage() {
   }
 
   return (
-    <div style={{ minHeight: '80vh', background: '#fafaf8', padding: '48px 24px' }}>
+    <div style={{ minHeight: '80vh', background: '#F6F4EF', padding: '48px 24px' }}>
       <div style={{ maxWidth: 600, margin: '0 auto' }}>
 
         {/* Progress bar */}
         <div style={{ marginBottom: 48 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a0a0a0' }}>
+            <span style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6E6B64' }}>
               Question {step + 1} of {QUESTIONS.length}
             </span>
-            <span style={{ fontSize: 11, color: '#a0a0a0' }}>{Math.round(progress)}% complete</span>
+            <span style={{ fontSize: 11, color: '#6E6B64' }}>{Math.round(progress)}% complete</span>
           </div>
-          <div style={{ height: 2, background: '#e8e8e8', borderRadius: 1 }}>
+          <div style={{ height: 2, background: '#E2DFD8', borderRadius: 0 }}>
             <div style={{
-              height: '100%', background: '#0c0c0c', borderRadius: 1,
+              height: '100%', background: '#0D0D0D', borderRadius: 0,
               width: `${progress}%`,
               transition: 'width 0.3s ease',
             }} />
@@ -234,14 +231,14 @@ export default function FragranceFinderPage() {
 
         {/* Question */}
         <div style={{ marginBottom: 40 }}>
-          <p style={{ fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#a0a0a0', marginBottom: 12 }}>
+          <p style={{ fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6E6B64', marginBottom: 12 }}>
             {current.subtitle}
           </p>
           <h2 style={{
             fontFamily: "var(--font-serif, Georgia, serif)",
             fontSize: 'clamp(24px, 4vw, 38px)',
             fontWeight: 300, letterSpacing: '-0.02em',
-            color: '#0c0c0c', lineHeight: 1.2,
+            color: '#0D0D0D', lineHeight: 1.2,
           }}>
             {current.question}
           </h2>
@@ -257,10 +254,10 @@ export default function FragranceFinderPage() {
                 onClick={() => handleSelect(opt.value)}
                 style={{
                   padding: '20px 16px',
-                  border: `2px solid ${selected ? '#0c0c0c' : '#e8e8e8'}`,
-                  borderRadius: 4,
-                  background: selected ? '#0c0c0c' : '#fff',
-                  color: selected ? '#fff' : '#0c0c0c',
+                  border: `2px solid ${selected ? '#0D0D0D' : '#E2DFD8'}`,
+                  borderRadius: 0,
+                  background: selected ? '#0D0D0D' : '#fff',
+                  color: selected ? '#fff' : '#0D0D0D',
                   cursor: 'pointer',
                   textAlign: 'left',
                   transition: 'all 0.15s',
@@ -280,7 +277,7 @@ export default function FragranceFinderPage() {
             onClick={() => setStep(s => s - 1)}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              fontSize: 12, color: '#737373',
+              fontSize: 12, color: '#55534D',
               background: 'none', border: 'none', cursor: 'pointer',
               letterSpacing: '0.06em',
             }}

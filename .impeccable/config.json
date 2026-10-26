@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "hero-eyebrow-chip",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/organ.html"
+        ],
+        "createdAt": "2026-10-26T18:32:55.301Z",
+        "reason": "decision-round sketch, gitignored, never shipped"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/cabinet.html"
+        ],
+        "createdAt": "2026-10-26T18:32:55.315Z",
+        "reason": "decision-round sketch, gitignored, never shipped"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/flagship.html"
+        ],
+        "createdAt": "2026-10-26T18:32:55.328Z",
+        "reason": "decision-round sketch of the chosen world's bone ground; gitignored, never shipped"
+      }
+    ]
+  }
+}

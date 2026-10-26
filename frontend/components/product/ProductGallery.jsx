@@ -1,68 +1,51 @@
 'use client';
 import Image from 'next/image';
-import { useState } from 'react';
-import { ZoomIn } from 'lucide-react';
-import Modal from '@/components/ui/Modal';
+import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
+import { sizedImage } from '@/lib/shop';
 
-export default function ProductGallery({ images = [] }) {
-  const [active, setActive] = useState(0);
-  const [lightbox, setLightbox] = useState(false);
+export default function ProductGallery({ images = [], name = 'Product' }) {
+  const [zoom, setZoom] = useState(null);
 
-  const activeImage = images[active];
+  useEffect(() => {
+    if (zoom === null) return undefined;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e) => e.key === 'Escape' && setZoom(null);
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [zoom]);
+
+  if (!images.length) {
+    return <div className="pd__gallery"><div className="pd__shot" style={{ display: 'grid', placeItems: 'center', cursor: 'default' }}><span className="t-label t-mute-3">Image soon</span></div></div>;
+  }
 
   return (
     <>
-      <div className="flex flex-col gap-4">
-        {/* Main image */}
-        <div
-          className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden cursor-zoom-in group"
-          onClick={() => activeImage && setLightbox(true)}
-        >
-          {activeImage ? (
-            <>
-              <Image
-                src={activeImage.url}
-                alt="Product image"
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition flex items-center justify-center">
-                <ZoomIn size={24} className="text-white opacity-0 group-hover:opacity-100 transition drop-shadow" />
-              </div>
-            </>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-300">No image</div>
-          )}
-        </div>
-
-        {/* Thumbnail strip */}
-        {images.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {images.map((img, i) => (
-              <button
-                key={img.id}
-                onClick={() => setActive(i)}
-                className={`relative shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition ${
-                  i === active ? 'border-black' : 'border-transparent hover:border-gray-200'
-                }`}
-              >
-                <Image src={img.url} alt={`View ${i + 1}`} fill sizes="64px" className="object-cover" />
-              </button>
-            ))}
-          </div>
-        )}
+      <div className="pd__gallery" aria-label={`${name} images`}>
+        {images.map((img, i) => (
+          <button key={img.id || img.url} type="button" className="pd__shot" onClick={() => setZoom(i)} aria-label={`Enlarge image ${i + 1} of ${name}`}>
+            <Image src={sizedImage(img.url, 1400)} alt={i === 0 ? name : ''} fill priority={i === 0} sizes="(max-width: 1023px) 86vw, 54vw" />
+          </button>
+        ))}
       </div>
 
-      {/* Lightbox */}
-      <Modal isOpen={lightbox} onClose={() => setLightbox(false)} size="xl" title="">
-        {activeImage && (
-          <div className="relative aspect-square w-full">
-            <Image src={activeImage.url} alt="Product zoom" fill className="object-contain" />
+      {zoom !== null && (
+        <div role="dialog" aria-modal="true" aria-label={`${name}, enlarged`} style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'var(--bone)', display: 'grid' }}>
+          <button className="h-close" onClick={() => setZoom(null)} aria-label="Close" style={{ position: 'absolute', top: 16, right: 28, zIndex: 2 }}><X size={22} strokeWidth={1.25} /></button>
+          <div style={{ position: 'relative', margin: '64px var(--gutter)' }}>
+            <Image src={sizedImage(images[zoom].url, 2000)} alt={name} fill sizes="100vw" style={{ objectFit: 'contain' }} />
           </div>
-        )}
-      </Modal>
+          {images.length > 1 && (
+            <div style={{ position: 'absolute', bottom: 20, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 20 }}>
+              {images.map((img, i) => (
+                <button key={img.url} type="button" className="t-label tabular" onClick={() => setZoom(i)} aria-current={i === zoom} style={{ background: 'none', border: 0, cursor: 'pointer', opacity: i === zoom ? 1 : 0.5, minHeight: 44 }}>
+                  {String(i + 1).padStart(2, '0')}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }

@@ -1,76 +1,48 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/lib/store';
-import { User, Mail, Shield, Package } from 'lucide-react';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { useAuthStore, useWishlistCount } from '@/lib/store';
 
 export default function AccountPage() {
   const { user, logout } = useAuthStore();
+  const saved = useWishlistCount();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
-
-  useEffect(() => { 
-    if (mounted && !user) router.push('/login'); 
+  useEffect(() => {
+    if (mounted && !user) router.push('/login?redirect=/account');
   }, [user, router, mounted]);
-  
+
   if (!mounted || !user) return null;
 
+  const rows = [
+    { href: '/orders', title: 'Orders', note: 'Track deliveries and download GST invoices.' },
+    { href: '/wishlist', title: `Saved${saved ? ` (${saved})` : ''}`, note: 'Bottles you are deciding on.' },
+    { href: '/fragrance-finder', title: 'Finder', note: 'Five questions, a shortlist made for you.' },
+    ...(user.role === 'admin' ? [{ href: '/admin', title: 'Admin', note: 'Products, orders and content.' }] : []),
+  ];
+
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
-      <h1 className="text-2xl font-bold mb-8">My Account</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Profile card */}
-        <div className="card p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-600">
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900">{user.name}</p>
-              <p className="text-sm text-gray-500">{user.email}</p>
-            </div>
-          </div>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-center gap-3 text-gray-600">
-              <User size={15} className="text-gray-400" />
-              <span className="capitalize">{user.role}</span>
-            </div>
-            <div className="flex items-center gap-3 text-gray-600">
-              <Mail size={15} className="text-gray-400" />
-              <span>{user.email}</span>
-            </div>
-            <div className="flex items-center gap-3 text-gray-600">
-              <Shield size={15} className="text-gray-400" />
-              <span className="text-green-600 font-medium">Account active</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick links */}
-        <div className="card p-6 space-y-3">
-          <h2 className="font-semibold text-gray-900 mb-4">Quick Links</h2>
-          <Link href="/orders" className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition text-sm text-gray-700">
-            <Package size={16} className="text-gray-400" />
-            My Orders
+    <>
+      <header className="h-wrap pg-head">
+        <h1 className="t-display t-xl">{user.name?.split(' ')[0] || 'Account'}</h1>
+        <p className="t-body t-mute" style={{ marginTop: 16 }}>{user.email}</p>
+      </header>
+      <section className="h-wrap" style={{ paddingBlock: '24px 120px', maxWidth: 1100, marginInline: 0 }}>
+        {rows.map((r) => (
+          <Link key={r.href} href={r.href} style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 24, padding: '28px 0', borderBottom: '1px solid var(--line)' }}>
+            <span style={{ display: 'grid', gap: 6 }}>
+              <span className="t-display t-m">{r.title}</span>
+              <span className="t-small t-mute">{r.note}</span>
+            </span>
+            <ArrowRight size={18} strokeWidth={1.25} />
           </Link>
-          {user.role === 'admin' && (
-            <Link href="/admin" className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition text-sm font-medium text-black">
-              <Shield size={16} />
-              Admin Dashboard
-            </Link>
-          )}
-          <button
-            onClick={logout}
-            className="w-full text-left flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 transition text-sm text-red-600 border-t border-gray-100 mt-4 pt-4"
-          >
-            Sign out
-          </button>
-        </div>
-      </div>
-    </div>
+        ))}
+        <button type="button" className="h-link" style={{ marginTop: 40 }} onClick={() => { logout(); router.push('/'); }}>Sign out</button>
+      </section>
+    </>
   );
 }

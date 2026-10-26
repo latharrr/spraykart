@@ -1,17 +1,20 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import toast from 'react-hot-toast';
 import { login } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
-import toast from 'react-hot-toast';
-import Link from 'next/link';
 import Spinner from '@/components/ui/Spinner';
+import AuthShell, { safeRedirect } from '@/components/layout/AuthShell';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const params = useSearchParams();
   const { setUser } = useAuthStore();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const next = safeRedirect(params.get('redirect'), null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,132 +22,36 @@ export default function LoginPage() {
     try {
       const { data } = await login(form);
       setUser(data.user);
-      const firstName = data.user?.name?.split(' ')[0] || 'there';
-      toast.success(`Welcome back, ${firstName}!`);
-      router.push(data.user?.role === 'admin' ? '/admin' : '/');
+      toast.success(`Welcome back, ${data.user?.name?.split(' ')[0] || 'there'}`);
+      router.push(next || (data.user?.role === 'admin' ? '/admin' : '/'));
     } catch (err) {
-      toast.error(err?.error || 'Invalid email or password');
+      toast.error(err?.error || "That email and password don't match. Try again or reset your password.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#fafaf8' }}>
-      {/* Left panel — brand */}
-      <div
-        className="hidden lg:flex"
-        style={{
-          flex: 1,
-          background: '#0c0c0c',
-          padding: '80px 64px',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Link href="/" style={{ textDecoration: 'none' }}>
-          <span style={{ fontFamily: "'Cormorant', Georgia, serif", fontSize: 26, fontWeight: 500, color: '#ffffff', letterSpacing: '-0.02em' }}>
-            Spray<em style={{ fontStyle: 'italic', fontWeight: 300 }}>kart</em>
-          </span>
-        </Link>
-
-        <div>
-          <p style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 24 }}>Est. 2024 · India</p>
-          <h2 style={{ fontFamily: "'Cormorant', Georgia, serif", fontSize: 48, fontWeight: 300, color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: 16 }}>
-            India&apos;s most<br />trusted luxury<br />fragrance store.
-          </h2>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', lineHeight: 1.8 }}>
-            100% authentic perfumes, attars &amp; niche fragrances.<br />
-            Sourced from authorised distributors · Pan-India delivery.
-          </p>
-        </div>
-
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,.15)', letterSpacing: '0.1em' }}>
-          © {new Date().getFullYear()} Spraykart
-        </p>
-      </div>
-
-      {/* Right panel — form */}
-      <div className="flex-1 lg:flex-none lg:w-[480px] flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-[380px]">
-          {/* Mobile logo */}
-          <Link href="/" className="lg:hidden" style={{ display: 'inline-block', marginBottom: 32, textDecoration: 'none' }}>
-            <span style={{ fontFamily: "'Cormorant', Georgia, serif", fontSize: 24, fontWeight: 500, color: '#0c0c0c' }}>
-              Spray<em style={{ fontStyle: 'italic', fontWeight: 300 }}>kart</em>
-            </span>
-          </Link>
-
-          <p style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a0a0a0', marginBottom: 12 }}>Welcome back</p>
-          <h1 style={{ fontFamily: "'Cormorant', Georgia, serif", fontSize: 36, fontWeight: 400, color: '#0c0c0c', marginBottom: 36, letterSpacing: '-0.01em' }}>
-            Sign in to your account
-          </h1>
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div>
-              <label htmlFor="login-email" style={{ display: 'block', fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#737373', marginBottom: 8 }}>
-                Email address
-              </label>
-              <input
-                id="login-email"
-                type="email"
-                placeholder="you@example.com"
-                className="input"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                required
-                autoComplete="email"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="login-password" style={{ display: 'block', fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#737373', marginBottom: 8 }}>
-                Password
-              </label>
-              <input
-                id="login-password"
-                type="password"
-                placeholder="••••••••"
-                className="input"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                required
-                autoComplete="current-password"
-              />
-            </div>
-
-            <div style={{ textAlign: 'right', marginTop: -8 }}>
-              <Link href="/forgot-password" style={{ fontSize: 12, color: '#737373', textDecoration: 'underline', textUnderlineOffset: 3 }}>
-                Forgot password?
-              </Link>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary"
-              style={{ width: '100%', padding: '14px', marginTop: 4, fontSize: 11, letterSpacing: '0.1em' }}
-            >
-              {loading ? <><Spinner size="sm" /> Signing in...</> : 'Sign In'}
-            </button>
-          </form>
-
-          <div style={{ marginTop: 32, paddingTop: 28, borderTop: '1px solid #eeeeee' }}>
-            <p style={{ fontSize: 13, color: '#737373', textAlign: 'center' }}>
-              Don&apos;t have an account?{' '}
-              <Link href="/register" style={{ color: '#0c0c0c', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3 }}>
-                Create account
-              </Link>
-            </p>
-          </div>
-
-          {/* Trust signals */}
-          <div style={{ marginTop: 40, display: 'flex', gap: 16, justifyContent: 'center' }}>
-            {['100% Authentic', 'Razorpay Secured', 'Pan-India Delivery'].map(s => (
-              <span key={s} style={{ fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#c0c0c0' }}>{s}</span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+    <AuthShell title="Sign in" lede="For your orders, saved bottles and faster checkout.">
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 18 }}>
+        <label className="h-field">
+          <span>Email</span>
+          <input id="login-email" type="email" className="input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required autoComplete="email" />
+        </label>
+        <label className="h-field">
+          <span>Password</span>
+          <input id="login-password" type="password" className="input" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required autoComplete="current-password" />
+        </label>
+        <Link href="/forgot-password" className="h-textlink t-small" style={{ justifySelf: 'end' }}>Forgot password?</Link>
+        <button type="submit" disabled={loading} className="h-btn h-btn--block">{loading ? <><Spinner size="sm" /> Signing in</> : 'Sign in'}</button>
+      </form>
+      <p className="t-small t-mute" style={{ borderTop: '1px solid var(--line)', paddingTop: 22 }}>
+        New to Spraykart? <Link href={next ? `/register?redirect=${encodeURIComponent(next)}` : '/register'} className="h-textlink" style={{ color: 'var(--ink)' }}>Create an account</Link>
+      </p>
+    </AuthShell>
   );
+}
+
+export default function LoginPage() {
+  return <Suspense fallback={null}><LoginForm /></Suspense>;
 }

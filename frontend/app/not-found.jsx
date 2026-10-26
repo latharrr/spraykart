@@ -5,21 +5,21 @@ const categories = ['Men', 'Women', 'Unisex', 'Attar', 'Gift Sets'];
 
 export default function NotFound() {
   return (
-    <div className="min-h-[72vh] bg-[#faf9f7]">
+    <div className="min-h-[72vh] bg-[#F6F4EF]">
       <div className="max-w-5xl mx-auto px-4 py-16 md:py-24">
         <p className="section-label">404</p>
         <div className="grid md:grid-cols-[1.2fr_.8fr] gap-10 items-start">
           <div>
-            <h1 className="serif text-5xl md:text-7xl font-medium leading-none text-[#0c0c0c]">
+            <h1 className="t-display t-xl">
               This trail went cold.
             </h1>
-            <p className="mt-5 text-sm md:text-base text-[#737373] max-w-xl">
+            <p className="mt-5 text-sm md:text-base text-[#55534D] max-w-xl">
               The page may have moved, but the collection is still close by. Search the store or jump into a popular category.
             </p>
 
             <form action="/products" className="mt-8 max-w-lg">
               <label htmlFor="not-found-search" className="sr-only">Search fragrances</label>
-              <div className="flex bg-white border border-[#0c0c0c]">
+              <div className="flex bg-white border border-[#0D0D0D]">
                 <div className="min-w-[44px] min-h-[44px] flex items-center justify-center">
                   <Search size={18} />
                 </div>
@@ -42,14 +42,14 @@ export default function NotFound() {
             </div>
           </div>
 
-          <div className="bg-white border border-[#e8e8e8] p-6">
-            <h2 className="text-xs uppercase tracking-[0.16em] font-semibold text-[#737373]">Popular Categories</h2>
+          <div className="bg-white border border-[#E2DFD8] p-6">
+            <h2 className="text-xs uppercase tracking-[0.16em] font-semibold text-[#55534D]">Popular Categories</h2>
             <div className="mt-5 grid gap-2">
               {categories.map((category) => (
                 <Link
                   key={category}
                   href={`/products?category=${encodeURIComponent(category)}`}
-                  className="min-h-[44px] flex items-center justify-between border-b border-[#f2f2f2] text-sm hover:text-[#b8922a] transition"
+                  className="min-h-[44px] flex items-center justify-between border-b border-[#EAE8E3] text-sm hover:text-[#5B1F2A] transition"
                 >
                   <span>{category}</span>
                   <span aria-hidden="true">/</span>

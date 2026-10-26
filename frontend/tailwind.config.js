@@ -1,4 +1,20 @@
 /** @type {import('tailwindcss').Config} */
+
+// Neutrals run from bone to ink so every utility-styled page sits in the house palette.
+const stone = {
+  50:  '#F6F4EF',
+  100: '#EFEDE7',
+  200: '#E2DFD8',
+  300: '#CFCCC4',
+  400: '#8F8C85',
+  500: '#6E6B64',
+  600: '#55534D',
+  700: '#3F3D39',
+  800: '#2A2926',
+  900: '#161513',
+  950: '#0D0D0D',
+};
+
 module.exports = {
   content: [
     './app/**/*.{js,jsx,ts,tsx}',
@@ -8,16 +24,24 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-text)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-display)', 'Georgia', 'serif'],
+        display: ['var(--font-display)', 'Georgia', 'serif'],
       },
       colors: {
+        gray: stone,
+        neutral: stone,
+        bone: '#F6F4EF',
+        paper: '#EAE8E3',
+        ink: '#0D0D0D',
+        merlot: { DEFAULT: '#5B1F2A', 600: '#4A1922' },
         brand: {
-          50:  '#f0f9ff',
-          100: '#e0f2fe',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          900: '#0c4a6e',
+          50:  '#F4EDEE',
+          100: '#E8D9DC',
+          500: '#5B1F2A',
+          600: '#4A1922',
+          700: '#3B141B',
+          900: '#230B10',
         },
       },
       animation: {

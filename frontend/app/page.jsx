@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { ArrowRight } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
-import FadeUp from '@/components/FadeUp';
-import WhyAccordion, { BrandScroll } from '@/components/WhyAccordion';
+import HomeHero from '@/components/home/HomeHero';
+import { TIERS, tierOf } from '@/lib/houses';
 import db from '@/lib/db';
 import cache from '@/lib/cache';
 import logger from '@/lib/logger';
-import { hasUsableDatabaseUrl } from '@/lib/env';
+import { hasUsableDatabaseUrl, SITE_URL } from '@/lib/env';
 
 export const dynamic = 'force-static';
 export const revalidate = 3600;
@@ -14,15 +15,15 @@ export const revalidate = 3600;
 const HOME_FETCH_TIMEOUT_MS = 2500;
 
 export const metadata = {
-  title: 'Spraykart - Luxury Fragrances at Accessible Prices',
-  description: "India's most trusted luxury fragrance platform. 100% authentic perfumes, attars & niche fragrances. Free shipping above ₹999. Pan-India delivery.",
+  title: { absolute: 'Spraykart — Original Designer & Niche Perfumes and Attars in India' },
+  description: 'Designer and niche perfumes and Indian attars, every bottle an original with a GST invoice. Try most as a 10 ml decant. Free delivery above ₹999 across India.',
   alternates: { canonical: '/' },
   openGraph: {
-    title: 'Spraykart - Luxury Fragrances at Accessible Prices',
-    description: "India's most trusted luxury fragrance platform. 100% authentic perfumes, attars & niche fragrances.",
+    title: 'Spraykart — Original Designer & Niche Perfumes and Attars',
+    description: 'Designer and niche perfumes and Indian attars, every bottle an original with a GST invoice.',
     url: '/',
     type: 'website',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Spraykart - Luxury Fragrances' }],
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Spraykart' }],
   },
 };
 
@@ -59,23 +60,24 @@ async function getFeaturedProducts() {
   if (!hasUsableDatabaseUrl()) return [];
 
   try {
-    const cached = await getHomeCache('products:featured:home');
+    const cached = await getHomeCache('products:featured:home:v2');
     if (cached) return cached;
 
     const { rows } = await withHomeTimeout(db.query(`
       WITH featured AS (
         SELECT * FROM products WHERE is_active = true
-        ORDER BY is_featured DESC, created_at DESC LIMIT 8
+        ORDER BY is_featured DESC, created_at DESC LIMIT 9
       )
       SELECT featured.*,
         (SELECT url FROM product_images WHERE product_id = featured.id AND is_primary = true LIMIT 1) AS image,
         (SELECT url FROM product_images WHERE product_id = featured.id AND is_primary = false ORDER BY sort_order ASC LIMIT 1) AS second_image,
+        (SELECT value FROM variants WHERE product_id = featured.id AND type = 'size' AND price_modifier = 0 LIMIT 1) AS base_size,
         (SELECT COALESCE(AVG(rating), 0)::NUMERIC(3,1) FROM reviews WHERE product_id = featured.id AND is_approved = true) AS avg_rating,
         (SELECT COUNT(id) FROM reviews WHERE product_id = featured.id AND is_approved = true) AS review_count
-      FROM featured ORDER BY featured.created_at DESC
+      FROM featured ORDER BY featured.is_featured DESC, featured.created_at DESC
     `), 'Featured products query');
 
-    await setHomeCache('products:featured:home', rows, 3600);
+    await setHomeCache('products:featured:home:v2', rows, 3600);
     return rows;
   } catch (err) {
     logger.error('Failed to fetch featured products:', err);
@@ -83,14 +85,8 @@ async function getFeaturedProducts() {
   }
 }
 
-const fallbackTestimonials = [
-  { name: 'Ananya Sharma', city: 'Mumbai', rating: 5, text: 'Finally found 100% authentic luxury fragrances online. The scent lasts all day and packaging was flawless.' },
-  { name: 'Rahul Mehta', city: 'Bangalore', rating: 5, text: 'Ordered a Creed fragrance and it arrived with a GST invoice and authenticity details. Perfect.' },
-  { name: 'Priya Nair', city: 'Chennai', rating: 5, text: 'Their team helped me pick the right fragrance for a wedding gift. The service felt personal and premium.' },
-];
-
 async function getTestimonials() {
-  if (!hasUsableDatabaseUrl()) return fallbackTestimonials;
+  if (!hasUsableDatabaseUrl()) return [];
 
   try {
     const cached = await getHomeCache('testimonials:home');
@@ -103,13 +99,13 @@ async function getTestimonials() {
       ORDER BY sort_order ASC, created_at DESC
       LIMIT 3
     `), 'Testimonials query');
-    const result = rows.length > 0 ? rows : fallbackTestimonials;
+    const result = rows;
 
     await setHomeCache('testimonials:home', result, 3600);
     return result;
   } catch (err) {
     logger.error('Failed to fetch testimonials:', err);
-    return fallbackTestimonials;
+    return [];
   }
 }
 
@@ -137,39 +133,64 @@ async function getHomeHeroImage() {
   }
 }
 
+async function getDepartmentImages() {
+  if (!hasUsableDatabaseUrl()) return {};
+
+  try {
+    const cached = await getHomeCache('homepage:departments:v3');
+    if (cached) return cached;
+
+    const { rows } = await withHomeTimeout(db.query(`
+      SELECT p.category, p.brand, i.url
+      FROM products p
+      JOIN product_images i ON i.product_id = p.id AND i.is_primary = true
+      WHERE p.is_active = true
+      ORDER BY p.is_featured DESC, p.created_at DESC
+    `), 'Department images query');
+    // Every candidate per department, best first; the page picks one that isn't already on screen.
+    const result = {};
+    for (const r of rows) {
+      const key = tierOf(r) || r.category;
+      (result[key] ||= []).push(r.url);
+    }
+
+    await setHomeCache('homepage:departments:v3', result, 3600);
+    return result;
+  } catch (err) {
+    logger.warn('Department images skipped:', err);
+    return {};
+  }
+}
+
+const departments = [
+  { key: 'designer', href: '/products?tier=designer', title: TIERS.designer.label, line: TIERS.designer.line },
+  { key: 'niche', href: '/products?tier=niche', title: TIERS.niche.label, line: TIERS.niche.line },
+  { key: 'Attar', href: '/products?category=Attar', title: 'Attar', line: 'Perfume oils without alcohol: oud, rose and musk, worn close to the skin.' },
+  { key: 'Gift Sets', href: '/products?category=Gift+Sets', title: 'Gifts', line: 'Discovery sets and boxed bottles, ready to give.' },
+];
+
 const faqs = [
-  { q: 'Are the fragrances 100% authentic?', a: 'Yes. Every product undergoes source verification, product inspection including packaging and batch codes, and a final pre-listing authenticity check by our experts.' },
-  { q: 'What are the shipping timelines?', a: 'Standard delivery takes 3-7 business days. Spraykart ships pan-India, including tier-2 and tier-3 cities, with free shipping on orders above ₹999.' },
-  { q: 'What payment methods do you accept?', a: "We accept major credit and debit cards, UPI, net banking, and wallets through Razorpay, India's trusted payment gateway." },
-  { q: 'How do I track my order?', a: 'Once dispatched, you will receive tracking details by email. You can also track your order from the Orders page in your account.' },
-  { q: 'What is your return policy?', a: 'We support returns for damaged, defective, or incorrect products. If something feels off, contact support with your order ID and product photos.' },
+  { q: 'Are the fragrances original?', a: 'Yes. Every bottle is sourced as an original, its batch code is checked before listing, and every order ships with a GST invoice.' },
+  { q: 'How long does delivery take?', a: 'Standard delivery takes 3 to 7 business days across India, including tier-2 and tier-3 cities. Delivery is free above ₹999.' },
+  { q: 'Which payment methods can I use?', a: 'UPI, credit and debit cards, net banking and wallets through Razorpay or Paytm, or cash on delivery on orders up to ₹2,999.' },
+  { q: 'What is a decant?', a: 'A decant is the same original perfume, poured from a sealed bottle into a 10 ml atomiser. It lets you wear a scent for a week or two before buying the full bottle.' },
+  { q: 'What if a bottle arrives damaged?', a: 'Report it within 48 hours of delivery with your order ID and photos, and we will replace or refund it. Opened bottles cannot be returned for a change of mind.' },
 ];
 
-const trustItems = [
-  { icon: '🧾', title: '100% Authentic', sub: 'Invoice + batch verified' },
-  { icon: '🌍', title: 'Directly Exported', sub: 'International markets' },
-  { icon: '⭐', title: 'Verified Reviews', sub: 'Real customers' },
-  { icon: '🎁', title: 'Gift Hampers', sub: 'Curated sets' },
-];
-
-const microTrust = [
-  { icon: '🏷', text: 'Invoice-backed originals' },
-  { icon: '📦', text: 'Free shipping ₹999+' },
-  { icon: '💬', text: 'WhatsApp support' },
-];
-
-const pledgeStats = [
-  { number: '100%', label: 'Authentic Products' },
-  { number: '7-Day', label: 'Free Returns' },
-  { number: '10,000+', label: 'Happy Customers' },
+const proof = [
+  { title: 'Originals only', body: 'Sourced as originals and batch-code checked before they are listed.' },
+  { title: 'GST invoice', body: 'Every order ships with a tax invoice in your name.' },
+  { title: 'Free delivery over ₹999', body: 'Across India, with tracking from dispatch to door.' },
+  { title: 'Cash on delivery', body: 'Pay at your door on orders up to ₹2,999, or online by UPI and cards.' },
 ];
 
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Spraykart',
-  url: 'https://spraykart.in',
-  logo: 'https://spraykart.in/logo.png',
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo.png`,
+  sameAs: ['https://www.instagram.com/spraykart'],
   contactPoint: { '@type': 'ContactPoint', contactType: 'customer support', email: 'support@spraykart.in', availableLanguage: ['English', 'Hindi'] },
 };
 
@@ -177,8 +198,8 @@ const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Spraykart',
-  url: 'https://spraykart.in',
-  potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: 'https://spraykart.in/products?search={search_term_string}' }, 'query-input': 'required name=search_term_string' },
+  url: SITE_URL,
+  potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: `${SITE_URL}/products?search={search_term_string}` }, 'query-input': 'required name=search_term_string' },
 };
 
 const faqSchema = {
@@ -187,274 +208,177 @@ const faqSchema = {
   mainEntity: faqs.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
 };
 
-function Stars({ count = 5, className = '' }) {
-  return (
-    <span className={className} aria-label={`${count} star rating`}>
-      {Array.from({ length: count }).map((_, i) => (
-        <span key={i} aria-hidden="true">★</span>
-      ))}
-    </span>
-  );
+function splitNotes(value) {
+  return String(value || '').split(',').map((n) => n.trim()).filter(Boolean).join(', ');
 }
 
 export default async function HomePage() {
-  const [featuredProducts, testimonials, homeHeroImage] = await Promise.all([
+  const [featuredProducts, testimonials, homeHeroImage, deptImages] = await Promise.all([
     getFeaturedProducts(),
     getTestimonials(),
     getHomeHeroImage(),
+    getDepartmentImages(),
   ]);
 
+  const look = featuredProducts.find((p) => p.image);
+  const arrivals = featuredProducts;
+  const attar = featuredProducts.find((p) => p.category === 'Attar' && p.image);
+  const houseImage = homeHeroImage?.url || featuredProducts.find((p) => p.category === 'Gift Sets' && p.image)?.image || featuredProducts[3]?.image;
+  const others = arrivals.filter((p) => p.id !== look?.id);
+  // Fill whole rows of four on desktop
+  const arrivalsList = others.slice(0, others.length >= 8 ? 8 : 4);
+  // Department tiles never repeat the hero bottle or the first row of arrivals.
+  const onScreen = new Set([look?.image, ...arrivalsList.slice(0, 4).map((p) => p.image)].filter(Boolean));
+  const deptImage = (key) => {
+    const options = deptImages[key] || [];
+    const pick = options.find((u) => !onScreen.has(u)) || options[0];
+    if (pick) onScreen.add(pick);
+    return pick;
+  };
+
   return (
-    <div className="home-new">
+    <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
-      <section className="home-hero" aria-labelledby="home-hero-title">
-        <div className="hero-new-grid home-container">
-          <div className="home-hero-left">
-            <p className="home-eyebrow-pill">✦ Invoice-Backed · Batch Verified · Exported Original</p>
-            <h1 id="home-hero-title" className="home-hero-title">
-              Luxury Fragrances.<br />
-              <em>Real Prices.</em>
-            </h1>
-            <p className="home-hero-copy">
-              Shop Dior, Creed, YSL, Maison Margiela — imported directly, verified by batch code, delivered pan-India.
-            </p>
-            <div className="home-cta-row">
-              <Link href="/products" className="btn-dark">Shop Collection →</Link>
-              <Link href="/fragrance-finder" className="btn-ghost-dark">Find My Scent</Link>
-            </div>
-            <div className="home-trust-micros" aria-label="Spraykart trust signals">
-              {microTrust.map(({ icon, text }) => (
-                <span key={text} className="home-micro-pill">
-                  <span aria-hidden="true">{icon}</span>
-                  {text}
-                </span>
-              ))}
-            </div>
-          </div>
+      {look ? (
+        <HomeHero look={look} />
+      ) : (
+        <section className="h-wrap h-section">
+          <h1 className="t-display t-hero">Designer, niche and attar.</h1>
+          <Link href="/products" className="h-btn" style={{ marginTop: 40 }}>Shop fragrances</Link>
+        </section>
+      )}
 
-          <div className="hero-new-right">
-            <div className="home-hero-art">
-              {homeHeroImage?.url ? (
-                <Image
-                  src={homeHeroImage.url}
-                  alt={homeHeroImage.alt || 'Luxury imported perfumes at Spraykart'}
-                  fill
-                  priority
-                  sizes="(min-width: 768px) 45vw, 0vw"
-                  className="home-hero-image"
-                />
-              ) : (
-                <>
-                  {/* TODO: replace with actual product/lifestyle image */}
-                  <div className="home-hero-art-glow" />
-                </>
-              )}
-              <div className="home-hero-badge">
-                <span className="home-hero-badge-kicker">UP TO</span>
-                <span className="home-hero-badge-number">40% off MRP</span>
+      <nav className="hp-depts" aria-label="Departments">
+        {departments.map((d) => {
+          const img = deptImage(d.key);
+          return (
+            <Link key={d.key} href={d.href} className="hp-dept">
+              <div className="hp-dept__img">
+                {img && <Image src={img} alt="" fill sizes="(max-width: 599px) 38vw, (max-width: 1023px) 50vw, 25vw" style={{ objectFit: 'cover' }} />}
               </div>
+              <div className="hp-dept__copy">
+                <h2 className="t-display t-m">{d.title}</h2>
+                <p className="t-small t-mute">{d.line}</p>
+                <span className="h-link">Shop {d.title.toLowerCase()} <ArrowRight size={14} strokeWidth={1.25} /></span>
+              </div>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {arrivals.length > 0 && (
+        <section className="h-wrap h-section" aria-labelledby="arrivals-title">
+          <div className="hp-head">
+            <h2 id="arrivals-title" className="t-display t-xl">New to the house</h2>
+            <Link href="/products" className="h-link">All fragrances <ArrowRight size={14} strokeWidth={1.25} /></Link>
+          </div>
+          <div className="h-grid">
+            {arrivalsList.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {attar && (
+        <section className="hp-look h-inverse" aria-labelledby="attar-title">
+          <div className="hp-look__img">
+            <Image src={attar.image} alt={attar.name} fill sizes="(max-width: 1023px) 100vw, 50vw" style={{ objectFit: 'cover' }} />
+          </div>
+          <div className="hp-look__copy">
+            <h2 id="attar-title" className="t-display t-xl">{attar.name}</h2>
+            <p className="t-body" style={{ color: 'var(--on-ink-2)' }}>
+              Attar is perfume in its oldest Indian form: concentrated oil, no alcohol, warmed by the skin. It sits on the same shelf here as Dior and Creed, because it belongs there.
+            </p>
+            {(attar.top_notes || attar.heart_notes || attar.base_notes) && (
+              <dl className="hp-notes">
+                {attar.top_notes && (<><dt>Top</dt><dd>{splitNotes(attar.top_notes)}</dd></>)}
+                {attar.heart_notes && (<><dt>Heart</dt><dd>{splitNotes(attar.heart_notes)}</dd></>)}
+                {attar.base_notes && (<><dt>Base</dt><dd>{splitNotes(attar.base_notes)}</dd></>)}
+              </dl>
+            )}
+            <div style={{ display: 'flex', gap: 28, alignItems: 'center', flexWrap: 'wrap' }}>
+              <Link href={`/products/${attar.slug}`} className="h-btn h-btn--light">View the attar</Link>
+              <Link href="/products?category=Attar" className="h-link">All attars <ArrowRight size={14} strokeWidth={1.25} /></Link>
             </div>
+          </div>
+        </section>
+      )}
+
+      <section className="h-wrap h-section" aria-labelledby="try-title">
+        <div className="hp-split">
+          <h2 id="try-title" className="t-display t-xl">Wear it for a week before the bottle.</h2>
+          <div style={{ display: 'grid', gap: 28, alignContent: 'end' }}>
+            <p className="t-body t-mute" style={{ maxWidth: '52ch' }}>
+              Most bottles here come as a 10 ml decant: the same original perfume, poured from a sealed bottle into a travel atomiser. Live with it, then buy the full size. Or answer five questions and let the finder shortlist for you.
+            </p>
+            <div style={{ display: 'flex', gap: 28, alignItems: 'center', flexWrap: 'wrap' }}>
+              <Link href="/fragrance-finder" className="h-btn">Take the finder</Link>
+              <Link href="/products?category=Gift+Sets" className="h-link">Discovery sets <ArrowRight size={14} strokeWidth={1.25} /></Link>
+            </div>
+            <dl className="hp-proof">
+              {proof.map((p) => (
+                <div key={p.title}>
+                  <dt className="t-label-l">{p.title}</dt>
+                  <dd className="t-small t-mute">{p.body}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </div>
       </section>
 
-      <section className="home-trust-strip" aria-label="Why customers trust Spraykart">
-        <div className="trust-strip-new">
-          {trustItems.map(({ icon, title, sub }, i) => (
-            <FadeUp key={title} delay={i * 0.08} className="home-trust-card trust-item">
-              <span className="home-trust-icon" aria-hidden="true">{icon}</span>
-              <strong>{title}</strong>
-              <span>{sub}</span>
-            </FadeUp>
-          ))}
-        </div>
-      </section>
-
-      <section className="home-section home-featured-section" aria-labelledby="just-landed-title">
-        <div className="home-container">
-          <FadeUp className="home-section-header">
-            <div>
-              <span className="eyebrow">Fresh Stock</span>
-              <h2 id="just-landed-title" className="section-h2">Just Landed</h2>
+      {houseImage && (
+        <section className="hp-look hp-look--flip" aria-labelledby="gift-title" style={{ borderTop: '1px solid var(--line)' }}>
+          <div className="hp-look__img">
+            <Image src={houseImage} alt={homeHeroImage?.alt || 'Spraykart gift set'} fill sizes="(max-width: 1023px) 100vw, 50vw" style={{ objectFit: 'cover' }} />
+          </div>
+          <div className="hp-look__copy">
+            <h2 id="gift-title" className="t-display t-xl">For someone else.</h2>
+            <p className="t-body t-mute">Weddings, birthdays, Diwali. Choose a boxed bottle or a discovery set and have it delivered anywhere in India. Not sure what they wear? Ask an advisor on WhatsApp.</p>
+            <div style={{ display: 'flex', gap: 28, alignItems: 'center', flexWrap: 'wrap' }}>
+              <Link href="/products?category=Gift+Sets" className="h-btn">Shop gifts</Link>
+              <a href="https://wa.me/917217816676?text=Hi%2C%20I%20need%20help%20choosing%20a%20gift" target="_blank" rel="noopener noreferrer" className="h-link">Ask an advisor <ArrowRight size={14} strokeWidth={1.25} /></a>
             </div>
-            <Link href="/products" className="home-header-link">View all →</Link>
-          </FadeUp>
+          </div>
+        </section>
+      )}
 
-          {featuredProducts.length > 0 ? (
-            <div className="home-product-grid">
-              {featuredProducts.map((product, i) => (
-                <FadeUp key={product.id} delay={(i % 4) * 0.06}>
-                  <ProductCard product={product} priority={i < 4} />
-                </FadeUp>
+      {testimonials.length > 0 && (
+        <section className="h-inverse h-section" aria-labelledby="voices-title">
+          <div className="h-wrap">
+            <h2 id="voices-title" className="t-display t-xl" style={{ marginBottom: 'clamp(36px, 4vw, 64px)' }}>In their words</h2>
+            <div className="hp-voices">
+              {testimonials.slice(0, 3).map(({ name, city, text }) => (
+                <figure key={`${name}-${city}`} className="hp-voice">
+                  <blockquote>{text}</blockquote>
+                  <figcaption className="t-label" style={{ color: 'var(--on-ink-2)' }}>{name}{city ? `, ${city}` : ''}</figcaption>
+                </figure>
               ))}
             </div>
-          ) : (
-            <FadeUp className="home-product-empty">
-              Fresh stock is being refreshed. Explore the full collection for available perfumes.
-            </FadeUp>
-          )}
-
-          <FadeUp className="home-center-action">
-            <Link href="/products" className="btn-ghost-muted">Explore Full Collection →</Link>
-          </FadeUp>
-        </div>
-      </section>
-
-      <section className="home-why-section" aria-labelledby="why-spraykart-title">
-        <div className="why-grid home-container">
-          <FadeUp className="home-why-copy">
-            <div className="home-why-sticky">
-              <span className="eyebrow">Our Promise</span>
-              <h2 id="why-spraykart-title" className="home-why-title">
-                The perfume market is full of fakes.<br />
-                <em>We&apos;re not.</em>
-              </h2>
-              <p>
-                Every bottle we stock comes with a paper trail. That&apos;s not a marketing line — it&apos;s how we sleep at night.
-              </p>
-            </div>
-          </FadeUp>
-          <FadeUp delay={0.12}>
-            <WhyAccordion />
-          </FadeUp>
-        </div>
-      </section>
-
-      <section className="home-brand-section" aria-labelledby="shop-by-brand-title">
-        <FadeUp>
-          <h2 id="shop-by-brand-title" className="home-brand-title">Shop by Brand</h2>
-        </FadeUp>
-        <FadeUp delay={0.1}>
-          <BrandScroll />
-        </FadeUp>
-      </section>
-
-      <section className="home-social-section" aria-labelledby="social-proof-title">
-        <div className="home-container">
-          <FadeUp className="home-social-header">
-            <Stars className="home-large-stars" />
-            <p className="home-rating-copy">4.8 ★ from 10,000+ verified buyers</p>
-            <h2 id="social-proof-title" className="section-h2">Don&apos;t take our word for it</h2>
-          </FadeUp>
-
-          <div className="home-reviews-grid">
-            {testimonials.map(({ name, city, text, rating }, i) => {
-              const starCount = Math.min(5, Math.max(4, Math.round(Number(rating) || 5)));
-
-              return (
-                <FadeUp key={`${name}-${city}`} delay={i * 0.1} className="home-review-card">
-                  <Stars count={starCount} className="home-review-stars" />
-                  <p className="home-review-quote">&ldquo;{text}&rdquo;</p>
-                  <div className="home-review-footer">
-                    <div>
-                      <strong className="home-review-name">{name}</strong>
-                      <span className="home-review-city">{city || 'India'}</span>
-                    </div>
-                    <span className="home-verified-badge">Verified Purchase ✓</span>
-                  </div>
-                </FadeUp>
-              );
-            })}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      <section className="home-gift-section" aria-labelledby="gift-title">
-        <div className="gift-grid home-container">
-          <FadeUp className="home-gift-copy">
-            <span className="eyebrow">✦ Something Special</span>
-            <h2 id="gift-title" className="home-gift-title">
-              Gift Scent.<br />
-              <em>Gift Memory.</em>
-            </h2>
-            <p>
-              Curated gift hampers with original perfumes, premium packaging, and a personal note — for birthdays, anniversaries, or just because.
-            </p>
-            <Link href="/products?category=Gift+Sets" className="btn-dark">Explore Gift Sets →</Link>
-          </FadeUp>
-          <FadeUp delay={0.12} className="home-gift-image" aria-hidden="true">
-            {/* TODO: replace with actual product/lifestyle image */}
-            <span>Premium gift packaging</span>
-          </FadeUp>
-        </div>
-      </section>
-
-      <section className="home-pledge" aria-labelledby="pledge-title">
-        <FadeUp>
-          <span className="home-dark-eyebrow">Our Commitment</span>
-          <h2 id="pledge-title" className="home-pledge-title">
-            Every bottle. Every batch.<br />
-            <em>Verified.</em>
-          </h2>
-          <p className="home-dark-copy">
-            We don&apos;t sell anything we can&apos;t prove is real. That&apos;s not a policy — it&apos;s who we are.
-          </p>
-          <Link href="#faq" className="btn-ghost-light">See How We Verify →</Link>
-        </FadeUp>
-        <div className="home-pledge-stats pledge-stats">
-          {pledgeStats.map(({ number, label }, i) => (
-            <FadeUp key={label} delay={i * 0.08} className="home-pledge-stat">
-              <strong>{number}</strong>
-              <span>{label}</span>
-            </FadeUp>
-          ))}
-        </div>
-      </section>
-
-      <section className="home-wa-strip wa-strip" aria-label="WhatsApp fragrance help">
-        <div className="home-wa-left">
-          <span className="home-wa-icon" aria-hidden="true">💬</span>
+      <section id="faq" className="h-wrap h-section" aria-labelledby="faq-title">
+        <div className="hp-split">
           <div>
-            <p>Not sure which fragrance to pick?</p>
-            <span>Our team is on WhatsApp — usually replies in 2 minutes.</span>
+            <h2 id="faq-title" className="t-display t-xl">Questions</h2>
+            <Link href="/faq" className="h-link" style={{ marginTop: 28 }}>All questions <ArrowRight size={14} strokeWidth={1.25} /></Link>
           </div>
-        </div>
-        <a
-          href="https://wa.me/917217816676?text=Hi%2C+I+need+help+choosing+a+fragrance"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="home-wa-button"
-        >
-          Chat with Us
-        </a>
-      </section>
-
-      <section id="faq" className="home-faq-section" aria-labelledby="faq-title">
-        <div className="home-faq-inner">
-          <FadeUp className="home-faq-header">
-            <span className="eyebrow">FAQ</span>
-            <h2 id="faq-title" className="section-h2">Common Questions</h2>
-          </FadeUp>
-          {faqs.map(({ q, a }, i) => (
-            <FadeUp key={q} delay={Math.min(i * 0.05, 0.2)}>
-              <details className="home-faq-item">
+          <div>
+            {faqs.map(({ q, a }) => (
+              <details key={q} className="h-acc">
                 <summary>{q}</summary>
-                <p>{a}</p>
+                <p className="h-acc__body t-body t-mute" style={{ maxWidth: '62ch' }}>{a}</p>
               </details>
-            </FadeUp>
-          ))}
-          <FadeUp className="home-faq-link-wrap">
-            <Link href="/faq" className="home-header-link">View all FAQs →</Link>
-          </FadeUp>
+            ))}
+          </div>
         </div>
       </section>
-
-      <section className="home-final-cta" aria-labelledby="final-cta-title">
-        <FadeUp>
-          <span className="home-dark-eyebrow">Free shipping ₹999+ · Razorpay Secured · Pan-India Delivery</span>
-          <h2 id="final-cta-title" className="home-final-title">
-            Your Perfect Scent<br />
-            <em>Awaits You</em>
-          </h2>
-          <div className="home-final-buttons">
-            <Link href="/products" className="home-btn-light">Explore Collection →</Link>
-            <Link href="/fragrance-finder" className="btn-ghost-light">Find Your Scent</Link>
-          </div>
-        </FadeUp>
-      </section>
-    </div>
+    </>
   );
 }

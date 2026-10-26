@@ -1,10 +1,10 @@
 import { getBusinessProfile } from '@/lib/business';
 
 export const metadata = {
-  title: 'Refund & Cancellation Policy | Spraykart',
+  title: 'Refund & Cancellation Policy',
   description: 'Refund, return, and cancellation policy for Spraykart orders. Learn how to request a return within 48 hours of delivery.',
   alternates: { canonical: '/refund' },
-  openGraph: { title: 'Refund & Cancellation Policy | Spraykart', url: '/refund', type: 'website' },
+  openGraph: { title: 'Refund & Cancellation Policy | Spraykart', url: '/refund', type: 'website', images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Spraykart' }] },
 };
 
 export default function RefundPage() {
@@ -20,13 +20,12 @@ export default function RefundPage() {
 
   return (
     <div style={{ maxWidth: 760, margin: '0 auto', padding: '60px 24px 80px' }}>
-      <p style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a0a0a0', marginBottom: 8 }}>Legal</p>
-      <h1 style={{ fontFamily: "'Cormorant', Georgia, serif", fontSize: 40, fontWeight: 400, color: '#0c0c0c', marginBottom: 8 }}>Refund & Cancellation Policy</h1>
-      <p style={{ fontSize: 13, color: '#a0a0a0', marginBottom: 48 }}>Last updated: May 1, 2026</p>
+      <h1 style={{ fontFamily: 'var(--font-d)', fontSize: 40, fontWeight: 400, color: '#0D0D0D', marginBottom: 8 }}>Refund & Cancellation Policy</h1>
+      <p style={{ fontSize: 13, color: '#6E6B64', marginBottom: 48 }}>Last updated: May 1, 2026</p>
       {sections.map(([title, body]) => (
         <section key={title} style={{ marginBottom: 36 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#0c0c0c', marginBottom: 10 }}>{title}</h2>
-          <p style={{ fontSize: 14, color: '#555', lineHeight: 1.8, whiteSpace: 'pre-line' }}>{body}</p>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#0D0D0D', marginBottom: 10 }}>{title}</h2>
+          <p style={{ fontSize: 14, color: '#55534D', lineHeight: 1.8, whiteSpace: 'pre-line' }}>{body}</p>
         </section>
       ))}
     </div>

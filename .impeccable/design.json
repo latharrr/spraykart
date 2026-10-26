@@ -1,0 +1,459 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-26T18:46:44+00:00",
+  "title": "Design System: Spraykart",
+  "extensions": {
+    "colorMeta": {
+      "bone": {
+        "role": "neutral",
+        "displayName": "Bone",
+        "canonical": "#F6F4EF",
+        "tonalRamp": [
+          "#0D0D0D",
+          "#161513",
+          "#2A2926",
+          "#55534D",
+          "#8F8C85",
+          "#CFCCC4",
+          "#E2DFD8",
+          "#F6F4EF"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#EAE8E3",
+        "tonalRamp": [
+          "#0D0D0D",
+          "#161513",
+          "#2A2926",
+          "#55534D",
+          "#8F8C85",
+          "#CFCCC4",
+          "#E2DFD8",
+          "#F6F4EF"
+        ]
+      },
+      "stone": {
+        "role": "neutral",
+        "displayName": "Stone",
+        "canonical": "#B7B5AE",
+        "tonalRamp": [
+          "#0D0D0D",
+          "#161513",
+          "#2A2926",
+          "#55534D",
+          "#8F8C85",
+          "#CFCCC4",
+          "#E2DFD8",
+          "#F6F4EF"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#0D0D0D",
+        "tonalRamp": [
+          "#0D0D0D",
+          "#161513",
+          "#2A2926",
+          "#55534D",
+          "#8F8C85",
+          "#CFCCC4",
+          "#E2DFD8",
+          "#F6F4EF"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "#55534D",
+        "tonalRamp": [
+          "#0D0D0D",
+          "#161513",
+          "#2A2926",
+          "#55534D",
+          "#8F8C85",
+          "#CFCCC4",
+          "#E2DFD8",
+          "#F6F4EF"
+        ]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Ash",
+        "canonical": "#6E6B64",
+        "tonalRamp": [
+          "#0D0D0D",
+          "#161513",
+          "#2A2926",
+          "#55534D",
+          "#8F8C85",
+          "#CFCCC4",
+          "#E2DFD8",
+          "#F6F4EF"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "rgba(13, 13, 13, 0.14)",
+        "tonalRamp": [
+          "#0D0D0D",
+          "#161513",
+          "#2A2926",
+          "#55534D",
+          "#8F8C85",
+          "#CFCCC4",
+          "#E2DFD8",
+          "#F6F4EF"
+        ]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Strong Hairline",
+        "canonical": "rgba(13, 13, 13, 0.32)",
+        "tonalRamp": [
+          "#0D0D0D",
+          "#161513",
+          "#2A2926",
+          "#55534D",
+          "#8F8C85",
+          "#CFCCC4",
+          "#E2DFD8",
+          "#F6F4EF"
+        ]
+      },
+      "on-ink-2": {
+        "role": "neutral",
+        "displayName": "Bone Mute",
+        "canonical": "rgba(246, 244, 239, 0.72)",
+        "tonalRamp": [
+          "#0D0D0D",
+          "#161513",
+          "#2A2926",
+          "#55534D",
+          "#8F8C85",
+          "#CFCCC4",
+          "#E2DFD8",
+          "#F6F4EF"
+        ]
+      },
+      "line-on-ink": {
+        "role": "neutral",
+        "displayName": "Hairline on Ink",
+        "canonical": "rgba(246, 244, 239, 0.2)",
+        "tonalRamp": [
+          "#0D0D0D",
+          "#161513",
+          "#2A2926",
+          "#55534D",
+          "#8F8C85",
+          "#CFCCC4",
+          "#E2DFD8",
+          "#F6F4EF"
+        ]
+      },
+      "merlot": {
+        "role": "primary",
+        "displayName": "Merlot",
+        "canonical": "#5B1F2A",
+        "tonalRamp": [
+          "#230B10",
+          "#3B141B",
+          "#4A1922",
+          "#5B1F2A",
+          "#8A5560",
+          "#BC9AA0",
+          "#E8D9DC",
+          "#F4EDEE"
+        ]
+      },
+      "merlot-deep": {
+        "role": "primary",
+        "displayName": "Deep Merlot",
+        "canonical": "#3B141B",
+        "tonalRamp": [
+          "#230B10",
+          "#3B141B",
+          "#4A1922",
+          "#5B1F2A",
+          "#8A5560",
+          "#BC9AA0",
+          "#E8D9DC",
+          "#F4EDEE"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display-hero": {
+        "displayName": "Display Hero",
+        "purpose": "Featured bottle name on the home hero, uppercase, two lines."
+      },
+      "display-xl": {
+        "displayName": "Display XL",
+        "purpose": "Section and page titles, empty-state statements, auth panel line; uppercase."
+      },
+      "display-product": {
+        "displayName": "Display Product",
+        "purpose": "Product name on the product page, house above name; uppercase."
+      },
+      "display-l": {
+        "displayName": "Display L",
+        "purpose": "Auth form titles; uppercase."
+      },
+      "display-m": {
+        "displayName": "Display M",
+        "purpose": "Department names, checkout step titles, footer brand line, empty bag; uppercase."
+      },
+      "display-s": {
+        "displayName": "Display S",
+        "purpose": "Notes pyramid entries, mixed case."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Ledes and editorial paragraphs, 40-52ch."
+      },
+      "text": {
+        "displayName": "Text",
+        "purpose": "Base page size: card names, prices, inputs, summary rows."
+      },
+      "small": {
+        "displayName": "Small",
+        "purpose": "Supporting facts and notes under controls."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Uppercase tracked labels for fields, houses, note tiers, nav, announcement bar."
+      },
+      "label-l": {
+        "displayName": "Label L",
+        "purpose": "Uppercase spec lines, panel headings, proof titles."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Uppercase tracked text for buttons and action links."
+      }
+    },
+    "shadows": [
+      {
+        "name": "selection-ring",
+        "value": "inset 0 0 0 1px var(--merlot)",
+        "purpose": "Doubles the merlot border of a selected size tile or checkout option. A border, not elevation."
+      },
+      {
+        "name": "radio-dot",
+        "value": "inset 0 0 0 3px var(--bone)",
+        "purpose": "Insets the merlot fill of a checked radio or checkbox."
+      },
+      {
+        "name": "caption-legibility",
+        "value": "text-shadow: 0 1px 12px rgba(0,0,0,.35)",
+        "purpose": "Bone caption text over hero photography only."
+      },
+      {
+        "name": "nav-blur",
+        "value": "backdrop-filter: saturate(1.2) blur(10px) over rgba(246,244,239,.94)",
+        "purpose": "Sticky nav separation, with a bottom hairline."
+      },
+      {
+        "name": "scrim",
+        "value": "rgba(13,13,13,.4)",
+        "purpose": "Behind drawers."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The house ease for every state change, underline, drawer and reveal."
+      },
+      {
+        "name": "ease-in-out",
+        "value": "cubic-bezier(0.65, 0, 0.35, 1)",
+        "purpose": "Declared symmetric ease; reserved."
+      },
+      {
+        "name": "state",
+        "value": "0.2s-0.3s",
+        "purpose": "Button, chip, input and option state changes."
+      },
+      {
+        "name": "underline-drawer",
+        "value": "0.4s-0.5s",
+        "purpose": "Nav underline draw, action-link underline, drawer slide, mobile buy bar."
+      },
+      {
+        "name": "image-hover",
+        "value": "0.6s fade, 1.2s-1.4s scale",
+        "purpose": "Product card second image and image scale on hover."
+      },
+      {
+        "name": "hero-reveal",
+        "value": "image 1.6s unclip from scale 1.08; lines 1.1s rise with 0.08s stagger; facts 0.9s fade after 0.35s",
+        "purpose": "Home hero entrance, gated on prefers-reduced-motion: no-preference."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "xs",
+        "value": "480px"
+      },
+      {
+        "name": "sm",
+        "value": "600px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1200px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The buy action: ink fill, merlot on hover.",
+      "html": "<button class=\"ds-btn\">Add to bag</button>",
+      "css": ":host{--bone:#F6F4EF;--paper:#EAE8E3;--stone:#B7B5AE;--ink:#0D0D0D;--merlot:#5B1F2A;--ink-2:#55534D;--ink-3:#6E6B64;--line:rgba(13,13,13,.14);--line-strong:rgba(13,13,13,.32);--ease:cubic-bezier(0.16,1,0.3,1);--font-d:Oranienbaum,Didot,'Bodoni 72',Georgia,serif;--font-t:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:52px;padding:0 32px;font-family:var(--font-t);font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;line-height:1;border:1px solid var(--ink);border-radius:0;cursor:pointer;transition:background-color .3s var(--ease),border-color .3s var(--ease),color .3s var(--ease);background:var(--ink);color:var(--bone);} .ds-btn:hover{background:var(--merlot);border-color:var(--merlot);} .ds-btn:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px;} .ds-btn:disabled{opacity:.45;pointer-events:none;}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action beside a primary; fills ink on hover.",
+      "html": "<button class=\"ds-btn-ghost\">Register</button>",
+      "css": ":host{--bone:#F6F4EF;--paper:#EAE8E3;--stone:#B7B5AE;--ink:#0D0D0D;--merlot:#5B1F2A;--ink-2:#55534D;--ink-3:#6E6B64;--line:rgba(13,13,13,.14);--line-strong:rgba(13,13,13,.32);--ease:cubic-bezier(0.16,1,0.3,1);--font-d:Oranienbaum,Didot,'Bodoni 72',Georgia,serif;--font-t:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;} .ds-btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:52px;padding:0 32px;font-family:var(--font-t);font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;line-height:1;border:1px solid var(--ink);border-radius:0;cursor:pointer;transition:background-color .3s var(--ease),border-color .3s var(--ease),color .3s var(--ease);background:transparent;color:var(--ink);} .ds-btn-ghost:hover{background:var(--ink);color:var(--bone);} .ds-btn-ghost:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px;}"
+    },
+    {
+      "name": "Action Link",
+      "kind": "custom",
+      "refersTo": "text-link",
+      "description": "Tracked-caps link whose underline shrinks to 30% and arrow nudges on hover.",
+      "html": "<a class=\"ds-link\" href=\"#\">View the bottle <svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.25\" aria-hidden=\"true\"><path d=\"M5 12h14M12 5l7 7-7 7\"/></svg></a>",
+      "css": ":host{--bone:#F6F4EF;--paper:#EAE8E3;--stone:#B7B5AE;--ink:#0D0D0D;--merlot:#5B1F2A;--ink-2:#55534D;--ink-3:#6E6B64;--line:rgba(13,13,13,.14);--line-strong:rgba(13,13,13,.32);--ease:cubic-bezier(0.16,1,0.3,1);--font-d:Oranienbaum,Didot,'Bodoni 72',Georgia,serif;--font-t:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;} .ds-link{display:inline-flex;align-items:center;gap:10px;font-family:var(--font-t);font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;padding-block:6px;color:var(--ink);text-decoration:none;background:linear-gradient(currentColor,currentColor) left bottom/100% 1px no-repeat;transition:background-size .45s var(--ease);} .ds-link:hover{background-size:30% 1px;} .ds-link svg{transition:transform .45s var(--ease);} .ds-link:hover svg{transform:translateX(4px);} .ds-link:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px;}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Square outlined field with a tracked-caps label; fills paper on focus.",
+      "html": "<label class=\"ds-field\"><span>Email address</span><input class=\"ds-input\" placeholder=\"you@example.com\"></label>",
+      "css": ":host{--bone:#F6F4EF;--paper:#EAE8E3;--stone:#B7B5AE;--ink:#0D0D0D;--merlot:#5B1F2A;--ink-2:#55534D;--ink-3:#6E6B64;--line:rgba(13,13,13,.14);--line-strong:rgba(13,13,13,.32);--ease:cubic-bezier(0.16,1,0.3,1);--font-d:Oranienbaum,Didot,'Bodoni 72',Georgia,serif;--font-t:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;} .ds-field{display:flex;flex-direction:column;gap:8px;font-family:var(--font-t);} .ds-field>span{font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);} .ds-input{width:100%;min-height:48px;padding:12px 14px;font-family:var(--font-t);font-size:14px;color:var(--ink);background:transparent;border:1px solid var(--line-strong);border-radius:0;caret-color:var(--merlot);transition:border-color .2s var(--ease),background-color .2s var(--ease);} .ds-input::placeholder{color:var(--ink-3);} .ds-input:hover{border-color:var(--ink-3);} .ds-input:focus{outline:none;border-color:var(--ink);background:var(--paper);}"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Outlined square chip; pressed fills ink.",
+      "html": "<button class=\"ds-chip\">Woody</button> <button class=\"ds-chip\" aria-pressed=\"true\">Unisex</button>",
+      "css": ":host{--bone:#F6F4EF;--paper:#EAE8E3;--stone:#B7B5AE;--ink:#0D0D0D;--merlot:#5B1F2A;--ink-2:#55534D;--ink-3:#6E6B64;--line:rgba(13,13,13,.14);--line-strong:rgba(13,13,13,.32);--ease:cubic-bezier(0.16,1,0.3,1);--font-d:Oranienbaum,Didot,'Bodoni 72',Georgia,serif;--font-t:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;} .ds-chip{display:inline-flex;align-items:center;min-height:40px;padding:0 16px;font-family:var(--font-t);font-size:12px;letter-spacing:.06em;color:var(--ink);border:1px solid var(--line-strong);border-radius:0;background:transparent;cursor:pointer;transition:background-color .2s var(--ease),color .2s var(--ease),border-color .2s var(--ease);} .ds-chip:hover{border-color:var(--ink);} .ds-chip[aria-pressed=\"true\"]{background:var(--ink);color:var(--bone);border-color:var(--ink);} .ds-chip:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px;}"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "refersTo": "nav",
+      "description": "Ink announcement bar over a bone hairline nav: wordmark, departments, word utilities.",
+      "html": "<div class=\"ds-bar\"><span>Originals only, with GST invoice</span><span>Free delivery above ₹999</span></div><nav class=\"ds-nav\"><a class=\"ds-word\" href=\"#\">Spraykart</a><div class=\"ds-dept\"><a href=\"#\" aria-current=\"page\">Designer</a><a href=\"#\">Niche</a><a href=\"#\">Attar</a><a href=\"#\">Gifts</a></div><div class=\"ds-util\"><a href=\"#\">Search</a><a href=\"#\">Saved</a><a href=\"#\">Bag (<span class=\"ds-count\">1</span>)</a></div></nav>",
+      "css": ":host{--bone:#F6F4EF;--paper:#EAE8E3;--stone:#B7B5AE;--ink:#0D0D0D;--merlot:#5B1F2A;--ink-2:#55534D;--ink-3:#6E6B64;--line:rgba(13,13,13,.14);--line-strong:rgba(13,13,13,.32);--ease:cubic-bezier(0.16,1,0.3,1);--font-d:Oranienbaum,Didot,'Bodoni 72',Georgia,serif;--font-t:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;} .ds-bar{height:34px;display:flex;align-items:center;justify-content:center;gap:28px;background:var(--ink);color:rgba(246,244,239,.72);font-family:var(--font-t);font-size:11px;letter-spacing:.16em;text-transform:uppercase;} .ds-nav{height:72px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px;padding:0 48px;background:rgba(246,244,239,.94);border-bottom:1px solid var(--line);font-family:var(--font-t);} .ds-word{font-family:var(--font-d);font-size:34px;line-height:1;letter-spacing:.02em;text-transform:uppercase;color:var(--ink);text-decoration:none;} .ds-dept,.ds-util{display:flex;gap:32px;} .ds-util{justify-content:flex-end;} .ds-dept a,.ds-util a{position:relative;padding-block:8px;font-size:11.5px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);text-decoration:none;} .ds-dept a::after,.ds-util a::after{content:'';position:absolute;left:0;right:0;bottom:2px;height:1px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease);} .ds-dept a:hover::after,.ds-util a:hover::after,.ds-dept a[aria-current=\"page\"]::after{transform:scaleX(1);} .ds-dept a[aria-current=\"page\"]::after{background:var(--merlot);} .ds-count{color:var(--merlot);} .ds-nav a:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px;}"
+    },
+    {
+      "name": "Product Card",
+      "kind": "card",
+      "refersTo": "product-card-media",
+      "description": "Frameless card: 4:5 paper image well, house, name, price and struck MRP.",
+      "html": "<a class=\"ds-card\" href=\"#\"><div class=\"ds-card__media\"><button class=\"ds-card__save\" aria-label=\"Save\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.25\" aria-hidden=\"true\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/></svg></button></div><div class=\"ds-card__meta\"><span class=\"ds-card__house\">Tom Ford</span><span class=\"ds-card__name\">Oud Wood</span><span class=\"ds-card__price\">₹22,000</span><span class=\"ds-card__mrp\">MRP <s>₹28,000</s></span></div></a>",
+      "css": ":host{--bone:#F6F4EF;--paper:#EAE8E3;--stone:#B7B5AE;--ink:#0D0D0D;--merlot:#5B1F2A;--ink-2:#55534D;--ink-3:#6E6B64;--line:rgba(13,13,13,.14);--line-strong:rgba(13,13,13,.32);--ease:cubic-bezier(0.16,1,0.3,1);--font-d:Oranienbaum,Didot,'Bodoni 72',Georgia,serif;--font-t:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;} .ds-card{display:flex;flex-direction:column;gap:14px;width:240px;color:var(--ink);text-decoration:none;font-family:var(--font-t);} .ds-card__media{position:relative;aspect-ratio:4/5;background:var(--paper);overflow:hidden;transition:transform 1.2s var(--ease);} .ds-card__save{position:absolute;top:10px;right:10px;width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;background:rgba(246,244,239,.9);border:0;cursor:pointer;opacity:0;transition:opacity .3s var(--ease);} .ds-card:hover .ds-card__save,.ds-card__save:focus-visible{opacity:1;} .ds-card__save:hover svg{fill:var(--merlot);stroke:var(--merlot);} .ds-card__meta{display:grid;grid-template-columns:1fr auto;gap:2px 16px;align-items:baseline;} .ds-card__house{grid-column:1/-1;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);} .ds-card__name,.ds-card__price{font-size:14px;line-height:1.35;} .ds-card__price{text-align:right;} .ds-card__mrp{grid-column:1/-1;justify-self:end;font-size:12px;color:var(--ink-3);} .ds-card:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px;}"
+    },
+    {
+      "name": "Size Tile",
+      "kind": "custom",
+      "refersTo": "size-tile-selected",
+      "description": "Signature size picker: bottle drawn at true relative scale; selected takes the merlot ring.",
+      "html": "<div class=\"ds-sizes\"><button class=\"ds-size\"><svg class=\"ds-bottle\" width=\"12\" height=\"40\" viewBox=\"0 0 12 40\"><rect x=\"3.5\" y=\"0.5\" width=\"5\" height=\"6\" fill=\"currentColor\"/><rect x=\"1.5\" y=\"6.5\" width=\"9\" height=\"33\" fill=\"none\" stroke=\"currentColor\"/></svg><span>10 ml decant</span><span class=\"ds-mute\">₹4,400</span></button><button class=\"ds-size\" aria-pressed=\"true\"><svg class=\"ds-bottle\" width=\"32\" height=\"41\" viewBox=\"0 0 32 41\"><rect x=\"10\" y=\"0.5\" width=\"12\" height=\"8\" fill=\"currentColor\"/><rect x=\"0.5\" y=\"11.5\" width=\"31\" height=\"29\" fill=\"none\" stroke=\"currentColor\"/></svg><span>50 ml</span><span class=\"ds-mute\">₹22,000</span></button></div>",
+      "css": ":host{--bone:#F6F4EF;--paper:#EAE8E3;--stone:#B7B5AE;--ink:#0D0D0D;--merlot:#5B1F2A;--ink-2:#55534D;--ink-3:#6E6B64;--line:rgba(13,13,13,.14);--line-strong:rgba(13,13,13,.32);--ease:cubic-bezier(0.16,1,0.3,1);--font-d:Oranienbaum,Didot,'Bodoni 72',Georgia,serif;--font-t:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;} .ds-sizes{display:grid;grid-template-columns:repeat(2,120px);gap:8px;font-family:var(--font-t);} .ds-size{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:10px;padding:18px 10px 14px;border:1px solid var(--line-strong);border-radius:0;background:transparent;color:var(--ink);font-size:13px;cursor:pointer;transition:border-color .2s var(--ease),background-color .2s var(--ease);} .ds-size:hover{border-color:var(--ink);} .ds-size[aria-pressed=\"true\"]{border-color:var(--merlot);box-shadow:inset 0 0 0 1px var(--merlot);background:var(--paper);} .ds-size[aria-pressed=\"true\"] .ds-bottle{color:var(--merlot);} .ds-mute{color:var(--ink-2);} .ds-size:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px;}"
+    },
+    {
+      "name": "Notes Pyramid",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "Top, Heart, Base on hairlines: tier in ash tracked caps, notes in the display face.",
+      "html": "<dl class=\"ds-pyr\"><div><dt>Top</dt><dd>Rosewood, Cardamom, Pepper</dd></div><div><dt>Heart</dt><dd>Oud, Sandalwood, Vetiver</dd></div><div><dt>Base</dt><dd>Tonka Bean, Amber</dd></div></dl>",
+      "css": ":host{--bone:#F6F4EF;--paper:#EAE8E3;--stone:#B7B5AE;--ink:#0D0D0D;--merlot:#5B1F2A;--ink-2:#55534D;--ink-3:#6E6B64;--line:rgba(13,13,13,.14);--line-strong:rgba(13,13,13,.32);--ease:cubic-bezier(0.16,1,0.3,1);--font-d:Oranienbaum,Didot,'Bodoni 72',Georgia,serif;--font-t:'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif;} .ds-pyr{margin:0;width:420px;} .ds-pyr div{display:grid;grid-template-columns:76px 1fr;gap:16px;padding:14px 0;border-top:1px solid var(--line);} .ds-pyr dt{font-family:var(--font-t);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);padding-top:4px;} .ds-pyr dd{margin:0;font-family:var(--font-d);font-size:26px;line-height:1.05;color:var(--ink);}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Fragrance House Flagship",
+    "overview": "Spraykart is built like the flagship of a fashion house that happens to carry many houses. Every bottle is shown as a runway look: a full-bleed photograph, its name set monumental in condensed didone capitals, and the commercial facts (price, struck MRP, size, delivery) set small and plain beside it. The house's curation, Designer, Niche, Attar and Gifts, is the department index, the way a fashion flagship indexes womenswear and menswear.\n\nThe material is paper and ink. A warm bone ground carries everything; a slightly darker paper tone marks a panel or an image well; full ink fields invert the page for the announcement bar, the footer, the attar feature and the testimonials. Structure comes from 1px hairlines, never from boxes, radii or shadows. Density is low on the persuasion surfaces (home, listing, product) and tightens on the operating surfaces (bag, cart, checkout, account, auth) without leaving the world: the same hairlines, the same tracked-caps labels, the same square buttons.\n\nOne colour carries intent. Merlot appears only where the visitor has committed or is about to: the hover of a primary action, the selected size, the chosen payment method, the active department underline, the count in the bag, a saved heart. It is never decoration.",
+    "keyCharacteristics": [
+      "Bone ground, ink type, one merlot accent for active and committed state.",
+      "Condensed high-contrast didone (Oranienbaum) in capitals for display; a grotesk (Schibsted Grotesk) for everything else.",
+      "Square everything: 0 radius on buttons, inputs, chips, cards, images, drawers and toasts.",
+      "1px hairlines as the only structural device; no elevation shadows.",
+      "Words, not icons, in the desktop navigation: SEARCH, SIGN IN / ACCOUNT, SAVED, BAG (n).",
+      "Product photography fills its frame edge to edge on a paper well, so uneven catalogue shots still sit in the world."
+    ],
+    "rules": [
+      {
+        "name": "The Committed State Rule",
+        "body": "Merlot marks only what the visitor has chosen or is about to commit to (hover on a buy action, a selected option, the current department, a saved item, the bag count). If nothing is selected or being pressed, there is no merlot on screen.",
+        "section": "colors"
+      },
+      {
+        "name": "The No White Rule",
+        "body": "The lightest surface is bone. Panels step down to paper, never up to white.",
+        "section": "colors"
+      },
+      {
+        "name": "The Struck MRP Rule",
+        "body": "A discount is shown only as the price followed by a small, ash-coloured \"MRP\" with the old figure struck through. No percentage badges, no red, no sale colour.",
+        "section": "colors"
+      },
+      {
+        "name": "The Capitals Are the Couture Rule",
+        "body": "The display face is always uppercase where it names a bottle, a department or a section, and always weight 400. It has no italic; emphasis inside display text stays roman.",
+        "section": "typography"
+      },
+      {
+        "name": "The Label Is Not a Kicker Rule",
+        "body": "Tracked-caps labels name data and controls (a field, a note tier, a house, a summary panel). They never sit above a display heading as an eyebrow or section tag.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hairline Rule",
+        "body": "Anything that needs separating gets a 1px hairline (`line`, or `line-strong` for controls). No outer shadows, no cards lifted off the page.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** set every surface on bone (#F6F4EF) and step panels and image wells down to paper (#EAE8E3).",
+      "**Do** keep merlot (#5B1F2A) for hover on a buy action, selected options, the current department, the bag count and saved state only.",
+      "**Do** set bottle, department and section names in Oranienbaum capitals at weight 400 with line-height 0.86–0.95.",
+      "**Do** separate with 1px hairlines: `line` for structure, `line-strong` for control outlines.",
+      "**Do** keep every corner at 0px; the radio input is the only circle.",
+      "**Do** show price followed by a small ash \"MRP\" with the old figure struck through.",
+      "**Do** use words in tracked caps for desktop navigation and utilities; use 1.25px-stroke line icons only where a word will not fit (mobile nav targets, close, quantity, save, link arrows, the product fact list).",
+      "**Do** put proof facts (originals with GST invoice, free delivery above ₹999, COD, returns) beside the decision in small graphite text.",
+      "**Do** gate every entrance animation on `prefers-reduced-motion: no-preference` and use the house ease."
+    ],
+    "donts": [
+      "**Don't** use white (#FFFFFF) as a surface; the lightest surface is bone.",
+      "**Don't** add drop shadows or lift cards off the page; the only box-shadows are the inset selection ring and radio dot.",
+      "**Don't** round corners on any button, field, chip, card, image, menu, drawer or toast.",
+      "**Don't** use percentage-off badges, red sale colour or loud discount tags.",
+      "**Don't** place tracked-caps labels, eyebrows or kickers above display headings.",
+      "**Don't** introduce a second accent colour or use merlot as decoration or a section background.",
+      "**Don't** italicise the display face; it has no italic.",
+      "**Don't** reach for the legacy `--gray-*`, `--black`, `--font-serif` or `--font-sans` aliases in new storefront work."
+    ]
+  }
+}

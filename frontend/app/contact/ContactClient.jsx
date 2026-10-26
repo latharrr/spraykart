@@ -27,27 +27,27 @@ export default function ContactClient({ business }) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 md:py-24">
-      <h1 className="text-2xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Contact Us</h1>
+      <h1 className="t-display t-xl mb-4">Contact</h1>
       <p className="text-gray-600 mb-12">We would love to hear from you. Reach out to us for any queries about our authentic luxury fragrances.</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         <div className="space-y-6">
           <div className="card p-6 border border-gray-100">
-            <h3 className="font-semibold text-lg mb-2">Customer Support</h3>
+            <h2 className="font-semibold text-lg mb-2">Customer Support</h2>
             <p className="text-sm text-gray-500 mb-4">For order inquiries, tracking, and product questions.</p>
             <p className="text-sm font-medium">Email: <a href={`mailto:${business.email}`} className="text-black hover:underline">{business.email}</a></p>
             <p className="text-sm font-medium mt-2">Phone: <a href={`tel:${business.phone}`} className="text-black hover:underline">{business.phone}</a></p>
           </div>
 
           <div className="card p-6 border border-gray-100">
-            <h3 className="font-semibold text-lg mb-2">Business Details</h3>
+            <h2 className="font-semibold text-lg mb-2">Business Details</h2>
             <p className="text-sm text-gray-500 whitespace-pre-line">{business.legalName}</p>
             <p className="text-sm text-gray-500 whitespace-pre-line mt-2">{business.address}</p>
             <p className="text-sm text-gray-500 mt-2">GSTIN: {business.gstin}</p>
           </div>
 
           <div className="card p-6 border border-gray-100">
-            <h3 className="font-semibold text-lg mb-2">Business Hours</h3>
+            <h2 className="font-semibold text-lg mb-2">Business Hours</h2>
             <p className="text-sm text-gray-500">{business.supportHours}</p>
             <p className="text-sm text-gray-400 mt-2 text-xs">Closed on Sundays and public holidays unless otherwise notified.</p>
           </div>

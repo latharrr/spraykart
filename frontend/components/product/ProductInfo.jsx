@@ -1,336 +1,274 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ShoppingCart, Zap, Star, Heart } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Heart, Minus, Plus, ShieldCheck, Truck, RotateCcw, MessageCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useCartStore, useAuthStore, useWishlistStore, useIsWishlisted } from '@/lib/store';
+import { useRouter } from 'next/navigation';
+import { useCartStore, useAuthStore, useWishlistStore, useIsWishlisted, useBagUI } from '@/lib/store';
 import { applyCoupon } from '@/lib/api';
-import Spinner from '@/components/ui/Spinner';
+import { inr, unitPrice, unitMrp, mlOf, perMl, nameWithoutHouse, FREE_SHIPPING_AT, SHIPPING_FEE, WHATSAPP_URL } from '@/lib/shop';
+
+const listOf = (v) => String(v || '').split(',').map((s) => s.trim()).filter(Boolean).join(', ');
+
+// Bottles drawn at true relative scale: same shape, so height grows with the cube root of volume.
+// Decants are drawn as a slim atomiser, which is what arrives.
+function Bottle({ ml, maxMl }) {
+  const k = Math.cbrt((ml || maxMl) / maxMl);
+  if (ml && ml <= 15) {
+    const h = Math.round(56 * k * 1.35);
+    return (
+      <svg className="pd__bottle" width="12" height={h} viewBox={`0 0 12 ${h}`} aria-hidden="true">
+        <rect x="3.5" y="0.5" width="5" height="6" fill="currentColor" />
+        <rect x="1.5" y="6.5" width="9" height={h - 7} fill="none" stroke="currentColor" />
+        <rect x="2.5" y={h * 0.45} width="7" height={h * 0.55 - 1.5} fill="currentColor" opacity="0.18" />
+      </svg>
+    );
+  }
+  const h = Math.round(56 * k);
+  const w = Math.round(h * 0.78);
+  const cap = Math.max(5, Math.round(h * 0.2));
+  return (
+    <svg className="pd__bottle" width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
+      <rect x={w * 0.32} y="0.5" width={w * 0.36} height={cap} fill="currentColor" />
+      <rect x={w * 0.42} y={cap + 0.5} width={w * 0.16} height="3" fill="currentColor" />
+      <rect x="0.5" y={cap + 3.5} width={w - 1} height={h - cap - 4} fill="none" stroke="currentColor" />
+      <rect x="1.5" y={cap + 3.5 + (h - cap - 4) * 0.3} width={w - 3} height={(h - cap - 4) * 0.7 - 1} fill="currentColor" opacity="0.18" />
+    </svg>
+  );
+}
 
 export default function ProductInfo({ product }) {
-  const { addItem, setCoupon } = useCartStore();
-  const { user } = useAuthStore();
-  const { toggle: toggleWishlist } = useWishlistStore();
-  const wishlisted = useIsWishlisted(product.id);
   const router = useRouter();
+  const { addItem, setCoupon } = useCartStore();
+  const openBag = useBagUI((s) => s.openBag);
+  const { user } = useAuthStore();
+  const toggleWishlist = useWishlistStore((s) => s.toggle);
+  const saved = useIsWishlisted(product.id);
 
-  const [selectedVariant, setSelectedVariant] = useState(null);
-  const [quantity, setQuantity] = useState(1);
-  const [couponCode, setCouponCode] = useState('');
-  const [couponLoading, setCouponLoading] = useState(false);
-  const [added, setAdded] = useState(false);
-  const [activeTab, setActiveTab] = useState('description');
+  const sizes = useMemo(() => (product.variants || [])
+    .filter((v) => v.type === 'size')
+    .sort((a, b) => (mlOf(a.value) || 0) - (mlOf(b.value) || 0)), [product.variants]);
+  const otherVariants = (product.variants || []).filter((v) => v.type !== 'size');
+  const baseSize = sizes.find((v) => Number(v.price_modifier) === 0) || sizes[0] || null;
 
-  // Price display — if variant has its own price use it, otherwise fall back to base
-  const displayPrice = selectedVariant
-    ? parseFloat(product.price) + parseFloat(selectedVariant.price_modifier || 0)
-    : parseFloat(product.price);
+  const [variant, setVariant] = useState(baseSize || otherVariants[0] || null);
+  const [qty, setQty] = useState(1);
+  const [coupon, setCouponCode] = useState('');
+  const [couponBusy, setCouponBusy] = useState(false);
+  const buyRef = useRef(null);
+  const [showBar, setShowBar] = useState(false);
 
-  // Compare price — prefer variant-level compare_price, then product-level, adjusted by modifier
-  const displayComparePrice = selectedVariant?.compare_price
-    ? parseFloat(selectedVariant.compare_price)
-    : product.compare_price
-    ? parseFloat(product.compare_price) + (selectedVariant ? parseFloat(selectedVariant.price_modifier || 0) : 0)
-    : null;
+  const price = unitPrice(product, variant);
+  const mrp = unitMrp(product, variant);
+  const stock = variant ? Number(variant.stock) : Number(product.stock);
+  const inStock = stock > 0;
+  const ml = mlOf(variant?.value) || mlOf(product.name);
+  const maxMl = Math.max(...sizes.map((s) => mlOf(s.value) || 0), 100);
+  const lineTotal = price * qty;
+  const delivery = lineTotal >= FREE_SHIPPING_AT ? 0 : SHIPPING_FEE;
+  const house = product.brand && !/^spraykart/i.test(product.brand) ? product.brand : null;
+  const rest = nameWithoutHouse(product);
+  const reviewCount = Number(product.review_count) || 0;
 
-  const discount = displayComparePrice
-    ? Math.round(((displayComparePrice - displayPrice) / displayComparePrice) * 100)
-    : 0;
+  const notes = [
+    ['Top', listOf(product.top_notes)],
+    ['Heart', listOf(product.heart_notes)],
+    ['Base', listOf(product.base_notes)],
+  ].filter(([, v]) => v);
+  const profile = [
+    ['Family', product.scent_family],
+    ['Longevity', product.longevity],
+    ['Sillage', product.sillage],
+    ['Season', product.season],
+    ['Occasion', product.occasion],
+  ].filter(([, v]) => v);
 
-  // Group variants by type
-  const variantGroups = (product.variants || []).reduce((acc, v) => {
-    acc[v.type] = acc[v.type] || [];
-    acc[v.type].push(v);
-    return acc;
-  }, {});
+  // Show the mobile buy bar only once the main buy row has scrolled above the viewport.
+  useEffect(() => {
+    let frame = 0;
+    const check = () => {
+      frame = 0;
+      const el = buyRef.current;
+      const past = Boolean(el) && el.getBoundingClientRect().bottom < 0;
+      setShowBar(past);
+      document.body.classList.toggle('has-mobilebar', past);
+    };
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(check); };
+    check();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      cancelAnimationFrame(frame);
+      document.body.classList.remove('has-mobilebar');
+    };
+  }, []);
 
-  const handleAddToCart = () => {
-    const addedToCart = addItem(product, selectedVariant, quantity);
-    if (!addedToCart) {
-      toast.error('This item is currently out of stock');
-      return;
+  const add = () => {
+    if (!addItem(product, variant, qty)) {
+      toast.error('That size is sold out right now');
+      return false;
     }
-    setAdded(true);
-    toast.success(`${product.name} added to cart`);
-    setTimeout(() => setAdded(false), 1500);
+    openBag();
+    return true;
   };
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
-    if (!user) { toast.error('Sign in to apply coupons'); return; }
+  const buyNow = () => {
+    if (addItem(product, variant, qty)) router.push('/checkout');
+    else toast.error('That size is sold out right now');
+  };
 
-    const cartSubtotal = displayPrice * quantity;
-    setCouponLoading(true);
+  const onCoupon = async (e) => {
+    e.preventDefault();
+    if (!coupon.trim()) return;
+    if (!user) { toast.error('Sign in to apply a coupon'); return; }
+    setCouponBusy(true);
     try {
-      const { data } = await applyCoupon({
-        code: couponCode,
-        cart_total: cartSubtotal,
-        cart_items: [{ id: product.id, price: displayPrice, quantity }],
-      });
+      const { data } = await applyCoupon({ code: coupon, cart_total: lineTotal, cart_items: [{ id: product.id, price, quantity: qty }] });
       setCoupon(data.coupon, data.discount);
-      if (data.is_product_specific) {
-        toast.success(`Coupon applied to this product! Saved ₹${data.discount.toFixed(2)}`);
-      } else {
-        toast.success(`Coupon applied! Saved ₹${data.discount.toFixed(2)}`);
-      }
+      toast.success(`Coupon applied. You save ${inr(data.discount)}`);
     } catch (err) {
-      toast.error(err?.error || 'Invalid coupon');
+      toast.error(err?.error || "That code isn't valid for this bottle");
     } finally {
-      setCouponLoading(false);
+      setCouponBusy(false);
     }
   };
-
-  const inStock = product.stock > 0;
-
-  const hasFragranceNotes = product.top_notes || product.heart_notes || product.base_notes;
-  const hasScentProfile = product.scent_family || product.longevity || product.sillage || product.season || product.occasion;
-
-  const tabs = [
-    { id: 'description', label: 'Description' },
-    ...(hasFragranceNotes || hasScentProfile ? [{ id: 'fragrance', label: 'Fragrance Notes' }] : []),
-    { id: 'reviews', label: `Reviews (${product.review_count || 0})` },
-  ];
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Category */}
-      <p className="text-sm text-gray-400 uppercase tracking-widest">{product.category}</p>
+    <div className="pd__sticky">
+      <nav className="pd__crumbs" aria-label="Breadcrumb">
+        <Link href="/products">Fragrances</Link><span aria-hidden="true">/</span>
+        {product.category && <><Link href={`/products?category=${encodeURIComponent(product.category)}`}>{product.category}</Link><span aria-hidden="true">/</span></>}
+        <span aria-current="page">{rest}</span>
+      </nav>
 
-      {/* Title */}
-      <h1 className="text-3xl font-bold text-gray-900 leading-tight">{product.name}</h1>
-
-      {/* Rating */}
-      {product.review_count > 0 && (
-        <div className="flex items-center gap-2">
-          <div className="flex">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                size={14}
-                fill={i < Math.round(product.avg_rating) ? '#fbbf24' : 'none'}
-                stroke={i < Math.round(product.avg_rating) ? '#fbbf24' : '#d1d5db'}
-              />
-            ))}
-          </div>
-          <span className="text-sm text-gray-500">
-            {parseFloat(product.avg_rating).toFixed(1)} · {product.review_count} review{product.review_count !== 1 && 's'}
-          </span>
+      <div style={{ display: 'grid', gap: 18 }}>
+        <h1 className="t-display pd__name">
+          {house && <span style={{ display: 'block' }}>{house}{' '}</span>}
+          <span style={{ display: 'block' }}>{rest}</span>
+        </h1>
+        <div className="pd__priceline">
+          <span className="h-price">{inr(price)}</span>
+          {mrp && mrp > price && <span className="t-small t-mute h-price">MRP <s>{inr(mrp)}</s></span>}
+          {ml && <span className="t-small t-mute-3 h-price" style={{ whiteSpace: 'nowrap' }}>{ml} ml · {perMl(price, ml)}</span>}
         </div>
-      )}
-
-      {/* Price */}
-      <div className="flex items-baseline gap-3">
-        <span className="text-4xl font-bold text-gray-900">
-          ₹{displayPrice.toLocaleString('en-IN')}
-        </span>
-        {displayComparePrice && displayComparePrice > displayPrice && (
-          <>
-            <span className="text-xl text-gray-400 line-through">
-              ₹{displayComparePrice.toLocaleString('en-IN')}
-            </span>
-            <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-              {discount}% off
-            </span>
-          </>
-        )}
+        <p className="t-small t-mute-3">Inclusive of all taxes.{reviewCount > 0 && <> <a href="#reviews" className="h-textlink">{Number(product.avg_rating).toFixed(1)} / 5 from {reviewCount} {reviewCount === 1 ? 'review' : 'reviews'}</a></>}</p>
       </div>
 
-      {/* Stock */}
-      <div className={`text-sm font-medium ${inStock ? 'text-green-600' : 'text-red-500'}`}>
-        {inStock ? `${product.stock > 10 ? 'In stock' : `Only ${product.stock} left!`}` : 'Out of stock'}
-      </div>
-
-      {/* Variants */}
-      {Object.entries(variantGroups).map(([type, variants]) => (
-        <div key={type}>
-          <p className="text-sm font-medium text-gray-700 mb-2 capitalize">{type}:</p>
-          <div className="flex flex-wrap gap-2">
-            {variants.map((v) => {
-              const vPrice = parseFloat(product.price) + parseFloat(v.price_modifier || 0);
-              const vCompare = v.compare_price ? parseFloat(v.compare_price) : null;
+      {sizes.length > 0 && (
+        <fieldset style={{ display: 'grid', gap: 12 }}>
+          <legend className="t-label t-mute" style={{ marginBottom: 12 }}>Size</legend>
+          <div className="pd__sizes">
+            {sizes.map((v) => {
+              const vml = mlOf(v.value);
+              const vPrice = unitPrice(product, v);
               return (
-                <button
-                  key={v.id}
-                  onClick={() => setSelectedVariant(selectedVariant?.id === v.id ? null : v)}
-                  className={`min-h-[44px] px-4 py-2 rounded-lg text-sm font-medium border transition flex flex-col items-center ${
-                    selectedVariant?.id === v.id
-                      ? 'border-black bg-black text-white'
-                      : 'border-gray-200 text-gray-700 hover:border-gray-400'
-                  } ${v.stock === 0 ? 'opacity-40 cursor-not-allowed' : ''}`}
-                  disabled={v.stock === 0}
-                >
-                  <span>{v.value}</span>
-                  <span className={`text-xs mt-0.5 ${selectedVariant?.id === v.id ? 'text-gray-300' : 'text-gray-500'}`}>
-                    ₹{vPrice.toLocaleString('en-IN')}
-                    {vCompare && vCompare > vPrice && (
-                      <span className="line-through ml-1 opacity-60">₹{vCompare.toLocaleString('en-IN')}</span>
-                    )}
-                  </span>
+                <button key={v.id} type="button" className="pd__size" aria-pressed={variant?.id === v.id} disabled={Number(v.stock) === 0} onClick={() => setVariant(v)}>
+                  <Bottle ml={vml} maxMl={maxMl} />
+                  <span className="t-small" style={{ color: 'var(--ink)' }}>{v.value}</span>
+                  <span className="t-small t-mute h-price">{Number(v.stock) === 0 ? 'Sold out' : inr(vPrice)}</span>
                 </button>
               );
             })}
           </div>
-        </div>
-      ))}
+          {variant && /decant/i.test(variant.value) && (
+            <p className="t-small t-mute">A decant is the same original perfume, poured from a sealed bottle into a 10 ml atomiser.</p>
+          )}
+        </fieldset>
+      )}
 
-      {/* Quantity */}
-      <div className="flex items-center gap-3">
-        <p className="text-sm font-medium text-gray-700">Qty:</p>
-        <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-          <button
-            className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition"
-            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-          >−</button>
-          <span className="w-11 text-center text-sm font-medium">{quantity}</span>
-          <button
-            className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition"
-            onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-          >+</button>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <button
-          onClick={handleAddToCart}
-          disabled={!inStock || added}
-          className="btn-primary flex-1 min-h-[48px] py-3.5 gap-2"
-        >
-          <ShoppingCart size={18} />
-          {added ? 'Added!' : 'Add to cart'}
-        </button>
-        <button
-          onClick={() => { handleAddToCart(); router.push('/checkout'); }}
-          disabled={!inStock}
-          className="btn-secondary flex-1 min-h-[48px] py-3.5 gap-2"
-        >
-          <Zap size={18} />
-          Buy now
-        </button>
-        {/* Wishlist toggle */}
-        <button
-          onClick={() => {
-            const added = toggleWishlist(product);
-            toast.success(added ? '❤️ Added to wishlist' : 'Removed from wishlist');
-          }}
-          aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-          style={{
-            width: 48, height: 48, borderRadius: 8, flexShrink: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            border: wishlisted ? '1px solid #fda4af' : '1px solid #e5e7eb',
-            background: wishlisted ? '#fff1f2' : '#ffffff',
-            cursor: 'pointer', transition: 'all 0.15s',
-          }}
-        >
-          <Heart size={18} fill={wishlisted ? '#e11d48' : 'none'} color={wishlisted ? '#e11d48' : '#9ca3af'} />
-        </button>
-      </div>
-
-      {/* Coupon */}
-      <div className="flex gap-2">
-        <input
-          className="input text-sm"
-          placeholder="Apply coupon code"
-          value={couponCode}
-          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-          onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
-        />
-        <button onClick={handleApplyCoupon} disabled={couponLoading} className="btn-secondary shrink-0 text-sm min-h-[44px] py-2 px-4">
-          {couponLoading ? <Spinner size="sm" /> : 'Apply'}
-        </button>
-      </div>
-
-      {/* Tabs: Description | Fragrance Notes | Reviews */}
-      <div className="border-t border-gray-100 pt-5">
-        {/* Tab Nav */}
-        <div className="flex gap-0 border-b border-gray-100 mb-5 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`text-sm font-medium px-4 py-2.5 border-b-2 shrink-0 transition-colors ${
-                activeTab === tab.id
-                  ? 'border-black text-black'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Description Tab */}
-        {activeTab === 'description' && (
-          <div>
-            {product.description ? (
-              <div
-                className="text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: product.description }}
-              />
-            ) : (
-              <p className="text-sm text-gray-400 italic">No description available.</p>
-            )}
+      {otherVariants.length > 0 && (
+        <fieldset>
+          <legend className="t-label t-mute" style={{ marginBottom: 12 }}>Options</legend>
+          <div className="pl-chips">
+            {otherVariants.map((v) => (
+              <button key={v.id} type="button" className="h-chip" aria-pressed={variant?.id === v.id} onClick={() => setVariant(v)} disabled={Number(v.stock) === 0}>{v.value}</button>
+            ))}
           </div>
-        )}
+        </fieldset>
+      )}
 
-        {/* Fragrance Notes Tab */}
-        {activeTab === 'fragrance' && (
-          <div className="space-y-6">
-            {/* Top / Heart / Base notes cards */}
-            {hasFragranceNotes && (
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { label: 'Top Notes', notes: product.top_notes, color: '#f59e0b', bg: '#fffbeb', emoji: '🌿' },
-                  { label: 'Heart Notes', notes: product.heart_notes, color: '#e11d48', bg: '#fff1f2', emoji: '🌸' },
-                  { label: 'Base Notes', notes: product.base_notes, color: '#7c3aed', bg: '#f5f3ff', emoji: '🪵' },
-                ].map(({ label, notes, color, bg, emoji }) => notes ? (
-                  <div key={label} className="flex flex-col items-center text-center p-4 rounded-xl border" style={{ background: bg, borderColor: `${color}20` }}>
-                    <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3 text-2xl" style={{ background: `${color}15` }}>
-                      {emoji}
-                    </div>
-                    <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color }}>{label}</p>
-                    <div className="flex flex-wrap gap-1 justify-center">
-                      {notes.split(',').map((n) => (
-                        <span key={n} className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: `${color}18`, color }}>
-                          {n.trim()}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ) : null)}
-              </div>
-            )}
-
-            {/* Scent Profile */}
-            {hasScentProfile && (
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Scent Profile</p>
-                <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-                  {[
-                    { label: 'Family', value: product.scent_family },
-                    { label: 'Longevity', value: product.longevity },
-                    { label: 'Sillage', value: product.sillage },
-                    { label: 'Season', value: product.season },
-                    { label: 'Occasion', value: product.occasion },
-                  ].filter(i => i.value).map(({ label, value }) => (
-                    <div key={label}>
-                      <span className="block text-[10px] uppercase tracking-widest text-gray-400 mb-0.5">{label}</span>
-                      <span className="text-sm font-medium text-gray-800">{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+      <div ref={buyRef} style={{ display: 'grid', gap: 12 }}>
+        <div className="pd__buy">
+          <div className="h-qty" style={{ height: 52 }}>
+            <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1} aria-label="Decrease quantity"><Minus size={13} /></button>
+            <span className="tabular" aria-live="polite">{qty}</span>
+            <button type="button" onClick={() => setQty((q) => Math.min(stock || 1, q + 1))} disabled={qty >= stock} aria-label="Increase quantity"><Plus size={13} /></button>
           </div>
-        )}
-
-        {/* Reviews tab placeholder — ReviewSection handles full display below the fold */}
-        {activeTab === 'reviews' && (
-          <div className="text-sm text-gray-500">
-            <p>Scroll down to see all reviews.</p>
-          </div>
-        )}
+          <button type="button" className="h-btn" onClick={add} disabled={!inStock}>{inStock ? `Add to bag · ${inr(lineTotal)}` : 'Sold out'}</button>
+          <button type="button" className="pd__wish" aria-pressed={saved} aria-label={saved ? 'Remove from saved' : 'Save for later'} onClick={() => toast(toggleWishlist(product) ? 'Saved' : 'Removed from saved')}>
+            <Heart size={18} strokeWidth={1.25} />
+          </button>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', alignItems: 'baseline' }}>
+          <p className="t-small t-mute">
+            {inStock && stock <= 5 ? `Only ${stock} left. ` : ''}
+            Estimated total <span className="h-price" style={{ color: 'var(--ink)' }}>{inr(lineTotal + delivery)}</span>{delivery ? ` with ${inr(delivery)} delivery` : ', delivery free'}
+          </p>
+          {inStock && <button type="button" className="h-link" onClick={buyNow}>Buy now</button>}
+        </div>
       </div>
+
+      <ul className="pd__facts">
+        <li><ShieldCheck size={15} strokeWidth={1.25} /><span>Original, batch-code checked, with a GST invoice in your name.</span></li>
+        <li><Truck size={15} strokeWidth={1.25} /><span>Delivered in 3 to 7 business days. Free above {inr(FREE_SHIPPING_AT)}. Cash on delivery up to ₹2,999.</span></li>
+        <li><RotateCcw size={15} strokeWidth={1.25} /><span>Arrived damaged or wrong? Report it within 48 hours for a replacement or refund. <Link href="/refund" className="h-textlink">Returns policy</Link></span></li>
+        <li><MessageCircle size={15} strokeWidth={1.25} /><span>Buying as a gift or unsure of the size? <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="h-textlink">Ask an advisor on WhatsApp</a></span></li>
+      </ul>
+
+      <div>
+        {(notes.length > 0 || profile.length > 0) && (
+          <details className="h-acc" open>
+            <summary>The scent</summary>
+            <div className="h-acc__body">
+              {notes.length > 0 && (
+                <dl className="pd__pyr">
+                  {notes.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
+                </dl>
+              )}
+              {profile.length > 0 && (
+                <dl className="pd__meters">
+                  {profile.map(([k, v]) => <div key={k} className="pd__meter"><dt><span>{k}</span></dt><dd><b>{v}</b></dd></div>)}
+                </dl>
+              )}
+            </div>
+          </details>
+        )}
+        {product.description && (
+          <details className="h-acc">
+            <summary>About this fragrance</summary>
+            <div className="h-acc__body prose t-body" dangerouslySetInnerHTML={{ __html: product.description }} />
+          </details>
+        )}
+        <details className="h-acc">
+          <summary>Delivery and returns</summary>
+          <div className="h-acc__body t-body t-mute" style={{ display: 'grid', gap: 10 }}>
+            <p>Orders usually dispatch within 1 to 2 business days and arrive in 2 to 7 depending on your city, with tracking by email. Delivery is free above {inr(FREE_SHIPPING_AT)}; below that it is {inr(SHIPPING_FEE)}.</p>
+            <p>If a bottle arrives damaged, defective or isn&apos;t what you ordered, tell us within 48 hours of delivery with your order ID and photos and we will replace or refund it. Opened fragrances can&apos;t be returned for a change of mind.</p>
+          </div>
+        </details>
+        <details className="h-acc">
+          <summary>Have a coupon?</summary>
+          <form className="h-acc__body" onSubmit={onCoupon}>
+            <div className="pd__coupon">
+              <label htmlFor="pd-coupon" className="sr-only">Coupon code</label>
+              <input id="pd-coupon" value={coupon} onChange={(e) => setCouponCode(e.target.value.toUpperCase())} placeholder="Enter code" autoComplete="off" />
+              <button type="submit" disabled={couponBusy}>{couponBusy ? 'Checking' : 'Apply'}</button>
+            </div>
+          </form>
+        </details>
+      </div>
+
+      {showBar && (
+      <div className="pd-mobilebar is-on">
+        <div style={{ display: 'grid' }}>
+          <span className="t-small" style={{ fontSize: 13 }}>{rest}</span>
+          <span className="t-small t-mute h-price">{inr(price)}{variant ? ` · ${variant.value}` : ''}</span>
+        </div>
+        <button type="button" className="h-btn" style={{ minHeight: 46, padding: '0 22px' }} onClick={add} disabled={!inStock}>{inStock ? 'Add to bag' : 'Sold out'}</button>
+      </div>
+      )}
     </div>
   );
 }

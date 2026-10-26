@@ -25,14 +25,14 @@ const nextConfig = {
   serverExternalPackages: ['pg', 'bcryptjs', 'jsonwebtoken'],
 
   experimental: {
-    optimizePackageImports: ['lucide-react', '@headlessui/react', 'react-hot-toast'],
+    optimizePackageImports: ['lucide-react', '@headlessui/react'],
   },
 
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
     config.externals.push({ 'pg-cloudflare': 'pg-cloudflare' });
 
     // Tree-shake unused code
-    if (!isServer) {
+    if (!isServer && !dev) {
       config.optimization = {
         ...config.optimization,
         usedExports: true,

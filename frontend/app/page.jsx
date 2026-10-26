@@ -137,7 +137,7 @@ async function getDepartmentImages() {
   if (!hasUsableDatabaseUrl()) return {};
 
   try {
-    const cached = await getHomeCache('homepage:departments:v2');
+    const cached = await getHomeCache('homepage:departments:v3');
     if (cached) return cached;
 
     const { rows } = await withHomeTimeout(db.query(`
@@ -147,13 +147,14 @@ async function getDepartmentImages() {
       WHERE p.is_active = true
       ORDER BY p.is_featured DESC, p.created_at DESC
     `), 'Department images query');
+    // Every candidate per department, best first; the page picks one that isn't already on screen.
     const result = {};
     for (const r of rows) {
       const key = tierOf(r) || r.category;
-      if (!result[key]) result[key] = r.url;
+      (result[key] ||= []).push(r.url);
     }
 
-    await setHomeCache('homepage:departments:v2', result, 3600);
+    await setHomeCache('homepage:departments:v3', result, 3600);
     return result;
   } catch (err) {
     logger.warn('Department images skipped:', err);
@@ -225,6 +226,14 @@ export default async function HomePage() {
   const others = arrivals.filter((p) => p.id !== look?.id);
   // Fill whole rows of four on desktop
   const arrivalsList = others.slice(0, others.length >= 8 ? 8 : 4);
+  // Department tiles never repeat the hero bottle or the first row of arrivals.
+  const onScreen = new Set([look?.image, ...arrivalsList.slice(0, 4).map((p) => p.image)].filter(Boolean));
+  const deptImage = (key) => {
+    const options = deptImages[key] || [];
+    const pick = options.find((u) => !onScreen.has(u)) || options[0];
+    if (pick) onScreen.add(pick);
+    return pick;
+  };
 
   return (
     <>
@@ -243,7 +252,7 @@ export default async function HomePage() {
 
       <nav className="hp-depts" aria-label="Departments">
         {departments.map((d) => {
-          const img = deptImages[d.key];
+          const img = deptImage(d.key);
           return (
             <Link key={d.key} href={d.href} className="hp-dept">
               <div className="hp-dept__img">

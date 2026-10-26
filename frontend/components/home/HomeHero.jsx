@@ -56,12 +56,12 @@ export default function HomeHero({ look }) {
   return (
     <section className="hp-hero" aria-labelledby="hp-look-name">
       <div className="hp-hero__copy">
-        {note && <p className="hp-hero__note t-body t-mute hp-reveal-fade">{note}</p>}
         <h1 id="hp-look-name" className="t-display t-hero hp-hero__name">
           {lines.map((line) => (
             <span className="hp-reveal-line" key={line}><span>{line}</span></span>
           ))}
         </h1>
+        {note && <p className="hp-hero__note t-body t-mute hp-reveal-fade">{note}</p>}
         <div className="hp-hero__facts hp-reveal-fade">
           {spec.length > 0 && <span className="t-label-l">{spec.join(' · ')}</span>}
           <span className="h-price">{inr(price)}</span>

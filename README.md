@@ -10,7 +10,7 @@ Storefront and admin for an Indian online perfume retailer: designer and niche f
 | **Stack** | Next.js 14 (App Router), React 18, Tailwind, PostgreSQL (`pg`), optional Redis, Zustand |
 | **Payments** | Razorpay, Paytm, COD (up to INR 2,999) |
 | **Ops** | Sentry, PM2 + Nginx handover doc, health endpoints, reconcile cron |
-| **My role** | Product, frontend, backend, schema, payments, deployment scripts |
+| **Scope** | Storefront, admin, payments, database schema and migrations, deployment scripts |
 
 ## What it does
 

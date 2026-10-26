@@ -132,7 +132,7 @@ export default function FragranceFinderPage() {
             Find your<br />fragrance
           </h1>
           <p style={{ fontSize: 15, color: '#55534D', lineHeight: 1.7, marginBottom: 40 }}>
-            Answer five questions about when you wear it and what you like, and we'll shortlist bottles from the house to try.
+            Answer five questions about when you wear it and what you like, and we&apos;ll shortlist bottles from the house to try.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginBottom: 40 }}>
             {['5 Questions', '~2 Minutes', 'Personalised Results'].map(tag => (
@@ -173,7 +173,7 @@ export default function FragranceFinderPage() {
             Your Fragrances<br /><em style={{ fontStyle: 'italic' }}>Are Ready</em>
           </h2>
           <p style={{ fontSize: 15, color: '#55534D', lineHeight: 1.7, marginBottom: 40 }}>
-            Based on your preferences, we've curated a personalised selection just for you. Explore and find your signature scent.
+            Based on your preferences, we&apos;ve curated a personalised selection just for you. Explore and find your signature scent.
           </p>
           {savingSubmission ? (
             <p style={{ fontSize: 12, color: '#6E6B64', marginBottom: 20 }}>Saving your quiz response...</p>

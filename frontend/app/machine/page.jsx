@@ -91,8 +91,8 @@ export default function SpraykartMachinePage() {
           color: 'rgba(255,255,255,0.5)',
           lineHeight: 1.7, maxWidth: 560, marginBottom: 64,
         }}>
-          We're not just selling fragrances anymore.<br />
-          We're redefining how you <em style={{ color: 'rgba(255,255,255,0.75)', fontStyle: 'italic' }}>experience</em> them.
+          We&apos;re not just selling fragrances anymore.<br />
+          We&apos;re redefining how you <em style={{ color: 'rgba(255,255,255,0.75)', fontStyle: 'italic' }}>experience</em> them.
         </p>
 
         {/* Scroll cue */}
@@ -199,8 +199,8 @@ export default function SpraykartMachinePage() {
             fontWeight: 300, letterSpacing: '-0.02em',
             color: '#ffffff', lineHeight: 1.2, marginBottom: 64,
           }}>
-            This isn't just a machine—<br />
-            <em style={{ color: 'rgba(255,255,255,0.55)', fontStyle: 'italic' }}>it's a new way to experience perfumes.</em>
+            This isn&apos;t just a machine—<br />
+            <em style={{ color: 'rgba(255,255,255,0.55)', fontStyle: 'italic' }}>it&apos;s a new way to experience perfumes.</em>
           </h2>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 32 }}>
@@ -263,7 +263,7 @@ export default function SpraykartMachinePage() {
           maxWidth: 560, borderLeft: '2px solid rgba(167,139,250,0.4)',
           paddingLeft: 24,
         }}>
-          Whether you're heading to a party, a date, a meeting, or just want to feel fresh — the Spraykart Machine makes sure you're always ready.
+          Whether you&apos;re heading to a party, a date, a meeting, or just want to feel fresh — the Spraykart Machine makes sure you&apos;re always ready.
         </p>
       </section>
 
@@ -361,7 +361,7 @@ export default function SpraykartMachinePage() {
             fontSize: 16, color: 'rgba(255,255,255,0.4)', lineHeight: 1.7,
             maxWidth: 480, margin: '0 auto 56px',
           }}>
-            We're getting ready to roll this out — and trust us, it's worth the wait.
+            We&apos;re getting ready to roll this out — and trust us, it&apos;s worth the wait.
           </p>
 
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>

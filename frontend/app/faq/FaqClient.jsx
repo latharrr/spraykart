@@ -105,7 +105,7 @@ export default function FaqClient({ faqs }) {
           maxWidth: 560, margin: '0 auto',
           lineHeight: 1.6,
         }}>
-          Everything you need to know about Spraykart. Can't find the answer?{' '}
+          Everything you need to know about Spraykart. Can&apos;t find the answer?{' '}
           <Link href="/contact" style={{ color: '#0D0D0D', fontWeight: 600, textDecorationLine: 'underline', textUnderlineOffset: 3 }}>
             Contact us
           </Link>
@@ -147,7 +147,7 @@ export default function FaqClient({ faqs }) {
               marginBottom: 'clamp(16px, 4vw, 24px)', 
               fontFamily: "Georgia, serif" 
             }}>
-              We're here to help
+              We&apos;re here to help
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link href="/contact" style={{

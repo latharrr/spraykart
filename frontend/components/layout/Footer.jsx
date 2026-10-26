@@ -1,118 +1,77 @@
 import Link from 'next/link';
-import Image from 'next/image';
-import { Instagram, Twitter, Facebook, Mail } from 'lucide-react';
+import FooterNewsletter from '@/components/layout/FooterNewsletter';
 
-const footerLinks = {
-  Shop: [
-    { label: 'All Fragrances',     href: '/products' },
-    { label: "Men's Fragrances",   href: '/products?category=Men' },
-    { label: "Women's Fragrances", href: '/products?category=Women' },
-    { label: 'Attar & Unisex',     href: '/products?category=Attar' },
-    { label: 'Gift Sets',          href: '/products?category=Gift+Sets' },
-  ],
-  Explore: [
-    { label: 'Fragrance Finder',   href: '/fragrance-finder' },
-    { label: 'Spraykart Machine',  href: '/machine' },
-    { label: 'About Us',           href: '/contact' },
-    { label: 'Contact Us',         href: '/contact' },
-  ],
-  Account: [
-    { label: 'My Orders',          href: '/orders' },
-    { label: 'Track Order',        href: '/orders' },
-    { label: 'My Account',         href: '/account' },
-    { label: 'Sign In',            href: '/login' },
-  ],
-  Support: [
-    { label: 'Privacy Policy',     href: '/privacy' },
-    { label: 'Terms & Conditions', href: '/terms' },
-    { label: 'Refund Policy',      href: '/refund' },
-    { label: 'Shipping Policy',    href: '/shipping' },
-  ],
-};
+const columns = [
+  {
+    title: 'Shop',
+    links: [
+      { label: 'All fragrances', href: '/products' },
+      { label: 'Men', href: '/products?category=Men' },
+      { label: 'Women', href: '/products?category=Women' },
+      { label: 'Unisex', href: '/products?category=Unisex' },
+      { label: 'Attar', href: '/products?category=Attar' },
+      { label: 'Gift sets', href: '/products?category=Gift+Sets' },
+    ],
+  },
+  {
+    title: 'Discover',
+    links: [
+      { label: 'Fragrance finder', href: '/fragrance-finder' },
+      { label: 'Spraykart Machine', href: '/machine' },
+      { label: 'FAQ', href: '/faq' },
+      { label: 'Contact', href: '/contact' },
+    ],
+  },
+  {
+    title: 'Account',
+    links: [
+      { label: 'Orders and tracking', href: '/orders' },
+      { label: 'Saved', href: '/wishlist' },
+      { label: 'Profile', href: '/account' },
+      { label: 'Sign in', href: '/login' },
+    ],
+  },
+  {
+    title: 'Care',
+    links: [
+      { label: 'Shipping', href: '/shipping' },
+      { label: 'Returns and refunds', href: '/refund' },
+      { label: 'Terms', href: '/terms' },
+      { label: 'Privacy', href: '/privacy' },
+    ],
+  },
+];
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-neutral-400">
-      <style>{`
-        .ftr-link  { color:#737373; font-size:13px; text-decoration:none; transition:color .15s; }
-        .ftr-link:hover { color:#fff; }
-        .ftr-social{ display:flex; width:34px; height:34px; align-items:center; justify-content:center; border:1px solid #262626; border-radius:2px; color:#737373; transition:all .15s; }
-        .ftr-social:hover{ border-color:#fff; color:#fff; }
-      `}</style>
-
-      <div className="max-w-7xl mx-auto px-5 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
-
-          {/* Brand */}
-          <div className="lg:col-span-2">
-            <Link href="/" className="inline-flex items-baseline gap-0 mb-4">
-              <span className="text-xl font-semibold text-white" style={{ fontFamily: "'Playfair Display', serif", letterSpacing: '-0.02em' }}>
-                Spray<em className="font-normal">kart</em>
-              </span>
-            </Link>
-            <p className="text-[13px] text-neutral-500 max-w-xs leading-relaxed mb-2">
-              India&apos;s most trusted luxury fragrance platform. 100% authentic perfumes, attars &amp; niche fragrances.
-            </p>
-            <p className="text-[11px] text-neutral-700 mb-6 tracking-wide">
-              स्प्रेकार्ट · ஸ்ப்ரேகார்ட் · స్ప్రేకార్ట్ · স্প্রেকার্ট · સ્પ્રేકાર્ટ
-            </p>
-            <div className="flex gap-2">
-              {[
-                { Icon: Instagram, href: 'https://www.instagram.com/spraykart', label: 'Instagram' },
-                { Icon: Twitter,   href: 'https://twitter.com/spraykart', label: 'Twitter' },
-                { Icon: Facebook,  href: 'https://www.facebook.com/spraykart', label: 'Facebook' },
-                { Icon: Mail,      href: 'mailto:support@spraykart.in', label: 'Email' },
-              ].map(({ Icon, href, label }) => (
-                <a key={label} href={href} aria-label={label} className="ftr-social" target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}>
-                  <Icon size={14} />
-                </a>
-              ))}
-            </div>
+    <footer className="h-foot on-ink">
+      <div className="h-wrap">
+        <div className="h-foot__top">
+          <div className="h-foot__brand">
+            <p className="t-display t-m" style={{ maxWidth: '12ch' }}>Designer, niche and attar. One house.</p>
+            <FooterNewsletter />
           </div>
-
-          {/* Link columns */}
-          {Object.entries(footerLinks).map(([section, links]) => (
-            <div key={section}>
-              <h3 className="text-white text-xs font-semibold tracking-[0.1em] uppercase mb-4">{section}</h3>
-              <ul className="space-y-2.5">
-                {links.map(({ label, href }) => (
-                  <li key={label}>
-                    <Link href={href} className="ftr-link">{label}</Link>
-                  </li>
+          {columns.map((col) => (
+            <div key={col.title}>
+              <h3>{col.title}</h3>
+              <ul>
+                {col.links.map((l) => (
+                  <li key={l.label}><Link href={l.href} className="h-foot__a">{l.label}</Link></li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
-
-        {/* Bottom bar with logo */}
-        <div className="border-t border-white/8 mt-14 pt-8">
-          {/* Spraykart Logo — centered, prominent */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
-            <Link href="/" aria-label="Spraykart Home">
-              <span style={{
-                display: 'inline-flex', alignItems: 'baseline', gap: 0,
-                fontFamily: "'Cormorant', Georgia, serif",
-                fontSize: 42, fontWeight: 500,
-                color: '#ffffff', letterSpacing: '-0.03em',
-                lineHeight: 1,
-              }}>
-                Spray<em style={{ fontWeight: 300, fontStyle: 'italic' }}>kart</em>
-              </span>
-            </Link>
-          </div>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-neutral-700 flex flex-wrap gap-3">
-              <span>© {new Date().getFullYear()} Spraykart</span>
-              <span>·</span>
-              <span>Pan-India Delivery</span>
-              <span>·</span>
-              <span>100% Authentic</span>
-            </p>
-            <p className="text-xs text-neutral-700 flex items-center gap-2">
-              Payments secured by <span className="text-neutral-500 font-medium">Razorpay</span>
-            </p>
-          </div>
+      </div>
+      <p className="h-foot__word" aria-hidden="true">Spraykart</p>
+      <div className="h-wrap">
+        <div className="h-foot__base">
+          <span>© {new Date().getFullYear()} Spraykart · Delivered across India</span>
+          <span style={{ display: 'flex', gap: 24 }}>
+            <a href="https://www.instagram.com/spraykart" target="_blank" rel="noopener noreferrer" className="h-foot__a" style={{ fontSize: 12 }}>Instagram</a>
+            <a href="mailto:support@spraykart.in" className="h-foot__a" style={{ fontSize: 12 }}>support@spraykart.in</a>
+            <span>Payments by Razorpay</span>
+          </span>
         </div>
       </div>
     </footer>

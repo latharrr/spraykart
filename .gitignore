@@ -32,3 +32,8 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# impeccable working files
+.impeccable/mocks/
+.impeccable/review/
+.impeccable/build/

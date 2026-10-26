@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function SpraykartMachinePage() {
   return (
-    <main style={{ background: '#0a0a0a', minHeight: '100vh', color: '#ffffff', fontFamily: "var(--font-sans, system-ui, sans-serif)" }}>
+    <main style={{ background: '#0D0D0D', minHeight: '100vh', color: '#ffffff', fontFamily: "var(--font-sans, system-ui, sans-serif)" }}>
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section style={{
@@ -49,7 +49,7 @@ export default function SpraykartMachinePage() {
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '8px 20px',
             border: '1px solid rgba(255,255,255,0.15)',
-            borderRadius: 100,
+            borderRadius: 0,
             fontSize: 11, fontWeight: 600, letterSpacing: '0.16em',
             textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)',
             backdropFilter: 'blur(8px)',
@@ -57,8 +57,8 @@ export default function SpraykartMachinePage() {
           }}>
             <span style={{
               width: 6, height: 6, borderRadius: '50%',
-              background: '#a78bfa',
-              boxShadow: '0 0 8px #a78bfa',
+              background: '#5B1F2A',
+              boxShadow: '0 0 8px #5B1F2A',
               animation: 'pulse-dot 2s ease-in-out infinite',
             }} />
             Coming Soon
@@ -74,12 +74,7 @@ export default function SpraykartMachinePage() {
           }}>
             Something Game-Changing Is On Its Way
           </p>
-          <h1 style={{
-            fontFamily: "var(--font-serif, Georgia, serif)",
-            fontSize: 'clamp(42px, 7vw, 88px)',
-            fontWeight: 300,
-            lineHeight: 1.06,
-            letterSpacing: '-0.03em',
+          <h1 className="t-display t-xl" style={{
             color: '#ffffff',
             marginBottom: 0,
           }}>
@@ -135,7 +130,7 @@ export default function SpraykartMachinePage() {
           gap: 1,
           border: '1px solid rgba(255,255,255,0.07)',
           background: 'rgba(255,255,255,0.07)',
-          borderRadius: 2,
+          borderRadius: 0,
           overflow: 'hidden',
         }}>
           {[
@@ -160,7 +155,7 @@ export default function SpraykartMachinePage() {
           ].map(({ step, title, desc, color }) => (
             <div key={step} style={{
               padding: '48px 40px',
-              background: '#0f0f0f',
+              background: '#0D0D0D',
               position: 'relative',
               overflow: 'hidden',
             }}>
@@ -217,7 +212,7 @@ export default function SpraykartMachinePage() {
               <div key={text} style={{
                 padding: '32px 28px',
                 border: '1px solid rgba(255,255,255,0.07)',
-                borderRadius: 2,
+                borderRadius: 0,
                 background: 'rgba(255,255,255,0.02)',
                 transition: 'border-color 0.2s',
               }}>
@@ -252,7 +247,7 @@ export default function SpraykartMachinePage() {
             <span key={label} style={{
               padding: '12px 24px',
               border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 100,
+              borderRadius: 0,
               fontSize: 13, color: 'rgba(255,255,255,0.6)',
               background: 'rgba(255,255,255,0.03)',
               letterSpacing: '0.02em',
@@ -295,7 +290,7 @@ export default function SpraykartMachinePage() {
             aspectRatio: '16/9',
             background: 'rgba(255,255,255,0.04)',
             border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 4,
+            borderRadius: 0,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -373,8 +368,8 @@ export default function SpraykartMachinePage() {
               display: 'inline-flex', alignItems: 'center', gap: 10,
               padding: '14px 36px',
               fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
-              background: '#ffffff', color: '#0a0a0a',
-              textDecoration: 'none', borderRadius: 2,
+              background: '#ffffff', color: '#0D0D0D',
+              textDecoration: 'none', borderRadius: 0,
               transition: 'opacity 0.15s',
             }}>
               Shop Fragrances Now
@@ -385,7 +380,7 @@ export default function SpraykartMachinePage() {
               fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
               background: 'transparent', color: 'rgba(255,255,255,0.7)',
               border: '1px solid rgba(255,255,255,0.15)',
-              textDecoration: 'none', borderRadius: 2,
+              textDecoration: 'none', borderRadius: 0,
               transition: 'border-color 0.15s, color 0.15s',
             }}>
               Get Notified

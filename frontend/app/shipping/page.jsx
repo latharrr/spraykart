@@ -18,15 +18,14 @@ export default function ShippingPage() {
 
   return (
     <div style={{ maxWidth: 760, margin: '0 auto', padding: '60px 24px 80px' }}>
-      <p style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a0a0a0', marginBottom: 8 }}>Legal</p>
-      <h1 style={{ fontFamily: "'Cormorant', Georgia, serif", fontSize: 40, fontWeight: 400, color: '#0c0c0c', marginBottom: 8 }}>Shipping Policy</h1>
-      <p style={{ fontSize: 13, color: '#a0a0a0', marginBottom: 48 }}>Last updated: May 1, 2026</p>
+      <h1 style={{ fontFamily: 'var(--font-d)', fontSize: 40, fontWeight: 400, color: '#0D0D0D', marginBottom: 8 }}>Shipping Policy</h1>
+      <p style={{ fontSize: 13, color: '#6E6B64', marginBottom: 48 }}>Last updated: May 1, 2026</p>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 44 }}>
         {highlights.map(([title, body]) => (
-          <div key={title} style={{ background: '#f7f7f5', border: '1px solid #e8e8e8', padding: 18 }}>
-            <h2 style={{ fontSize: 13, fontWeight: 700, color: '#0c0c0c', marginBottom: 6 }}>{title}</h2>
-            <p style={{ fontSize: 12, color: '#666', lineHeight: 1.7 }}>{body}</p>
+          <div key={title} style={{ background: '#EAE8E3', border: '1px solid #E2DFD8', padding: 18 }}>
+            <h2 style={{ fontSize: 13, fontWeight: 700, color: '#0D0D0D', marginBottom: 6 }}>{title}</h2>
+            <p style={{ fontSize: 12, color: '#55534D', lineHeight: 1.7 }}>{body}</p>
           </div>
         ))}
       </div>
@@ -39,8 +38,8 @@ export default function ShippingPage() {
         ['Contact', `For shipping queries: ${business.email}\nPhone: ${business.phone}\nHours: ${business.supportHours}`],
       ].map(([title, body]) => (
         <section key={title} style={{ marginBottom: 36 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#0c0c0c', marginBottom: 10 }}>{title}</h2>
-          <p style={{ fontSize: 14, color: '#555', lineHeight: 1.8, whiteSpace: 'pre-line' }}>{body}</p>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#0D0D0D', marginBottom: 10 }}>{title}</h2>
+          <p style={{ fontSize: 14, color: '#55534D', lineHeight: 1.8, whiteSpace: 'pre-line' }}>{body}</p>
         </section>
       ))}
     </div>

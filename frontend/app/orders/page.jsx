@@ -39,18 +39,18 @@ function estimatedDelivery(createdAt) {
 // ─── Status badge ─────────────────────────────────────────────────────────────
 function StatusPill({ status }) {
   const map = {
-    pending:   { bg: '#fef3c7', color: '#92400e', label: 'Order Placed' },
-    confirmed: { bg: '#dbeafe', color: '#1e40af', label: 'Confirmed' },
-    shipped:   { bg: '#ede9fe', color: '#5b21b6', label: 'Shipped' },
-    delivered: { bg: '#dcfce7', color: '#166534', label: 'Delivered' },
-    cancelled: { bg: '#fee2e2', color: '#991b1b', label: 'Cancelled' },
+    pending:   { bg: 'transparent', color: '#0D0D0D', border: '1px solid rgba(13,13,13,.32)', label: 'Order placed' },
+    confirmed: { bg: 'transparent', color: '#0D0D0D', border: '1px solid #0D0D0D', label: 'Confirmed' },
+    shipped:   { bg: '#0D0D0D', color: '#F6F4EF', border: '1px solid #0D0D0D', label: 'Shipped' },
+    delivered: { bg: '#EAE8E3', color: '#0D0D0D', border: '1px solid #EAE8E3', label: 'Delivered' },
+    cancelled: { bg: 'transparent', color: '#5B1F2A', border: '1px solid #5B1F2A', label: 'Cancelled' },
   };
   const s = map[status] || map.pending;
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 5,
-      padding: '4px 10px', borderRadius: 100,
-      fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
+      padding: '5px 10px', borderRadius: 0, border: s.border,
+      fontSize: 11, fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase',
       background: s.bg, color: s.color,
     }}>
       {s.label}
@@ -67,15 +67,15 @@ function TrackingTimeline({ order }) {
     return (
       <div style={{
         padding: '20px 24px',
-        background: '#fff5f5',
-        border: '1px solid #fecaca',
-        borderRadius: 8,
+        background: '#F4EDEE',
+        border: '1px solid #E8D9DC',
+        borderRadius: 0,
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
         <span style={{ fontSize: 20 }}>❌</span>
         <div>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#991b1b' }}>Order Cancelled</p>
-          <p style={{ fontSize: 12, color: '#dc2626', marginTop: 2 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#5B1F2A' }}>Order Cancelled</p>
+          <p style={{ fontSize: 12, color: '#5B1F2A', marginTop: 2 }}>
             {order.razorpay_payment_id
               ? 'Refund will be processed within 5–7 business days.'
               : 'This order was cancelled before payment.'}
@@ -91,11 +91,11 @@ function TrackingTimeline({ order }) {
       {order.status !== 'delivered' && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10,
-          padding: '12px 16px', background: '#f0fdf4',
-          border: '1px solid #bbf7d0', borderRadius: 8, marginBottom: 24,
+          padding: '12px 16px', background: '#EAE8E3',
+          border: '1px solid #E2DFD8', borderRadius: 0, marginBottom: 24,
         }}>
-          <Clock size={14} color="#16a34a" />
-          <p style={{ fontSize: 13, color: '#166534' }}>
+          <Clock size={14} color="#0D0D0D" />
+          <p style={{ fontSize: 13, color: '#0D0D0D' }}>
             <strong>Estimated Delivery:</strong> {estimatedDelivery(order.created_at)}
           </p>
         </div>
@@ -113,7 +113,7 @@ function TrackingTimeline({ order }) {
                 <div style={{
                   position: 'absolute', left: 14, top: 30,
                   width: 2, height: 'calc(100% - 10px)',
-                  background: isDone ? '#0c0c0c' : '#e5e7eb',
+                  background: isDone ? '#0D0D0D' : '#E2DFD8',
                   transition: 'background 0.3s',
                 }} />
               )}
@@ -122,8 +122,8 @@ function TrackingTimeline({ order }) {
               <div style={{
                 width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: isDone ? '#0c0c0c' : '#f3f4f6',
-                border: `2px solid ${isDone ? '#0c0c0c' : '#e5e7eb'}`,
+                background: isDone ? '#0D0D0D' : '#EAE8E3',
+                border: `2px solid ${isDone ? '#0D0D0D' : '#E2DFD8'}`,
                 transition: 'all 0.3s',
                 zIndex: 1, position: 'relative',
                 boxShadow: isCurrent ? '0 0 0 4px rgba(0,0,0,0.08)' : 'none',
@@ -131,7 +131,7 @@ function TrackingTimeline({ order }) {
                 {isDone ? (
                   <Check size={13} color="#fff" strokeWidth={3} />
                 ) : (
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#d1d5db' }} />
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#CFCCC4' }} />
                 )}
               </div>
 
@@ -139,21 +139,21 @@ function TrackingTimeline({ order }) {
               <div style={{ paddingBottom: idx < STATUS_STEPS.length - 1 ? 32 : 0 }}>
                 <p style={{
                   fontSize: 13, fontWeight: isCurrent ? 700 : isDone ? 600 : 400,
-                  color: isDone ? '#0c0c0c' : '#9ca3af',
+                  color: isDone ? '#0D0D0D' : '#6E6B64',
                   lineHeight: 1.4,
                 }}>
                   {step.label}
                   {isCurrent && (
                     <span style={{
                       marginLeft: 8, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
-                      textTransform: 'uppercase', color: '#6366f1',
-                      background: '#eef2ff', padding: '2px 6px', borderRadius: 4,
+                      textTransform: 'uppercase', color: '#5B1F2A',
+                      background: '#EAE8E3', padding: '2px 6px', borderRadius: 0,
                     }}>
                       Current
                     </span>
                   )}
                 </p>
-                <p style={{ fontSize: 12, color: isDone ? '#6b7280' : '#d1d5db', marginTop: 2 }}>
+                <p style={{ fontSize: 12, color: isDone ? '#55534D' : '#CFCCC4', marginTop: 2 }}>
                   {step.desc}
                 </p>
               </div>
@@ -180,7 +180,7 @@ function OrderCard({ order }) {
 
   return (
     <div style={{
-      border: '1px solid #e5e7eb', borderRadius: 12,
+      border: '1px solid #E2DFD8', borderRadius: 0,
       overflow: 'hidden', background: '#fff',
       boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
       marginBottom: 16,
@@ -190,31 +190,31 @@ function OrderCard({ order }) {
       <div style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
         {/* Order icon */}
         <div style={{
-          width: 44, height: 44, borderRadius: 10,
-          background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 44, height: 44, borderRadius: 0,
+          background: '#EAE8E3', display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
         }}>
-          <Package size={20} color="#374151" />
+          <Package size={20} color="#3F3D39" />
         </div>
 
         {/* Main info */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#1a1a1a', fontFamily: 'monospace' }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#0D0D0D', fontFamily: 'monospace' }}>
               #{order.id.slice(0, 8).toUpperCase()}
             </span>
             <StatusPill status={order.status} />
             {order.payment_method === 'cod' && (
-              <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: '#fef9c3', color: '#854d0e', fontWeight: 600 }}>
+              <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 0, background: '#EAE8E3', color: '#0D0D0D', fontWeight: 600 }}>
                 COD
               </span>
             )}
           </div>
-          <p style={{ fontSize: 12, color: '#6b7280' }}>
+          <p style={{ fontSize: 12, color: '#55534D' }}>
             {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
             {' · '}{itemCount} item{itemCount !== 1 && 's'}
             {' · '}
-            <strong style={{ color: '#1a1a1a' }}>₹{parseFloat(order.final_price).toLocaleString('en-IN')}</strong>
+            <strong style={{ color: '#0D0D0D' }}>₹{parseFloat(order.final_price).toLocaleString('en-IN')}</strong>
           </p>
         </div>
 
@@ -223,9 +223,9 @@ function OrderCard({ order }) {
           onClick={() => setExpanded(v => !v)}
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            padding: '8px 16px', borderRadius: 8,
-            border: '1px solid #e5e7eb', background: '#fff',
-            fontSize: 12, fontWeight: 600, color: '#374151',
+            padding: '8px 16px', borderRadius: 0,
+            border: '1px solid #E2DFD8', background: '#fff',
+            fontSize: 12, fontWeight: 600, color: '#3F3D39',
             cursor: 'pointer', flexShrink: 0,
             transition: 'background 0.1s',
           }}
@@ -237,17 +237,17 @@ function OrderCard({ order }) {
 
       {/* ── Expanded content ──────────────────────────────────────────── */}
       {expanded && (
-        <div style={{ borderTop: '1px solid #f3f4f6' }}>
+        <div style={{ borderTop: '1px solid #EAE8E3' }}>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
             gap: 0,
           }}>
             {/* Tracking timeline */}
-            <div style={{ padding: '24px 24px', borderRight: '1px solid #f3f4f6' }}>
+            <div style={{ padding: '24px 24px', borderRight: '1px solid #EAE8E3' }}>
               <p style={{
                 fontSize: 10, fontWeight: 700, letterSpacing: '0.12em',
-                textTransform: 'uppercase', color: '#9ca3af', marginBottom: 20,
+                textTransform: 'uppercase', color: '#6E6B64', marginBottom: 20,
               }}>
                 Order Tracking
               </p>
@@ -260,7 +260,7 @@ function OrderCard({ order }) {
               <div style={{ marginBottom: 24 }}>
                 <p style={{
                   fontSize: 10, fontWeight: 700, letterSpacing: '0.12em',
-                  textTransform: 'uppercase', color: '#9ca3af', marginBottom: 14,
+                  textTransform: 'uppercase', color: '#6E6B64', marginBottom: 14,
                 }}>
                   Items Ordered
                 </p>
@@ -268,13 +268,13 @@ function OrderCard({ order }) {
                   {(order.items || []).filter(Boolean).map((item) => (
                     <div key={item.id} style={{
                       display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                      padding: '10px 12px', background: '#f9fafb', borderRadius: 8,
+                      padding: '10px 12px', background: '#EAE8E3', borderRadius: 0,
                     }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: '#1a1a1a', lineHeight: 1.3 }}>{item.name}</p>
-                        <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Qty: {item.quantity}</p>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: '#0D0D0D', lineHeight: 1.3 }}>{item.name}</p>
+                        <p style={{ fontSize: 11, color: '#6E6B64', marginTop: 2 }}>Qty: {item.quantity}</p>
                       </div>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#1a1a1a', flexShrink: 0, marginLeft: 12 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#0D0D0D', flexShrink: 0, marginLeft: 12 }}>
                         ₹{parseFloat(item.price * item.quantity).toLocaleString('en-IN')}
                       </p>
                     </div>
@@ -282,14 +282,14 @@ function OrderCard({ order }) {
                 </div>
 
                 {/* Price summary */}
-                <div style={{ marginTop: 12, padding: '10px 12px', background: '#f9fafb', borderRadius: 8 }}>
+                <div style={{ marginTop: 12, padding: '10px 12px', background: '#EAE8E3', borderRadius: 0 }}>
                   {order.discount > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#16a34a', marginBottom: 4 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#0D0D0D', marginBottom: 4 }}>
                       <span>Discount</span>
                       <span>−₹{parseFloat(order.discount).toLocaleString('en-IN')}</span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: '#1a1a1a' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: '#0D0D0D' }}>
                     <span>Total Paid</span>
                     <span>₹{parseFloat(order.final_price).toLocaleString('en-IN')}</span>
                   </div>
@@ -301,21 +301,21 @@ function OrderCard({ order }) {
                 <div>
                   <p style={{
                     fontSize: 10, fontWeight: 700, letterSpacing: '0.12em',
-                    textTransform: 'uppercase', color: '#9ca3af', marginBottom: 10,
+                    textTransform: 'uppercase', color: '#6E6B64', marginBottom: 10,
                   }}>
                     Delivery Address
                   </p>
                   <div style={{
                     display: 'flex', gap: 8,
-                    padding: '12px 14px', background: '#f9fafb', borderRadius: 8,
+                    padding: '12px 14px', background: '#EAE8E3', borderRadius: 0,
                   }}>
-                    <MapPin size={14} color="#9ca3af" style={{ flexShrink: 0, marginTop: 1 }} />
-                    <div style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.6 }}>
-                      {addr.name && <p style={{ fontWeight: 600, color: '#1a1a1a' }}>{addr.name}</p>}
+                    <MapPin size={14} color="#6E6B64" style={{ flexShrink: 0, marginTop: 1 }} />
+                    <div style={{ fontSize: 13, color: '#55534D', lineHeight: 1.6 }}>
+                      {addr.name && <p style={{ fontWeight: 600, color: '#0D0D0D' }}>{addr.name}</p>}
                       <p>{addr.line1}</p>
                       {addr.line2 && <p>{addr.line2}</p>}
                       <p>{addr.city}, {addr.state} – {addr.pincode}</p>
-                      {addr.phone && <p style={{ marginTop: 4, color: '#6b7280' }}>📱 {addr.phone}</p>}
+                      {addr.phone && <p style={{ marginTop: 4, color: '#55534D' }}>📱 {addr.phone}</p>}
                     </div>
                   </div>
                 </div>
@@ -346,16 +346,16 @@ export default function OrdersPage() {
     <div style={{ maxWidth: 860, margin: '0 auto', padding: '40px 16px 80px' }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: '#1a1a1a', marginBottom: 4 }}>My Orders</h1>
-        <p style={{ fontSize: 13, color: '#6b7280' }}>Track and manage all your Spraykart orders</p>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: '#0D0D0D', marginBottom: 4 }}>My Orders</h1>
+        <p style={{ fontSize: 13, color: '#55534D' }}>Track and manage all your Spraykart orders</p>
       </div>
 
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {[...Array(3)].map((_, i) => (
             <div key={i} style={{
-              height: 96, borderRadius: 12, border: '1px solid #e5e7eb',
-              background: '#f9fafb', animation: 'pulse 1.5s ease-in-out infinite',
+              height: 96, borderRadius: 0, border: '1px solid #E2DFD8',
+              background: '#EAE8E3', animation: 'pulse 1.5s ease-in-out infinite',
             }} />
           ))}
         </div>

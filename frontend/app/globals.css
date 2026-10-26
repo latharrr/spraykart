@@ -153,6 +153,8 @@ html { scrollbar-color: var(--stone) transparent; scrollbar-width: thin; }
   .prose u { text-decoration: underline; text-underline-offset: 3px; }
 
   .serif { font-family: var(--font-d); font-weight: 400; letter-spacing: -0.005em; }
+  /* the display face has no italic; never let the browser fake one */
+  .serif em, h1 em, h2 em { font-style: normal; }
 }
 
 /* ─── Type ───────────────────────────────────────────────────────────────── */
@@ -549,6 +551,7 @@ html { scrollbar-color: var(--stone) transparent; scrollbar-width: thin; }
 /* ─── Auth + account shells ──────────────────────────────────────────────── */
 .au { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: calc(100svh - var(--nav-h) - var(--bar-h)); }
 .au__img { position: relative; background: var(--paper); overflow: hidden; }
+.au__img.h-inverse { background: var(--ink); }
 .au__form { display: flex; flex-direction: column; justify-content: center; padding: 56px var(--gutter); }
 .au__form > div { width: 100%; max-width: 420px; margin: 0 auto; display: grid; gap: 22px; }
 @media (max-width: 1023px) { .au { grid-template-columns: 1fr; } .au__img { display: none; } }
